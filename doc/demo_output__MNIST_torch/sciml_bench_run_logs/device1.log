@@ -1,0 +1,32 @@
+<BEGIN> **** EPOCH LOOP ****
+....<BEGIN> Epoch: 0
+........<BEGIN> Training batch loop
+............<MESSG> [    0/30000 (  0%)] loss=2.301450, acc=0.109375, elapsed=0.045302 sec
+............<MESSG> [ 6400/30000 ( 21%)] loss=1.598601, acc=0.875000, elapsed=3.891284 sec
+............<MESSG> [12800/30000 ( 43%)] loss=1.521520, acc=0.921875, elapsed=7.716672 sec
+............<MESSG> [19200/30000 ( 64%)] loss=1.547043, acc=0.921875, elapsed=11.539742 sec
+............<MESSG> [25600/30000 ( 85%)] loss=1.480972, acc=0.984375, elapsed=15.566177 sec
+........<ENDED> Training batch loop [ELAPSED = 18.580899 sec]
+........<BEGIN> Validating on test set
+............<BEGIN> Averaging metrics across ranks (allreduce)
+............<ENDED> Averaging metrics across ranks (allreduce) [ELAPSED = 0.019675 sec]
+............<MESSG> Metrics on rank: loss_val=0.000899, acc_val=0.965200
+............<MESSG> Average metrics: loss_val=0.000898, acc_val=0.967000
+........<ENDED> Validating on test set [ELAPSED = 1.354554 sec]
+....<ENDED> Epoch: 0 [ELAPSED = 19.935980 sec]
+....<BEGIN> Epoch: 1
+........<BEGIN> Training batch loop
+............<MESSG> [    0/30000 (  0%)] loss=1.502614, acc=0.968750, elapsed=0.053829 sec
+............<MESSG> [ 6400/30000 ( 21%)] loss=1.517950, acc=0.937500, elapsed=4.265421 sec
+............<MESSG> [12800/30000 ( 43%)] loss=1.468392, acc=1.000000, elapsed=9.170158 sec
+............<MESSG> [19200/30000 ( 64%)] loss=1.475933, acc=0.984375, elapsed=14.661066 sec
+............<MESSG> [25600/30000 ( 85%)] loss=1.498461, acc=0.968750, elapsed=19.484558 sec
+........<ENDED> Training batch loop [ELAPSED = 22.575596 sec]
+........<BEGIN> Validating on test set
+............<BEGIN> Averaging metrics across ranks (allreduce)
+............<ENDED> Averaging metrics across ranks (allreduce) [ELAPSED = 0.036944 sec]
+............<MESSG> Metrics on rank: loss_val=0.000892, acc_val=0.975400
+............<MESSG> Average metrics: loss_val=0.000892, acc_val=0.976600
+........<ENDED> Validating on test set [ELAPSED = 1.477473 sec]
+....<ENDED> Epoch: 1 [ELAPSED = 24.053485 sec]
+<ENDED> **** EPOCH LOOP **** [ELAPSED = 43.989705 sec]

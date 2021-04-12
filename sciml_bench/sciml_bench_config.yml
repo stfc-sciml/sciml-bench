@@ -1,0 +1,17 @@
+# sciml_bench_config.yml
+
+# SciML-Bench
+# Copyright © 2021 Scientific Machine Learning Research Group
+# Scientific Computing Department, Rutherford Appleton Laboratory
+# Science and Technology Facilities Council, UK. 
+# All rights reserved.
+
+# config for sciml-bench
+
+# directories
+sciml_bench_dirs:
+    # root directory of datasets
+    dataset_root_dir: ~/sciml_bench_user/datasets
+
+    # root directory of outputs
+    output_root_dir: ~/sciml_bench_user/outputs

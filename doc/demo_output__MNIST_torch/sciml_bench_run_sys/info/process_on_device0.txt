@@ -1,0 +1,18 @@
+
+=========================== Process ============================
+PID                                                 =    61402
+Name                                                =    python3.8
+Username                                            =    kuangdai
+Cmdline                                             =    /Users/kuangdai/anaconda3/envs/SciML-Benchmarks/bin/python3.8 /Users/kuangdai/anaconda3/envs/SciML-Benchmarks/bin/sciml-bench run MNIST_torch --output_dir=demo_output__MNIST_torch --monitor_interval=0.1 -b use_cuda false -b epochs 2
+CPU load                                            =    315.60%
+Num Threads                                         =    5
+Memory _________________________________________________________
+    RSS                                             =    93.71 MB
+    VMS                                             =    4.81 GB
+    PFAULTS                                         =    27.05 KB
+    PAGEINS                                         =    1.00 B
+    USS                                             =    60.48 MB
+    Percent                                         =    0.57%
+Environment variables __________________________________________
+    <Masked for privacy>
+================================================================
