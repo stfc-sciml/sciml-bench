@@ -94,6 +94,8 @@ rm -rf /tmp/openmpi
 cd /
 pip --no-cache-dir --disable-pip-version-check install mpi4py
 
+LD_LIBRARY_PATH=/usr/local/lib/:/usr/local/lib/openmpi:$LD_LIBRARY_PATH
+
 %environment
 
 %runscript

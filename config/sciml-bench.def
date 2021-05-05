@@ -32,15 +32,9 @@ From: ompi4.sif
 # TensorFlow version is tightly coupled to CUDA and cuDNN so it should be selected carefully
 # Python 2.7 or 3.5 is supported by Ubuntu Xenial out of the box
 
-        #libcudnn8=${CUDNN_VERSION} \
-        #libnccl2=${NCCL_VERSION} \
-        #libnccl-dev=${NCCL_VERSION} \
-
     export PYTHON_VERSION=3.8
     export TENSORFLOW_VERSION=2.3.0
     export PYTORCH_VERSION=1.7.1+cu101
-    export CUDNN_VERSION=8.0.4.30+cuda10.1
-    export NCCL_VERSION=2.8.3+cuda10.1
 
     echo "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
 
@@ -51,9 +45,6 @@ From: ompi4.sif
         curl \
         vim \
         wget \
-        libcudnn8 \
-        libnccl2 \
-        libnccl-dev \
         ca-certificates \
         libjpeg-dev \
         libpng-dev \
@@ -68,7 +59,7 @@ From: ompi4.sif
 
 # Install TensorFlow, Keras and PyTorch
     pip install torch==${PYTORCH_VERSION} torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
-    pip install mxnet-cu101 tensorflow-gpu==${TENSORFLOW_VERSION} keras h5py filelock matplotlib
+    pip install mxnet-cu101 tensorflow-gpu==${TENSORFLOW_VERSION} keras h5py filelock matplotlib scikit-learn
 
 # Install Horovod, temporarily using CUDA stubs
     ldconfig /usr/local/cuda-10.1/targets/x86_64-linux/lib/stubs && \
