@@ -8,13 +8,50 @@
 
 # config for sciml-bench
 
-# directories
-sciml_bench_dirs:
-    # root directory of datasets
-    dataset_root_dir: ~/sciml_bench_user/datasets
+# Location where the datasets are.
+# Do not modify this unless this is different to you.
+data_mirrors:
+    stfc_mirror: "https://s3.echo.stfc.ac.uk"
+    osn_mirror: "https://sdsc.osn.xsede.org"
+    download_command1: "aws s3 --no-sign-request --endpoint-url $SERVER sync $DATASET_URI $DATASET_DIR"
 
-    # root directory of outputs
+
+# directories
+directories:
+    dataset_root_dir: ~/sciml_bench_user/datasets
     output_root_dir: ~/sciml_bench_user/outputs
+
+
+# Datasets
+datasets: 
+    mnist:
+    em_graphene_sim:
+    dms_sim:
+    slstr_cloud_ds1:
+    slstr_cloud_ds2:
+
+
+# Benchmarks
+benchmarks:
+    mnist_tf_keras:
+        datasets: mnist
+        demo: "yes" 
+        link: "mnist_tf_keras"
+
+    mnist_torch:
+        datasets: mnist
+        demo: "yes" 
+        link: "mnist_torch"
+
+    em_denoise:
+        datasets: em_graphene_sim
+        link: "mnist_torch"
+
+    dms_structure:
+        datasets: em_graphene_sim
+        link: "mnist_torch"
+
+
 
 # datasets
 datasets:
@@ -22,18 +59,22 @@ datasets:
     MNIST:
         # approximate size
         size: "12 MB"
+        # is it a demo dataset:
+        demo: "yes" 
         # title of the dataset
         title: "The MNIST database of handwritten digits."
         # any information to display, such as credits, purposes and features
         info: "Demonstrates how to add a dataset to SciML-Bench."
         # download method
         # use either STANDARD_DOWNLOAD_STFC_HOST or commands taking $DATASET_DIR as input
-        download_method: "wget -c https://www.dropbox.com/s/6xhviply27tw3yu/mnist.tar.bz2 -O -
-            | tar -jx -C $DATASET_DIR"
+        # download_method: "wget -c https://www.dropbox.com/s/6xhviply27tw3yu/mnist.tar.bz2 -O -
+        #     | tar -jx -C $DATASET_DIR"
 
     em_graphene_sim:
         # approximate size
         size: "28 GB"
+        # is it a demo dataset:
+        demo: "no" 
         # title of the dataset
         title: "Simulated electron microscopy (EM) images of graphene."
         # any information to display, such as credits, purposes and features
@@ -45,6 +86,8 @@ datasets:
     dms_sim:
         # approximate size
         size: "7 GB"
+        # is it a demo dataset:
+        demo: "no" 
         # title of the dataset
         title: "Simulated diffuse multiple scattering (DMS) patterns."
         # any information to display, such as credits, purposes and features
@@ -56,6 +99,8 @@ datasets:
     slstr_cloud_ds1:
         # approximate size
         size: "180 GB"
+        # is it a demo dataset:
+        demo: "no"         
         # contributor-defined download
         # title of the dataset
         title: "Sentinel-3 SLSTR satellite image data."
@@ -71,6 +116,8 @@ benchmarks:
     MNIST_tf_keras:
         # name of the used dataset (must be registered)
         dataset: MNIST
+        # is it a demo benchmark:
+        demo: "no" 
         # title of the dataset
         title: "Classifying MNIST with CNN using Tensorflow Keras."
         # any information to display, such as credits, purposes and features
@@ -82,6 +129,8 @@ benchmarks:
     MNIST_torch:
         # name of the used dataset (must be registered)
         dataset: MNIST
+        # is it a demo benchmark:
+        demo: "no" 
         # title of the dataset
         title: "Classifying MNIST with CNN using Pytorch and Horovod for distributed learning."
         # any information to display, such as credits, purposes and features
@@ -92,6 +141,8 @@ benchmarks:
     em_denoise:
         # name of the used dataset (must be registered)
         dataset: em_graphene_sim
+        # is it a demo benchmark:
+        demo: "no" 
         # title of the dataset
         title: "Denoising electron microscopy (EM) images of graphene using an autoencoder."
         # any information to display, such as credits, purposes and features
@@ -102,6 +153,8 @@ benchmarks:
     dms_structure:
         # name of the used dataset (must be registered)
         dataset: dms_sim
+        # is it a demo benchmark:
+        demo: "no" 
         # title of the dataset
         title: "Classifying crystal structures based on the DMS pattern."
         # any information to display, such as credits, purposes and features
@@ -112,6 +165,8 @@ benchmarks:
     slstr_cloud:
         # name of the used dataset (must be registered)
         dataset: slstr_cloud_ds1
+        # is it a demo benchmark:
+        demo: "no" 
         # title of the dataset
         title: "Cloud segmentation in Sentinel-3 SLSTR images"
         # any information to display, such as credits, purposes and features

@@ -17,14 +17,13 @@
 
 # 1. Synopsis
 
-Benchmarking is a well known topic of Computer Science, primarily aimed at comparing software and/or hardware systems.  With the rise of machine learning and AI, the overall efforts on AI benchmarking in constantly increasing. The SciMLBench is aimed at the AI for Science domain, as opposed to generic AI benchmarking.  
+Benchmarking is a valuable tool in computational science that allows effective comparison of software and/or hardware systems.  With the rise of machine learning and AI, the need for benchmarking AI algorithms is  increasing. The SciMLBench is aimed at the ‘*AI for Science*’ research community.  
 
-With an ever growing number of machine learning models and algorithms, a range of scientific problems, and the proliferation of AI systems, developing cutting-edge ML/AI algorithms requires a detailed understanding of the interactions between these aspects. 
+With an ever-growing number of machine learning models and algorithms, a range of scientific problems, and the proliferation of AI systems, the development of cutting-edge ML/AI algorithms requires a detailed understanding of all of these aspects as well as effective mechanisms for measuring their effectiveness.
 
-The SciMLBench is aimed at providing an answer to this open question. It is an open-source initiative, and covers a range of scientific problems from various domains of science, including  material, life, and earth sciences, particle physics and astronomy.  The benchmarks are implemented in  Python, relying on one or more  machine learning frameworks, such as TensorFlow, PyTorch or SciKit-Learn. 
+The SciMLBench toolkit aims to provide such mechanisms. It is an open-source initiative and covers a range of scientific problems from various domains of science, including materials, the life sciences and environmental science, as well as particle physics and astronomy. The benchmarks are implemented in Python and rely on one or more machine learning frameworks, such as TensorFlow, PyTorch or SciKit-Learn.
 
-The overarching purpose of this initiative is many-fold, including, supporting benchmarking of machine learning models, AI systems, and supporting the AI for Science community for developing better solutions.
-
+The overarching purpose of this initiative is to support the ‘*AI for Science*’ community in the development of more powerful, robust and understandable machine learning solutions.
 
 
 # 2. Benchmark Suite 
@@ -35,7 +34,7 @@ The overarching purpose of this initiative is many-fold, including, supporting b
 
 The suite has three components, namely, 
 
-1. **Benchmarks**: The benchmarks are machine learning applications performing a specific scientific task, written in Python. These are included as part of this package, and can be found inside the ``./sciml_bench/benchmarks`` directory. In the scale of *micro-apps*, *mini-apps*, and *apps*, these are full-fledged applications. 
+1. **Benchmarks**: The benchmarks are machine learning applications performing a specific scientific task, written in Python. These are included as part of the distribution, and can be found inside the ``./sciml_bench/benchmarks`` directory. In the scale of *micro-apps*, *mini-apps*, and *apps*, these are full-fledged applications. 
 
 2. **Datasets**: Each benchmark in (1) relies on one or more datasets, for example for training and/or inferencing. These datasets are open, task- or domain-specific, and FAIR compliant. Most of these datasets being large, they are hosted separately,  on one of the servers (or mirrors), and are automatically or explicitly downloaded on demand. The framework (see (3)), supports manual downloading of these datasets. 
 
@@ -70,11 +69,11 @@ The source tree, which captures these aspects,  is organised as follows:
 
 ```
 
-We have annotated the purpose of each folder/directory witin `<>`.  
+We have annotated the purpose of each folder/directory within `<>`.  
 
 ## 2.2 Features 
 
-A typical user-base for the benchmarking framework may include a number of user communities, such as system manufacturers and integrators (for assessing system performance), scientists (for developing new algorithms), and ML enthusiasts (for understanding the basics of various machine learning models and algorithms). It is a challenging task to design for and cover all these requirements in a single framework. Here, with SciMLBench, we have attempted to cover these requirements through the following set of features: 
+A typical user-base for the benchmarking framework may include a number of user communities, such as system manufacturers and integrators (for assessing system performance), scientists (for developing new algorithms), and ML enthusiasts (for understanding the basics of various machine learning models and algorithms). It is a challenging task to design for and cover all these requirements in a single framework. Here, with SciMLBench, we have attempted to cover these requirements through the following set of features:
 
 * Very flexible, customisable and lightweight framework,
 * Powerful logging and monitoring capabilities, 
@@ -88,9 +87,7 @@ A typical user-base for the benchmarking framework may include a number of user 
 
 ## 2.3 Benchmarks and Datasets 
 
-The number of datasets and benchmarks may vary with every release. Please consult the [Benchmarks](./doc/benchmarks_datasets.md) document for this. A number authors have contributed towards the development of the benchmarks,  and these can be see in the [Credits](./doc/credits.md). If you are thinking of contributing towards the benchmarks or datasets, please see the [Contributing Datasets & Benchmarks](./doc/contributing.md).
-
-
+The number of datasets and benchmarks may vary with every release. Please consult the [Benchmarks](./doc/benchmarks_datasets.md) document for this. A number of authors have contributed towards the development of the benchmarks,  and these can be see in the [Credits](./doc/credits.md). If you are thinking of contributing towards the benchmarks or datasets, please see the [Contributing Datasets & Benchmarks](./doc/contributing.md).
 
 
 # 3. Installation and Usage
@@ -106,7 +103,7 @@ Cite this benchmark suite as follows:
     ```
     @misc{scimlbench:2021,
         title  = {SciMLBench: A Benchmarking Suite for AI for Science},
-        author = {Jeyan Thiyagalingam, Kuangdai Leng, Samuel Jackson,  Juri Papay, Mallikarjun Shankar, Geoffrey Fox,  Tony Hey},
+        author = {Jeyan Thiyagalingam, Juri Papay, Kuangdai Leng, Samuel Jackson, Mallikarjun Shankar, Geoffrey Fox,  Tony Hey},
         url    = {https://github.com/stfc-sciml/sciml-bench},
         year   = {2021}
     }
