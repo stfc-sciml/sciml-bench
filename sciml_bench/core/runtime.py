@@ -15,13 +15,14 @@ Runtime input and output
 
 from datetime import datetime
 from pathlib import Path
-from sciml_bench.core.program import ProgramEnv
+from sciml_bench.core.config import ProgramEnv
 from sciml_bench.core.utils import SafeDict
 
 from contextlib import contextmanager
 from sciml_bench.core.utils import MultiLevelLogger
 from sciml_bench.core.system import SystemMonitor
 from sciml_bench.core.system import save_sys_info, save_proc_info
+from datetime import datetime
 
 
 class RuntimeIn:
@@ -35,46 +36,56 @@ class RuntimeIn:
     * smlb_in.bench_args: benchmark-specific arguments
     """
 
-    def __init__(self, smlb_env: ProgramEnv,
+    def __init__(self, prog_env: ProgramEnv, 
                  benchmark_name, dataset_dir, output_dir, bench_args_list):
-        # check registration
-        assert benchmark_name in smlb_env.registered_benchmarks.keys(), \
-            f'Benchmark {benchmark_name} is not registered.\n' \
-            f'Registered benchmarks: ' \
-            f'{list(smlb_env.registered_benchmarks.keys())}'
+
+        self.valid = True
+        self.error_msg = ''
+
+        if prog_env.is_config_valid() == False:
+            self.valid = False
+            self.error_msg = self.prog_env.config_error
+            return 
+
+        benchmarks = prog_env.benchmarks
+
+        if benchmark_name not in benchmarks.keys():
+            self.valid = False
+            self.error_msg = f'\nBenchmark {benchmark_name} is not part of the SciML-Bench.'
+            return 
 
         # start time
         self.start_time = datetime.utcnow().isoformat() + 'Z'
 
+        # At present, we will support only one dataset per benchmark
         # data dir
-        if dataset_dir == '':
+        if dataset_dir is None:
             # default
-            dataset_name = \
-                smlb_env.registered_benchmarks[benchmark_name]['dataset']
-            self.dataset_dir = smlb_env.dataset_root_dir / dataset_name
+            dataset_name = prog_env.benchmarks[benchmark_name]['datasets']
+            self.dataset_dir = (prog_env.dataset_dir / dataset_name).expanduser()
         else:
             self.dataset_dir = Path(dataset_dir).expanduser()
+
         # check data existence
-        assert self.dataset_dir.exists(), \
-            f'Dataset directory does not exist: {self.dataset_dir}' \
-            f'\nDownload dataset first or pass correct --dataset_dir.'
+        if not self.dataset_dir.exists():
+            self.valid = False
+            self.error_msg = f'\nDataset directory {self.dataset_dir} does not exist'
+            return
 
         # output dir
-        assert output_dir != '', \
-            'Option --output_dir cannot be "" (empty string).'
-
-        # user-specified
-        if output_dir[0] == '@':
+        if output_dir is None:
+            datestr = datetime.today().strftime('%Y%m%d')
+            self.output_dir = (prog_env.output_dir / benchmark_name / datestr ).expanduser()
+        elif output_dir[0] == '@':
             # special convention to use default root
-            self.output_dir = smlb_env.output_root_dir / benchmark_name / \
-                              output_dir[1:]
-        else:
-            self.output_dir = Path(output_dir).expanduser()
+            self.output_dir = prog_env.output_dir / benchmark_name / output_dir[1:]
 
-        # this is thread-safe
+        # If we have got this far, we can extract the arguments 
+
+        # Create the path in a thread-safe manner
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # benchmark-specific arguments
+        # Extract benchmark-specific arguments
         self.bench_args = SafeDict({})
         for key, val in bench_args_list:
             self.bench_args[key] = val

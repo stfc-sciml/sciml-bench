@@ -7,9 +7,12 @@
 
 Framework by: 
 
-  J. Thiyagalingam¹, J. Papay¹, K. Leng¹, S. Jackson¹, M. Shankar², G. Fox³ , and T. Hey¹.
+  Jeyan Thiyagalingam¹, Juri Papay¹, Kuangdai Leng¹,
+  Samuel Jackson¹,  Arjun Shankar²,  Geoffrey Fox³,
+  and Tony Hey¹.
 
-  ¹ Scientific Machine Learning (SciML) Group, Rutherford Appleton Laboratory (RAL),
+  ¹ Scientific Machine Learning (SciML) Group,
+    Rutherford Appleton Laboratory (RAL),
     Science & Technology Facilities Council (STFC), UK
   ² Oak Ridge National Laboratory, USA
   ³ Digital Science Centre, University of Indiana, USA

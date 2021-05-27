@@ -156,7 +156,7 @@ def gpu_info(usage=True):
     return info_all
 
 
-def all_sys_info(usage=True):
+def all_sys_info(usage=False):
     """ Get all system info """
     return {'Node': node_info(),
             'CPU': cpu_info(usage),

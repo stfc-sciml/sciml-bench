@@ -16,7 +16,7 @@ Benchmark management
 import importlib.util
 from pathlib import Path
 import os
-from sciml_bench.core.program import ProgramEnv
+from sciml_bench.core.config import ProgramEnv
 from sciml_bench.core.utils import query_yes_no
 
 
@@ -48,13 +48,48 @@ def install_benchmark_dependencies(benchmark_list, smlb_env: ProgramEnv):
     if 'all' in [bench.lower() for bench in benchmarks]:
         assert len(benchmarks) == 1, \
             'If "all" is presented, it must be the only entity.'
-        benchmarks = set(smlb_env.registered_benchmarks.keys())
+        benchmarks = set(smlb_env.benchmarks.keys())
 
     # check benchmarks
-    assert benchmarks <= smlb_env.registered_benchmarks.keys(), \
+    assert benchmarks <= smlb_env.benchmarks.keys(), \
         f'Selected benchmarks must be in the registered set:' \
         f'\n{list(smlb_env.registered_benchmarks.keys())}'
 
+
+
+    dependencies, horovod_env = build_dependencies(benchmarks)
+    install_dependencies(dependencies)
+    horovod_msg = install_horovod(horovod_env)
+   
+    # print benchmarks and dependencies
+    print('\n==================== Installation Finished ====================')
+    print('Benchmarks selected:')
+    [print(f'  - {bench}') for bench in benchmarks]
+    print('Dependencies installed:')
+    [print(f'  - {dep}') for dep in dependencies]
+    print(f"\n{horovod_msg}")
+    print('===============================================================\n')
+
+
+def install_dependencies(dependencies):
+    # install anything other than horovod
+    dependencies_copy = dependencies.copy()
+    for dep in dependencies_copy:
+        res = os.system(f'pip install {dep}')
+        # installing mxnet-cuXXX will fail on MacOS; install no GPU version
+        if 'mxnet-cu' in dep and res != 0:
+            dependencies.remove(dep)
+            dep = 'mxnet'
+            dependencies.add(dep)
+            res = os.system(f'pip install {dep}')
+            # change original for verbose
+        assert res == 0, f'"sciml-bench install" fails when doing' \
+                            f'\n\n$ pip install {dep}\n'
+
+
+
+
+def build_dependencies(benchmarks):
     # verify each benchmark
     dependencies = set()
     horovod_env = {}
@@ -74,27 +109,18 @@ def install_benchmark_dependencies(benchmark_list, smlb_env: ProgramEnv):
             horovod_env['HOROVOD_WITH_TENSORFLOW'] = '1'
         else:
             pass  # impossible
+    
+    return dependencies, horovod_env
 
-    # install anything other than horovod
-    dependencies_copy = dependencies.copy()
-    for dep in dependencies_copy:
-        res = os.system(f'pip install {dep}')
-        # installing mxnet-cuXXX will fail on MacOS; install no GPU version
-        if 'mxnet-cu' in dep and res != 0:
-            dep = 'mxnet'
-            res = os.system(f'pip install {dep}')
-            # change original for verbose
-            dependencies.remove(dep)
-            dependencies.add('mxnet')
-        assert res == 0, f'"sciml-bench install" fails when doing' \
-                         f'\n\n$ pip install {dep}\n'
 
+
+def install_horovod(horovod_env):
     # install horovod
     if len(horovod_env) == 0:
         horovod_msg = "Horovod is not required by selected benchmarks."
     else:
         # message path
-        msg_path = Path(__file__).parent / 'messages'
+        msg_path = Path(__file__).parents[1] / 'etc/messages'
 
         # check if horovod has been installed
         try:
@@ -176,12 +202,5 @@ def install_benchmark_dependencies(benchmark_list, smlb_env: ProgramEnv):
                         f'Horovod does not satisfy all the requirements and ' \
                         f'you chose to\ninstall it manually. ' \
                         f'Suggested command line:\n\n$ {cmd_str}\n'
+    return horovod_msg
 
-    # print benchmarks and dependencies
-    print('\n==================== Installation Finished ====================')
-    print('Benchmarks selected:')
-    [print(f'  - {bench}') for bench in benchmarks]
-    print('Dependencies installed:')
-    [print(f'  - {dep}') for dep in dependencies]
-    print(f"\n{horovod_msg}")
-    print('===============================================================\n')

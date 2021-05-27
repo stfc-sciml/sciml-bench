@@ -1,0 +1,68 @@
+# config.yml
+
+# SciML-Bench
+# Copyright © 2021 Scientific Machine Learning Research Group
+# Scientific Computing Department, Rutherford Appleton Laboratory
+# Science and Technology Facilities Council, UK. 
+# All rights reserved.
+
+# This is a configuration file for the sciml-bench.
+
+
+
+# Location where the datasets are.
+data_mirrors:
+    stfc_mirror: "https://s3.echo.stfc.ac.uk"
+    osn_mirror: "https://sdsc.osn.xsede.org"
+
+# Download commands - parameterised to servers 
+download_commands: 
+    download_command1: "aws s3 --no-sign-request --endpoint-url $SERVER sync $DATASET_URI $DATASET_DIR"
+    
+# Dataset and output directories
+directories:
+    dataset_root_dir: ~/sciml_bench/datasets
+    output_root_dir: ~/sciml_bench/outputs
+
+
+# List of datasets
+datasets: 
+    mnist:
+        is_example: True
+        end_point: 'sciml-datasets/ts'
+    em_graphene_sim:
+        end_point: 'sciml-datasets/ms'
+        download_command: download_command1
+    dms_sim:
+        end_point: 'sciml-datasets/ms'
+        download_command: download_command1
+    slstr_cloud_ds1:
+        end_point: 'sciml-datasets/es'
+        download_command: download_command1
+    slstr_cloud_ds2:
+        end_point: 'sciml-datasets/es'
+        download_command: download_command1
+
+# List of benchmarks
+benchmarks:
+    mnist_tf_keras:
+        datasets: mnist
+        is_example: True
+        dependencies: 'tensorflow'
+
+    mnist_torch:
+        datasets: mnist
+        is_example: True
+        dependencies: 'torch,horovod'
+
+    em_denoise:
+        datasets: em_graphene_sim
+        dependencies: 'mxnet-cu102'
+
+    dms_structure:
+        datasets: dms_sim
+        dependencies: 'torch'
+
+    slstr_cloud:
+        datasets: slstr_cloud_ds1
+        dependencies: 'tensorflow,scikit-learn, horovod'

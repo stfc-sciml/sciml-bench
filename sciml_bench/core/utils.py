@@ -18,7 +18,8 @@ import logging
 from pathlib import Path
 from contextlib import contextmanager
 import sys
-
+from sciml_bench import __version__ as VERSION
+from bs4 import BeautifulSoup, Comment
 
 class SafeDict(dict):
     """
@@ -225,3 +226,35 @@ def query_yes_no(question, default=None):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+
+
+def display_logo():
+    """ sciml_bench logo """
+    fqfn = Path(__file__).parents[1] / 'etc/messages/logo.txt'
+    with open(fqfn, 'r') as file:
+        logo = file.read()
+    logo = logo.replace('ver xx'.rjust(len(VERSION) + 4), f'ver {VERSION}')
+    print(logo)
+
+
+
+def extract_html_comments(file_name):
+    """
+    Extracts comments from an HTML File. Here This is used to extract 
+    reportable short summary from markdown files.
+
+    :param file_name: Fully qualified name of the MD file. 
+    """
+    try:
+        with open(file_name, 'r') as source:
+            html = source.read()
+            soup = BeautifulSoup(html, 'lxml')
+            comments = soup.findAll(text=lambda text:isinstance(text, Comment))
+            if len(comments) > 0:
+                return comments[0]
+            else:
+                return None
+    except EnvironmentError:
+        return None
+
+
