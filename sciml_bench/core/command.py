@@ -34,11 +34,21 @@ class NaturalOrderGroup(click.Group):
     """ Force click to keep the order of commands """
     def list_commands(self, ctx):
         return self.commands.keys()
+    
+    def format_help(self, ctx, formatter):
+        display_logo()
+        return super().format_help(ctx, formatter)
 
 
 @click.group(cls=NaturalOrderGroup)
 def cli():
     pass
+
+
+#####################################################################
+# Primary Help                                                      #
+#####################################################################
+
 
 ###################
 # List Command 
