@@ -146,28 +146,18 @@ class EMDenoiseNet(gluon.Block):
         return x
 
 
-def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
-    """
-    Main entry of `sciml_bench run` for a benchmark instance
+#####################################################################
+# Training mode                                                     #
+#####################################################################
 
-    :param smlb_in: runtime input of `sciml_bench run`, useful components:
-        * smlb_in.start_time: start time of running as UTC-datetime
-        * smlb_in.dataset_dir: dataset directory
-        * smlb_in.output_dir: output directory
-        * smlb_in.bench_args: benchmark-specific arguments
-    :param smlb_out: runtime output of `sciml_bench run`, useful components:
-        * smlb_out.log.console: multi-level logger on root (rank=0)
-        * smlb_out.log.host: multi-level logger on host (local_rank=0)
-        * smlb_out.log.device: multi-level logger on device (rank=any)
-        * smlb_out.system: a set of system monitors
-    """
+def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     # activate monitor
     # No distributed training in this one
-    smlb_out.activate(rank=0, local_rank=0)
+    params_out.activate(rank=0, local_rank=0)
 
     # log top level process
-    log = smlb_out.log.console
-    log.begin('Running benchmark em_denoise')
+    log = params_out.log.console
+    log.begin(f'Running benchmark em_denoise in {params_in.execution_mode} mode')
 
     # parse input arguments
     with log.subproc('Parsing input arguments'):
@@ -182,9 +172,8 @@ def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
             'plot_batches': 1
         }
         # replace default_args with bench_args
-        args = smlb_in.bench_args.try_get_dict(default_args=default_args)
-        assert args["decimation"] in [1, 2, 4], \
-            'Decimation scale must be 1, 2 or 4.'
+        args = params_in.bench_args.try_get_dict(default_args=default_args)
+        assert args["decimation"] in [1, 2, 4], 'Decimation scale must be 1, 2 or 4.'
         # verbose parameters
         log.message(f'decimation   = {args["decimation"]}')
         log.message(f'batch_size   = {args["batch_size"]}')
@@ -193,7 +182,7 @@ def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
         log.message(f'use_cuda     = {args["use_cuda"]}')
         log.message(f'plot_batches = {args["plot_batches"]}')
         # save parameters
-        args_file = smlb_in.output_dir / 'arguments_used.yml'
+        args_file = params_in.output_dir / 'arguments_used.yml'
         with open(args_file, 'w') as handle:
             yaml.dump(args, handle)
         log.message(f'Arguments used are saved to:\n{args_file}')
@@ -209,7 +198,7 @@ def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
 
     # create datasets
     with log.subproc('Creating datasets'):
-        data_dir = smlb_in.dataset_dir
+        data_dir = params_in.dataset_dir
         train_iter = create_data_iter(data_dir / 'train/graphene_img_noise.h5',
                                       data_dir / 'train/graphene_img_clean.h5',
                                       args["batch_size"])
@@ -232,7 +221,7 @@ def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
     # history
     history = {'train_loss': [], 'validate_loss': []}
 
-    smlb_out.system.stamp_event('start training')
+    params_out.system.stamp_event('start training')
     for epoch in range(args["epochs"]):
         train_loss_last_batch = 0.
         train_iter.reset()
@@ -285,14 +274,14 @@ def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
     # save weights and history
     with log.subproc('Saving model weights and training history'):
         # weights
-        weights_file = smlb_in.output_dir / \
+        weights_file = params_in.output_dir / \
                        f'model_weights_decimation={args["decimation"]}.params'
         net.save_parameters(str(weights_file))
         log.message(f'Model weights saved to:\n{weights_file}')
         # history
         history['train_loss'] = np.array(history['train_loss']).tolist()
         history['validate_loss'] = np.array(history['validate_loss']).tolist()
-        history_file = smlb_in.output_dir / 'training_history.yml'
+        history_file = params_in.output_dir / 'training_history.yml'
         with open(history_file, 'w') as handle:
             yaml.dump(history, handle)
         log.message(f'Training history saved to:\n{history_file}')
@@ -300,7 +289,7 @@ def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
     # plot batches
     if args["plot_batches"] > 0:
         log.begin('Plotting some batches from test set')
-        img_folder = smlb_in.output_dir / 'plots'
+        img_folder = params_in.output_dir / 'plots'
         img_folder.mkdir(exist_ok=True)
         plot_count = 0
         test_iter.reset()
@@ -333,4 +322,14 @@ def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
         log.ended('Plotting some batches from test set')
 
     # end top level
-    log.ended('Running benchmark em_denoise')
+    log.ended(f'Running benchmark em_denoise in {params_in.execution_mode} mode')
+
+
+
+
+#####################################################################
+# Inference mode                                                    #
+#####################################################################
+
+def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
+    pass

@@ -22,37 +22,56 @@ from contextlib import contextmanager
 from sciml_bench.core.utils import MultiLevelLogger
 from sciml_bench.core.system import SystemMonitor
 from sciml_bench.core.system import save_sys_info, save_proc_info
-from datetime import datetime
-
 
 class RuntimeIn:
     """
     Class for runtime input
 
-    Useful components of an object smlb_in:
-    * smlb_in.start_time: start time of running as UTC-datetime
-    * smlb_in.dataset_dir: dataset directory
-    * smlb_in.output_dir: output directory
-    * smlb_in.bench_args: benchmark-specific arguments
+    Useful components of an object params_in:
+    * params_in.start_time : start time of running as UTC-datetime
+    * params_in.dataset_dir: dataset directory
+    * params_in.output_dir : output directory
+    * params_in.bench_args : benchmark-specific arguments
     """
 
-    def __init__(self, prog_env: ProgramEnv, 
-                 benchmark_name, dataset_dir, output_dir, bench_args_list):
+    def __set_error_msg(self, msg):
+        self.valid = False
+        self.error_msg = msg
+
+    def __set_modes(self, benchmark_name, execution_mode):
+        if execution_mode in ['training']:
+            self.execution_mode = 'training'
+        elif execution_mode ==  'inference':
+            self.execution_mode = 'inference' 
+        else:
+            self.__set_error_msg(f'\nBenchmark {benchmark_name} is executed \
+                                    in non-inferenceand non-training mode.')
+            return 
+
+    def __init__(self, prog_env: ProgramEnv,  execution_mode, model_file, 
+                 benchmark_name, dataset_dir, 
+                 output_dir, bench_args_list):
 
         self.valid = True
-        self.error_msg = ''
+        self.error_msg = None
+        self.start_time = None
+        self.dataset_dir = None
+        self.output_dir = None
+        self.bench_args = None
+        self.execution_mode = execution_mode
+        self.model = model_file
+
 
         if prog_env.is_config_valid() == False:
-            self.valid = False
-            self.error_msg = self.prog_env.config_error
+            self.__set_error_msg(self.prog_env.config_error)
             return 
 
-        benchmarks = prog_env.benchmarks
-
-        if benchmark_name not in benchmarks.keys():
-            self.valid = False
-            self.error_msg = f'\nBenchmark {benchmark_name} is not part of the SciML-Bench.'
+        if benchmark_name not in prog_env.benchmarks.keys():
+            self.__set_error_msg(f'\nBenchmark {benchmark_name} is not part of the SciML-Bench.')
             return 
+
+        # Execution mode
+        self.__set_modes(benchmark_name, execution_mode)
 
         # start time
         self.start_time = datetime.utcnow().isoformat() + 'Z'
@@ -68,8 +87,7 @@ class RuntimeIn:
 
         # check data existence
         if not self.dataset_dir.exists():
-            self.valid = False
-            self.error_msg = f'\nDataset directory {self.dataset_dir} does not exist'
+            self.__set_error_msg(f'\nDataset directory {self.dataset_dir} does not exist')
             return
 
         # output dir
@@ -81,7 +99,6 @@ class RuntimeIn:
             self.output_dir = prog_env.output_dir / benchmark_name / output_dir[1:]
 
         # If we have got this far, we can extract the arguments 
-
         # Create the path in a thread-safe manner
         self.output_dir.mkdir(parents=True, exist_ok=True)
 

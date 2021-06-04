@@ -45,8 +45,8 @@ def cli():
 ###################
 
 @cli.command('list', help='List datasets, benchmarks and examples.')
-@click.argument('scope', default='summary',
-                type=click.Choice(['summary', 'datasets', 'benchmarks', 'examples']))
+@click.argument('scope', default='all',
+                type=click.Choice(['all', 'summary', 'datasets', 'benchmarks', 'examples']))
 def cmd_list(scope):
     """ sciml_bench list """
     # key width first
@@ -56,34 +56,34 @@ def cmd_list(scope):
 
     display_logo()
     # list datasets 
-    if scope == 'summary' or scope == 'datasets':
-        print('List of Datasets:')
+    if scope == 'summary' or scope == 'datasets' or scope=='all':
+        print(' List of Datasets:')
         for name, props in ENV.datasets.items():
             if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
-                print(f'* {name.ljust(width + 4)}')
+                print(f'  * {name.ljust(width + 4)}')
     
     # list benchmarks
-    if scope == 'summary' or scope == 'benchmarks':
-        print('\nList of Benchmarks:')
+    if scope == 'summary' or scope == 'benchmarks' or scope=='all':
+        print('\n List of Benchmarks:')
         for name, props in ENV.benchmarks.items():
             if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
-                print(f'* {name.ljust(width + 4)}')
+                print(f'  * {name.ljust(width + 4)}')
                 
     # list example datasets and benchmarks
-    if scope == 'examples':
+    if scope == 'examples' or scope=='all':
         n_ds_examples = sum(v["is_example"] == True for k, v in ENV.datasets.items() if v is not None and  'is_example' in v)
         n_bm_examples = sum(v["is_example"] == True for k, v in ENV.benchmarks.items() if v is not None and  'is_example' in v)
 
         if n_ds_examples > 0:
-            print('List of Example Datasets')
+            print('\n List of Example Datasets:')
             for name, props in ENV.datasets.items():
                 if props is not None and 'is_example' in props and props['is_example'] == True:
-                    print(f'* {name.ljust(width + 4)}')
+                    print(f'  * {name.ljust(width + 4)}')
         if n_bm_examples > 0:
-            print('\nList of Example Benchmarks')
+            print('\n List of Example Benchmarks:')
             for name, props in ENV.benchmarks.items():
                 if props is not None and 'is_example' in props and props['is_example'] == True:
-                    print(f'* {name.ljust(width + 4)}')
+                    print(f'  * {name.ljust(width + 4)}')
     print('\n')
 
 
@@ -154,62 +154,82 @@ def download(dataset_name, dataset_dir, verify):
 # Run Command 
 ###################
 
-@cli.command(help='Run a benchmark.')
+@cli.command(help='Run a given benchmark on a training/inference mode.')
+@click.option('--mode', required=False, default = 'training',
+              type=click.Choice(['training', 'inference']),
+              help='\b\nSets the mode to training or inference.\n'
+                   'Default: training.')
+@click.option('--model', required=False,
+              help='\b\nSets the model to be used (only for inference.)\n'
+                   'Default: None.')                       
 @click.option('--dataset_dir', required=False, 
-              help='\b\nDirectory of dataset.\n'
+              help='\b\nDirectory for the dataset(s).\n'
                    'Default: dataset directory from the config file')
 @click.option('--output_dir', required=False,
-              help='\b\nOutput directory of this run.\n'
-                   'Convention: use --output_dir=@foo to save outputs under\n'
-                   '            output_root_dir/benchmark_name/foo/;\n'
-                   '            without "@", foo is used as a normal path.\n'
-                   'If omitted, a new directory (based on yyyymmdd format)\n'
-                   'inside the default path will be used.')
+              help='\b\nOutput directory for this run.\n'
+                   'If not specified, outputs will be logged under\n' 
+                   '        output_root_dir/benchmark_name/yyyymmdd/\n'
+                   'where a yyyymmdd represents the current date\n'
+                   'Use --output_dir=@foo to save outputs under\n'
+                   '        output_root_dir/benchmark_name/foo/\n'
+                   'If "@" is omitted, absolute path is assumed.\n')
 @click.option('--monitor_on/--monitor_off', default=True,
               help='\b\nMonitor system usage during runtime.'
-                   '\nDefault: True.')
+                   '\nDefault: Monitor On.')
 @click.option('--monitor_interval', default=1.0, type=float,
               help='\b\nTime interval for system monitoring.'
-                   '\nDefault: 1.0.')
+                   '\nDefault: 1.0s.')
 @click.option('--monitor_report_style', default='pretty',
               type=click.Choice(['pretty', 'yaml', 'hdf5']),
-              help='\b\nReport style of system monitor.'
-                   '\nDefault: pretty.')
+              help='\b\nReport style for system monitor.'
+                   '\nDefault: Pretty.')
 @click.option('--benchmark_specific', '-b', 'bench_args_list',
               type=(str, str), multiple=True,
               help='\b\nBenchmark-specific arguments.\n'
                    'Usage: -b key1 val1 -b key2 val2 ...')
 @click.argument('benchmark_name')
-def run(dataset_dir, output_dir,
-        monitor_on, monitor_interval, monitor_report_style,
+def run(mode, model, dataset_dir, output_dir, monitor_on, 
+        monitor_interval, monitor_report_style,
         bench_args_list, benchmark_name):
     """ sciml_bench run """
-    # runtime input
-    smlb_in = RuntimeIn(ENV, benchmark_name, dataset_dir, output_dir,
-                        bench_args_list)
 
-    if smlb_in.valid == False:
-      print(smlb_in.error_msg)
+    # runtime input
+    params_in = RuntimeIn(ENV, mode, model, benchmark_name, 
+                          dataset_dir, output_dir, bench_args_list)
+
+    if params_in.valid == False:
+      print(params_in.error_msg)
       print()
       return
 
     # runtime output
-    smlb_out = RuntimeOut(smlb_in.output_dir,
+    params_out = RuntimeOut(params_in.output_dir,
                           monitor_on=monitor_on,
                           monitor_interval=monitor_interval,
                           monitor_report_style=monitor_report_style)
 
     # create instance and run
-    bench_run = Benchmark.create_instance(benchmark_name)
+    bench_types = ENV.get_bench_types(benchmark_name)
+    if mode in bench_types:
+        if mode ==  'inference':
+            bench_run = Benchmark.create_inference_instance(benchmark_name)
+        else:
+            bench_run = Benchmark.create_training_instance(benchmark_name)
+    else:
+        print(f'The benchmark {benchmark_name} does not support {mode}.')
+        print(f'Terminating the execution')
+        return 
+    
+    # Now try and launch
     try:
-        bench_run(smlb_in, smlb_out)
+        bench_run(params_in, params_out)
     except Exception as e:
         # kill system monitor thread
-        smlb_out.system.abort()
+        params_out.system.abort()
         raise e
 
     # report monitor
-    smlb_out.report()
+    params_out.report()
 
 
 ###################
@@ -231,8 +251,7 @@ def about():
     """ sciml_bench about """
     with open(Path(__file__).parents[1] / 'etc/messages/about.txt', 'r') as file:
         about_info = file.read()
-    about_info = about_info.replace(
-        'ver xx'.rjust(len(VERSION) + 4), f'ver {VERSION}')
+    display_logo()
     print(about_info)
 
 

@@ -12,16 +12,16 @@
 """
 Benchmark management
 """
-
+from datetime import datetime
 import importlib.util
 from pathlib import Path
 import os
 from sciml_bench.core.config import ProgramEnv
-from sciml_bench.core.utils import query_yes_no
+from sciml_bench.core.utils import display_logo, query_yes_no
 
 
-def create_instance(benchmark_name, return_none_on_except=False):
-    """ Create a benchmark instance """
+def create_training_instance(benchmark_name, return_none_on_except=False):
+    """ Create a benchmark instance for training"""
     try:
         # validate module
         bench_dir = Path(__file__).parents[1] / 'benchmarks'
@@ -30,8 +30,8 @@ def create_instance(benchmark_name, return_none_on_except=False):
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
 
-        # create an instance by returning the sciml_bench_run function
-        return getattr(mod, 'sciml_bench_run')
+        # create an instance by returning the sciml_bench_training function
+        return getattr(mod, 'sciml_bench_training')
     except Exception as e:
         if return_none_on_except:
             return None
@@ -39,168 +39,170 @@ def create_instance(benchmark_name, return_none_on_except=False):
             raise e
 
 
-def install_benchmark_dependencies(benchmark_list, smlb_env: ProgramEnv):
+
+def create_inference_instance(benchmark_name, return_none_on_except=False):
+    """ Create a benchmark instance for inference"""
+    try:
+        # validate module - but models cannot be verified at this stage
+        bench_dir = Path(__file__).parents[1] / 'benchmarks'
+        file = str(bench_dir / benchmark_name / benchmark_name) + '.py'
+        spec = importlib.util.spec_from_file_location(benchmark_name, file)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        # create an instance by returning the sciml_bench_inference function
+        return getattr(mod, 'sciml_bench_inference')
+    except Exception as e:
+        if return_none_on_except:
+            return None
+        else:
+            raise e
+
+
+def install_benchmark_dependencies(benchmark_list, prog_env: ProgramEnv):
     """ Install benchmark dependencies """
     # input to set
     benchmarks = set(filter(''.__ne__, benchmark_list.split(',')))
 
     # handle all
     if 'all' in [bench.lower() for bench in benchmarks]:
-        assert len(benchmarks) == 1, \
-            'If "all" is presented, it must be the only entity.'
-        benchmarks = set(smlb_env.benchmarks.keys())
+        if len(benchmarks) != 1:
+            print('"all" is presented - ignoring rest of the entries')
+            benchmarks = set(prog_env.benchmarks.keys())
 
     # check benchmarks
-    assert benchmarks <= smlb_env.benchmarks.keys(), \
-        f'Selected benchmarks must be in the registered set:' \
-        f'\n{list(smlb_env.registered_benchmarks.keys())}'
+    if benchmarks <= prog_env.benchmarks.keys():
+        print(f'One or more benchmarks in the list')
+        print(f'* {benchmarks}')
+        print(f'is not part of the SciML-Bench' )
+        return 
 
 
+    #log location for logging ourputs and errors
+    log_file_dir = prog_env.output_dir  / 'install_logs'
+    log_file_dir.mkdir(parents=True, exist_ok=True)
 
-    dependencies, horovod_env = build_dependencies(benchmarks)
-    install_dependencies(dependencies)
-    horovod_msg = install_horovod(horovod_env)
+    log_file = str(log_file_dir) + '/install_' + \
+                                datetime.today().strftime('%Y%m%d') + \
+                                '.log'
+
+    display_logo()
+    print(f'\n Installing dependencies.')
+    # now install the dependencies
+    regular_deps, horovod_deps = build_dependencies(prog_env.benchmarks)
+    succeeded, failed =  install_dependencies(regular_deps, horovod_deps, log_file)
    
     # print benchmarks and dependencies
-    print('\n==================== Installation Finished ====================')
-    print('Benchmarks selected:')
+    print('\n ==================== Installation Summary ====================')
+    print(' Benchmarks selected:')
     [print(f'  - {bench}') for bench in benchmarks]
-    print('Dependencies installed:')
-    [print(f'  - {dep}') for dep in dependencies]
-    print(f"\n{horovod_msg}")
-    print('===============================================================\n')
+    print(' Dependencies installed:')
+    [print(f'  - {dep}') for dep in succeeded]
+    if len(failed) > 0:
+        print(' Dependencies failed:')
+        [print(f'  - {failed_dep}') for failed_dep in failed]
+    print(f'\n Detailed Errors/Outputs are logged to\n   {log_file}')
+    print(' ===============================================================\n')
 
 
-def install_dependencies(dependencies):
+def install_dependencies(regular_deps, horovod_deps, log_file):
     # install anything other than horovod
-    dependencies_copy = dependencies.copy()
+    succeeded = set()
+    failed = set()
+    dependencies_copy = regular_deps.copy()
     for dep in dependencies_copy:
-        res = os.system(f'pip install {dep}')
-        # installing mxnet-cuXXX will fail on MacOS; install no GPU version
-        if 'mxnet-cu' in dep and res != 0:
-            dependencies.remove(dep)
-            dep = 'mxnet'
-            dependencies.add(dep)
-            res = os.system(f'pip install {dep}')
-            # change original for verbose
-        assert res == 0, f'"sciml-bench install" fails when doing' \
-                            f'\n\n$ pip install {dep}\n'
-
-
+        print(f'\t- Attempting to install {dep}', end='', flush=True)
+        res = os.system(f'pip install {dep} &> {log_file}')
+        if res != 0:
+            failed.add(dep)
+            print(f'...ERROR')
+        else:
+            succeeded.add(dep)
+            print(f'...DONE')
+    
+    # Now start off with horovod
+    h_succ, h_failed = __install_horovod__(horovod_deps, log_file)
+    succeeded = succeeded.union(h_succ)
+    failed = failed.union(h_failed)
+    return succeeded, failed
 
 
 def build_dependencies(benchmarks):
     # verify each benchmark
-    dependencies = set()
-    horovod_env = {}
-    for bench in benchmarks:
-        if bench == 'MNIST_tf_keras':
-            dependencies.add('tensorflow')
-        elif bench == 'MNIST_torch':
-            dependencies.add('torch')
-            horovod_env['HOROVOD_WITH_PYTORCH'] = '1'
-        elif bench == 'em_denoise':
-            dependencies.add('mxnet-cu102')
-        elif bench == 'dms_structure':
-            dependencies.add('torch')
-        elif bench == 'slstr_cloud':
-            dependencies.add('tensorflow')
-            dependencies.add('scikit-learn')
-            horovod_env['HOROVOD_WITH_TENSORFLOW'] = '1'
-        else:
-            pass  # impossible
+    regular_dependencies = set()
+    horovod_dependencies  = set()
+    for _,v in benchmarks.items():
+        bench_deps = set(filter(''.__ne__, v['dependencies'].split(',')))
+        for dep in bench_deps:
+            if 'horovod' in dep:
+                horovod_dependencies.add(dep)
+            else:
+                regular_dependencies.add(dep)
     
-    return dependencies, horovod_env
+    return regular_dependencies, horovod_dependencies
 
 
+def __get_horovod_env_key__(key: str):
+    horovod_dict = {
+    'horovod.torch'     : 'HOROVOD_WITH_PYTORCH=1', 
+    'horovod.tensorflow': 'HOROVOD_WITH_TENSORFLOW=1',
+    'horovod.mxnet'     : 'HOROVOD_WITH_MXNET=1'
+    }
+    if key in horovod_dict.keys():
+        return horovod_dict[key]
+    return ''
 
-def install_horovod(horovod_env):
-    # install horovod
-    if len(horovod_env) == 0:
-        horovod_msg = "Horovod is not required by selected benchmarks."
-    else:
-        # message path
-        msg_path = Path(__file__).parents[1] / 'etc/messages'
+    
 
-        # check if horovod has been installed
-        try:
-            __import__('horovod')
-            horovod_installed = True
-        except:
-            horovod_installed = False
+def __install_horovod__(horovod_dependencies, log_file):
+    
+    h_failed = set()
+    h_succeeded = set()
+    failed_deps = set()
 
-        if not horovod_installed:
-            # command line
-            env_str = ''
-            for key, val in horovod_env.items():
-                env_str += f'{key}={val} '
-            cmd_str = f'{env_str}pip install horovod --no-cache-dir'
+    # Check whether there are dependencies in the first place
+    if len(horovod_dependencies) == 0:
+        return 
 
-            # interactive session
-            with open(msg_path / 'horovod_not_installed.txt', 'r') as file:
-                msg = file.read()
-            print(msg.replace('HOROVOD_CMD_STR', cmd_str))
-            yes = query_yes_no('Install Horovod with the suggested '
-                               'command line?', None)
-            if yes:
-                res = os.system(cmd_str)
-                assert res == 0, f'"sciml-bench install" fails when doing' \
-                                 f'\n\n$ {cmd_str}\n'
-                horovod_msg = f'Horovod has been installed with' \
-                              f'\n\n$ {cmd_str}\n'
-            else:
-                horovod_msg = f'Horovod is required and you chose to ' \
-                              f'install it manually.\n' \
-                              f'Suggested command line:\n\n$ {cmd_str}\n'
-        else:
-            # check if the current build satisfies new requirements
-            horovod_modules = {
-                'HOROVOD_WITH_PYTORCH': 'horovod.torch',
-                'HOROVOD_WITH_TENSORFLOW': 'horovod.tensorflow',
-                'HOROVOD_WITH_MXNET': 'horovod.mxnet'
-            }
+    # check if horovod has been installed
+    try:
+        __import__('horovod')
+        horovod_installed = True
+    except:
+        horovod_installed = False
+
+    # If installed, try importing them m
+    # If any of the dependencies don't work 
+    # mark those for reinstallation 
+
+    if horovod_installed:
+        for mod in horovod_dependencies: 
             try:
-                for key, mod in horovod_modules.items():
-                    if key in horovod_env.keys():
-                        __import__(mod)
-                requirements_satisfied = True
+                __import__(mod)
+                h_succeeded.add(mod)
             except:
-                requirements_satisfied = False
-            # check satisfied
-            if requirements_satisfied:
-                horovod_msg = 'Horovod satisfies all requirements ' \
-                              'from selected benchmarks.'
+                failed_deps.add(mod)
+
+    if (not horovod_installed) or len(failed_deps) > 0: 
+        # Either Horovod is missing or there were some failures
+        # Rebuild what is needed to be installed 
+        if len(failed_deps) > 0:
+            horovod_dependencies = failed_deps
+
+        env_str = ''
+        for dep in horovod_dependencies: 
+            env_str = __get_horovod_env_key__(dep)
+            cmd_str = f'{env_str} pip install horovod --no-cache-dir &> {log_file}'
+            print(f'\t- Attempting to install {dep}',  end='', flush=True)
+            res = os.system(cmd_str)
+            if res != 0:
+                h_failed.add(dep)
+                print(f'...ERROR')
+
             else:
-                # update cmd with already supported ML libraries
-                for key, mod in horovod_modules.items():
-                    try:
-                        __import__(mod)
-                        horovod_env[key] = '1'
-                    except:
-                        pass
-                # command line
-                env_str = ''
-                for key, val in horovod_env.items():
-                    env_str += f'{key}={val} '
-                cmd_str = f'{env_str}pip install horovod --no-cache-dir'
+                h_succeeded.add(dep)
+                print(f'...DONE')
 
-                # interactive session
-                with open(msg_path / 'horovod_installed.txt', 'r') as file:
-                    msg = file.read()
-                print(msg.replace('HOROVOD_CMD_STR', cmd_str))
-                yes = query_yes_no('Re-install Horovod with the suggested '
-                                   'command line?', None)
-                if yes:
-                    os.system('pip uninstall horovod --yes')
-                    res = os.system(cmd_str)
-                    assert res == 0, f'"sciml-bench install" fails when ' \
-                                     f'doing\n\n$ {cmd_str}\n'
-                    horovod_msg = f'Horovod has been re-installed with' \
-                                  f'\n\n$ {cmd_str}\n'
-                else:
-                    horovod_msg = \
-                        f'Horovod does not satisfy all the requirements and ' \
-                        f'you chose to\ninstall it manually. ' \
-                        f'Suggested command line:\n\n$ {cmd_str}\n'
-    return horovod_msg
 
+
+    return h_succeeded, h_failed

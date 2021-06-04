@@ -36,13 +36,14 @@ class ProgramEnv:
         # TODO: Workout the closest mirror 
 
 
-        #Global download dommand
+        #Global download command
         self.download_commands = cfg['download_commands']
         
         # dirs
         cfg_dirs = cfg['directories']
         self.dataset_dir = Path(cfg_dirs['dataset_root_dir']).expanduser()
-        self.output_dir = Path(cfg_dirs['output_root_dir']).expanduser()
+        self.output_dir  = Path(cfg_dirs['output_root_dir']).expanduser()
+        self.model_dir   = Path(cfg_dirs['models_dir']).expanduser()
 
         # datasets 
         self.datasets = cfg['datasets']
@@ -116,3 +117,59 @@ class ProgramEnv:
             cmd = self.datasets[dataset_name]['download_command']
             cmd = self.download_commands[cmd]
         return cmd 
+
+    # Given a benchmark, returns the sections of the benchmark
+    # assigning default values wherever possible.
+    def get_bench_sections(self, benchmark_name):
+
+        bench_datasets = self.get_bench_datasets(benchmark_name)
+        bench_dependencies = self.get_bench_dependencies(benchmark_name)
+        is_bench_example = self.get_bench_example_flag(benchmark_name)
+        bench_types = self.get_bench_types(benchmark_name)
+        
+        return bench_datasets, bench_dependencies, is_bench_example, bench_types
+
+
+    def get_bench_types(self, benchmark_name):
+        
+        if (benchmark_name not in self.benchmarks) or self.is_config_valid==False:
+            return None
+
+        benchmark = self.benchmarks[benchmark_name]
+        if 'types' in benchmark.keys():
+            return list(set(filter(''.__ne__, benchmark['types'].split(','))))
+        else:
+            return  ['training', 'inference']
+
+    def get_bench_example_flag(self, benchmark_name):
+        
+        if (benchmark_name not in self.benchmarks) or self.is_config_valid==False:
+            return None
+
+        benchmark = self.benchmarks[benchmark_name]
+        if 'is_example' in benchmark.keys():
+            return benchmark['is_example']
+        else:
+            return  False
+
+    def get_bench_dependencies(self, benchmark_name):
+        
+        if (benchmark_name not in self.benchmarks) or self.is_config_valid==False:
+            return None
+
+        benchmark = self.benchmarks[benchmark_name]
+        if 'dependencies' in benchmark.keys():
+            return list(set(filter(''.__ne__, benchmark['dependencies'].split(','))))
+        else:
+            return  None
+
+    def get_bench_datasets(self, benchmark_name):
+        
+        if (benchmark_name not in self.benchmarks) or self.is_config_valid==False:
+            return None
+
+        benchmark = self.benchmarks[benchmark_name]
+        if 'datasets' in benchmark.keys():
+            return list(set(filter(''.__ne__, benchmark['datasets'].split(','))))
+        else:
+            return  None

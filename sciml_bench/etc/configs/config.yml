@@ -23,6 +23,7 @@ download_commands:
 directories:
     dataset_root_dir: ~/sciml_bench/datasets
     output_root_dir: ~/sciml_bench/outputs
+    models_dir: ~/sciml_bench/models
 
 
 # List of datasets
@@ -49,20 +50,25 @@ benchmarks:
         datasets: mnist
         is_example: True
         dependencies: 'tensorflow'
+        types: 'training'
 
     mnist_torch:
         datasets: mnist
         is_example: True
-        dependencies: 'torch,horovod'
+        dependencies: 'torch,horovod.torch'
 
     em_denoise:
         datasets: em_graphene_sim
         dependencies: 'mxnet-cu102'
+        types: 'training'
+
 
     dms_structure:
         datasets: dms_sim
         dependencies: 'torch'
+        types: 'training'
 
     slstr_cloud:
         datasets: slstr_cloud_ds1
-        dependencies: 'tensorflow,scikit-learn, horovod'
+        dependencies: 'tensorflow,scikit-learn,horovod.tensorflow'
+        types: 'training'

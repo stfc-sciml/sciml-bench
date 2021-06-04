@@ -1,11 +1,5 @@
 
-
-    __|   __| _ _|   \  |  |       _ )  __|   \ |   __|  |  |
-  \__ \  (      |   |\/ |  |       _ \  _|   .  |  (     __ |
-  ____/ \___| ___| _|  _| ____|   ___/ ___| _|\_| \___| _| _|
-                                                       ver xx
-
-Framework by: 
+  Framework by: 
 
   Jeyan Thiyagalingam¹, Juri Papay¹, Kuangdai Leng¹,
   Samuel Jackson¹,  Arjun Shankar²,  Geoffrey Fox³,
@@ -13,13 +7,14 @@ Framework by:
 
   ¹ Scientific Machine Learning (SciML) Group,
     Rutherford Appleton Laboratory (RAL),
-    Science & Technology Facilities Council (STFC), UK
-  ² Oak Ridge National Laboratory, USA
-  ³ Digital Science Centre, University of Indiana, USA
+    Science & Technology Facilities Council (STFC), UK.
+  ² Oak Ridge National Laboratory, USA.
+  ³ Digital Science Centre, University of Indiana, USA.
 
   Please post issues and suggestions at: 
           https://github.com/stfc-sciml/sciml-bench
 
   Please consult the CREDITS file in the documentation folder. 
-  Copyright © 2021 SciML, RAL, STFC, UK. All rights reserved.
+  
+  
   
