@@ -98,8 +98,3 @@ Benchmarks can be run either in training mode or in inference mode.
 
 
 
-# FAQ
-
-1. Does this work on Windows WSL2?
-
-1. 

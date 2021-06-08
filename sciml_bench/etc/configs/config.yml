@@ -31,6 +31,7 @@ datasets:
     mnist:
         is_example: True
         end_point: 'sciml-datasets/ts'
+        download_command: download_command1
     em_graphene_sim:
         end_point: 'sciml-datasets/ms'
         download_command: download_command1
