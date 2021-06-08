@@ -206,3 +206,16 @@ def __install_horovod__(horovod_dependencies, log_file):
 
 
     return h_succeeded, h_failed
+
+def get_status(benchmark_name):
+    is_good_train = create_training_instance(benchmark_name, True)
+    is_good_inference = create_inference_instance(benchmark_name, True)
+    if is_good_train and is_good_inference:
+        str = "Runnable (Training & Inference)"
+    elif is_good_train:
+        str = "Runnable (Training)"
+    elif is_good_inference:
+        str = "Runnable (Inference)"
+    else:
+        str = "Not runnable"
+    return str

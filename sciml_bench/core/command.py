@@ -56,8 +56,11 @@ def cli():
 
 @cli.command('list', help='List datasets, benchmarks and examples.')
 @click.argument('scope', default='all',
-                type=click.Choice(['all', 'summary', 'datasets', 'benchmarks', 'examples']))
-def cmd_list(scope):
+                type=click.Choice(['all', 'summary', 'datasets', 'benchmarks', 'examples'])) 
+@click.option('--verify', is_flag=True, default=False,
+              help='\b\nVerify existence of datasets, and modules of benchmarks.\n'\
+                  'Default: False.')
+def cmd_list(scope, verify):
     """ sciml_bench list """
     # key width first
     width_data = len(max(list(ENV.datasets.keys()), key=len))
@@ -70,14 +73,22 @@ def cmd_list(scope):
         print(' List of Datasets:')
         for name, props in ENV.datasets.items():
             if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
-                print(f'  * {name.ljust(width + 4)}')
+                output = f'  * {name.ljust(width + 4)}'
+                if verify: 
+                    dataset_status =  Dataset.get_status(name, ENV)
+                    output += f': {dataset_status}'
+                print(output)
     
     # list benchmarks
     if scope == 'summary' or scope == 'benchmarks' or scope=='all':
         print('\n List of Benchmarks:')
         for name, props in ENV.benchmarks.items():
             if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
-                print(f'  * {name.ljust(width + 4)}')
+                output = f'  * {name.ljust(width + 4)}'
+                if verify: 
+                    bench_status = Benchmark.get_status(name)
+                    output += f': {bench_status}'
+                print(output)
                 
     # list example datasets and benchmarks
     if scope == 'examples' or scope=='all':
@@ -88,12 +99,20 @@ def cmd_list(scope):
             print('\n List of Example Datasets:')
             for name, props in ENV.datasets.items():
                 if props is not None and 'is_example' in props and props['is_example'] == True:
-                    print(f'  * {name.ljust(width + 4)}')
+                    output = f'  * {name.ljust(width + 4)}'
+                    if verify: 
+                        dataset_status = Dataset.get_status(name, ENV)
+                        output += f': {dataset_status}'
+                    print(output)
         if n_bm_examples > 0:
             print('\n List of Example Benchmarks:')
             for name, props in ENV.benchmarks.items():
                 if props is not None and 'is_example' in props and props['is_example'] == True:
-                    print(f'  * {name.ljust(width + 4)}')
+                    output = f'  * {name.ljust(width + 4)}'
+                    if verify: 
+                        bench_status = Benchmark.get_status(name)
+                        output += f': {bench_status}'
+                    print(output)
     print('\n')
 
 
@@ -141,24 +160,34 @@ def install(benchmark_list):
 @cli.command(help='Download a dataset.')
 @click.option('--dataset_dir', default=ENV.dataset_dir,
               help='\b\nRoot directory of datasets.\n'
-                   'Default: dataset_dir in config.yml.')
-@click.option('--verify', is_flag=True,
-              help='\b\nVerify the downloaded dataset(s).'
-                   '\nDefault: False')
+                   'Default: dataset_dir in config.yml.\n')
+@click.option('--mode', default='background',
+                type=click.Choice(['foreground', 'background']),
+                help='Sets the downloading to foreground or background mode.\n'
+                   'Default: background\n'
+                )
 @click.argument('dataset_name')
-def download(dataset_name, dataset_dir, verify):
+def download(dataset_name, dataset_dir, mode):
     """ sciml_bench download """
-    dataset_dir = Dataset.download(dataset_name, Path(dataset_dir), ENV)
-    if dataset_dir is not None:
-      print(f'A command for downloading the dataset {dataset_name}\n'\
-            f'has been invoked in background mode. The dataset will be\n'\
-            f'downloaded to {dataset_dir}. \n'\
-            f'A log is available at {ENV.output_dir}/download_logs/\n')
-    else:
-      print('Download Failed.')
 
-    if verify:
-      print('<Verification of the downloaded dataset(s) is to be implemented>')
+    display_logo()
+
+    print(f'Downloading the dataset {dataset_name}\n'\
+            f'in {mode} mode.\n') 
+
+    dataset_dir = Dataset.download(dataset_name, Path(dataset_dir), ENV, mode)
+    if dataset_dir is None:
+        print('Download Failed.')
+        return  
+    if mode == 'background':
+        print(f'A log is available at\n'\
+              f'    {ENV.output_dir}/download_logs/.\n')  
+    else: 
+        print(f'\nDownload complete.  Downloaded/synced the dataset to\n'\
+              f'    {dataset_dir}. \n')
+    
+
+
 
 ###################
 # Run Command 

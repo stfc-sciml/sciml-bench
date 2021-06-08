@@ -1,4 +1,4 @@
-<img src="./sciml-bench/doc/resources/logo.png" alt="logo" width="500"/>
+<img src="./sciml_bench/doc/resources/logo.png" alt="logo" width="500"/>
 
 
 
