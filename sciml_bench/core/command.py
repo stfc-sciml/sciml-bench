@@ -17,6 +17,9 @@ Main entry of the program
 import click
 import os
 from pathlib import Path
+
+from click.core import Context
+from click.formatting import HelpFormatter
 import sciml_bench.core.benchmark as Benchmark
 import sciml_bench.core.dataset as Dataset
 from sciml_bench.core.config import ProgramEnv
@@ -34,13 +37,18 @@ class NaturalOrderGroup(click.Group):
     """ Force click to keep the order of commands """
     def list_commands(self, ctx):
         return self.commands.keys()
-    
-    def format_help(self, ctx, formatter):
+        
+    def format_help(self, ctx: Context, formatter: HelpFormatter) -> None:
         display_logo()
-        return super().format_help(ctx, formatter)
+        super().format_help(ctx, formatter)
+
 
 
 @click.group(cls=NaturalOrderGroup)
+@click.version_option(
+    VERSION,  "--version", message="\nSciMLBench Version %(version)s.\n"\
+              "Copyright © 2021 SciML, RAL, STFC, UK. All rights reserved.\n"
+)
 def cli():
     pass
 
@@ -120,10 +128,12 @@ def cmd_list(scope, verify):
 # Info Command 
 ###################
 
-@cli.command('info', help='Provide a detailed information about a given dataset or benchmark')
+@cli.command(help='Obtain a detailed information about an entity.')
 @click.argument('entity')
-def cmd_info(entity):
-    """ sciml_bench info """
+def info(entity):
+    """ sciml_bench info
+    """
+    
     # key width first
     width_data = len(max(list(ENV.datasets.keys()), key=len))
     width_ben = len(max(list(ENV.benchmarks.keys()), key=len))
@@ -144,6 +154,9 @@ def cmd_info(entity):
 
     print(f'No information can be found on the entity {entity}.\n')
 
+###################
+# Install Command 
+###################
 
 
 @cli.command(help='Install benchmark dependencies.')
@@ -163,7 +176,7 @@ def install(benchmark_list):
                    'Default: dataset_dir in config.yml.\n')
 @click.option('--mode', default='background',
                 type=click.Choice(['foreground', 'background']),
-                help='Sets the downloading to foreground or background mode.\n'
+                help='\b\nSets the downloading to foreground or background mode.\n'
                    'Default: background\n'
                 )
 @click.argument('dataset_name')
