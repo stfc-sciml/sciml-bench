@@ -17,10 +17,11 @@ import importlib.util
 from pathlib import Path
 import os
 from sciml_bench.core.config import ProgramEnv
-from sciml_bench.core.utils import display_logo, query_yes_no
+from sciml_bench.core.utils import display_logo, query_yes_no, check_command
+from subprocess import PIPE, STDOUT, run
 
 
-def create_training_instance(benchmark_name, return_none_on_except=False):
+def create_training_instance(benchmark_name, return_none_on_except=True):
     """ Create a benchmark instance for training"""
     try:
         # validate module
@@ -29,18 +30,15 @@ def create_training_instance(benchmark_name, return_none_on_except=False):
         spec = importlib.util.spec_from_file_location(benchmark_name, file)
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
-
-        # create an instance by returning the sciml_bench_training function
+ 
+         # create an instance by returning the sciml_bench_training function
         return getattr(mod, 'sciml_bench_training')
     except Exception as e:
-        if return_none_on_except:
-            return None
-        else:
-            raise e
+        return None 
 
 
 
-def create_inference_instance(benchmark_name, return_none_on_except=False):
+def create_inference_instance(benchmark_name, return_none_on_except=True):
     """ Create a benchmark instance for inference"""
     try:
         # validate module - but models cannot be verified at this stage
@@ -53,10 +51,7 @@ def create_inference_instance(benchmark_name, return_none_on_except=False):
         # create an instance by returning the sciml_bench_inference function
         return getattr(mod, 'sciml_bench_inference')
     except Exception as e:
-        if return_none_on_except:
-            return None
-        else:
-            raise e
+        return None
 
 
 def install_benchmark_dependencies(benchmark_list, prog_env: ProgramEnv):
@@ -71,7 +66,7 @@ def install_benchmark_dependencies(benchmark_list, prog_env: ProgramEnv):
             benchmarks = set(prog_env.benchmarks.keys())
 
     # check benchmarks
-    if benchmarks <= prog_env.benchmarks.keys():
+    if benchmarks > set(prog_env.benchmarks.keys()):
         print(f'One or more benchmarks in the list')
         print(f'* {benchmarks}')
         print(f'is not part of the SciML-Bench' )
@@ -83,13 +78,16 @@ def install_benchmark_dependencies(benchmark_list, prog_env: ProgramEnv):
     log_file_dir.mkdir(parents=True, exist_ok=True)
 
     log_file = str(log_file_dir) + '/install_' + \
-                                datetime.today().strftime('%Y%m%d') + \
+                                datetime.today().strftime('%Y%m%d_%H%M') + \
                                 '.log'
 
     display_logo()
     print(f'\n Installing dependencies.')
     # now install the dependencies
-    regular_deps, horovod_deps = build_dependencies(prog_env.benchmarks)
+    benchmarks = list(benchmarks)
+    benchmarks = { k: prog_env.benchmarks[k] for k in benchmarks }
+
+    regular_deps, horovod_deps = build_dependencies(benchmarks)
     succeeded, failed =  install_dependencies(regular_deps, horovod_deps, log_file)
    
     # print benchmarks and dependencies
@@ -112,16 +110,26 @@ def install_dependencies(regular_deps, horovod_deps, log_file):
     dependencies_copy = regular_deps.copy()
     for dep in dependencies_copy:
         print(f'\t- Attempting to install {dep}', end='', flush=True)
-        res = os.system(f'pip install {dep} &> {log_file}')
-        if res != 0:
+        result = run(f'pip install --no-cache-dir {dep}', stdout=PIPE, stderr=STDOUT, universal_newlines=True,  shell=True)
+        if result.returncode != 0:
             failed.add(dep)
             print(f'...ERROR')
         else:
             succeeded.add(dep)
             print(f'...DONE')
-    
+
+
+        with open(log_file, 'a') as f:
+            header = f'[Installing {dep}]'
+            f.write(f'\n\n{header}\n')
+            f.write("="*len(header))
+            f.write('\n')
+            f.write(result.stdout)
+            f.write('\n\n\n')
+
     # Now start off with horovod
     h_succ, h_failed = __install_horovod__(horovod_deps, log_file)
+
     succeeded = succeeded.union(h_succ)
     failed = failed.union(h_failed)
     return succeeded, failed
@@ -129,6 +137,7 @@ def install_dependencies(regular_deps, horovod_deps, log_file):
 
 def build_dependencies(benchmarks):
     # verify each benchmark
+    print(benchmarks)
     regular_dependencies = set()
     horovod_dependencies  = set()
     for _,v in benchmarks.items():
@@ -162,7 +171,20 @@ def __install_horovod__(horovod_dependencies, log_file):
 
     # Check whether there are dependencies in the first place
     if len(horovod_dependencies) == 0:
-        return 
+        return h_succeeded, horovod_dependencies
+
+    # Next cmake - without cmake, we can't move an inch.
+    if check_command('cmake') is False:
+        with open(log_file):
+            header = f'[Installing Horovod Dependencies]'
+            f.write(f'\n\n{header}\n')
+            f.write("="*len(header))
+            f.write('\n')
+            f.write('Horovod relies on cmake. Please install cmake first!')
+            f.write('\n\n\n')
+            print(f'\t- Attempting to install  Horovod ...ERROR')
+        return  h_succeeded, horovod_dependencies
+
 
     # check if horovod has been installed
     try:
@@ -171,8 +193,8 @@ def __install_horovod__(horovod_dependencies, log_file):
     except:
         horovod_installed = False
 
-    # If installed, try importing them m
-    # If any of the dependencies don't work 
+    # If installed, try importing them.
+    # If any of the dependencies doesn't work 
     # mark those for reinstallation 
 
     if horovod_installed:
@@ -184,7 +206,7 @@ def __install_horovod__(horovod_dependencies, log_file):
                 failed_deps.add(mod)
 
     if (not horovod_installed) or len(failed_deps) > 0: 
-        # Either Horovod is missing or there were some failures
+        # Either Horovod is missing or there were some failures!
         # Rebuild what is needed to be installed 
         if len(failed_deps) > 0:
             horovod_dependencies = failed_deps
@@ -192,18 +214,24 @@ def __install_horovod__(horovod_dependencies, log_file):
         env_str = ''
         for dep in horovod_dependencies: 
             env_str = __get_horovod_env_key__(dep)
-            cmd_str = f'{env_str} pip install horovod --no-cache-dir &> {log_file}'
+            cmd_str = f'{env_str} pip install --no-cache-dir horovod'
             print(f'\t- Attempting to install {dep}',  end='', flush=True)
-            res = os.system(cmd_str)
-            if res != 0:
+            result = run(cmd_str, stdout=PIPE, stderr=STDOUT, universal_newlines=True,  shell=True)
+
+            if result.returncode:
                 h_failed.add(dep)
                 print(f'...ERROR')
-
             else:
                 h_succeeded.add(dep)
                 print(f'...DONE')
 
-
+            with open(log_file, 'a') as f:
+                header = f'[Installing {p}]'
+                f.write(f'\n\n{header}\n')
+                f.write("="*len(header))
+                f.write('\n')
+                f.write(result.stdout)
+                f.write('\n\n\n')
 
     return h_succeeded, h_failed
 

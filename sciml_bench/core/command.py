@@ -46,7 +46,7 @@ class NaturalOrderGroup(click.Group):
 
 @click.group(cls=NaturalOrderGroup)
 @click.version_option(
-    VERSION,  "--version", message="\nSciMLBench Version %(version)s.\n"\
+    VERSION,  "--version", message="\nSciML-Bench Version %(version)s.\n"\
               "Copyright © 2021 SciML, RAL, STFC, UK. All rights reserved.\n"
 )
 def cli():
@@ -174,10 +174,10 @@ def install(benchmark_list):
 @click.option('--dataset_dir', default=ENV.dataset_dir,
               help='\b\nRoot directory of datasets.\n'
                    'Default: dataset_dir in config.yml.\n')
-@click.option('--mode', default='background',
+@click.option('--mode', default='foreground',
                 type=click.Choice(['foreground', 'background']),
                 help='\b\nSets the downloading to foreground or background mode.\n'
-                   'Default: background\n'
+                   'Default: foreground\n'
                 )
 @click.argument('dataset_name')
 def download(dataset_name, dataset_dir, mode):
@@ -267,18 +267,20 @@ def run(mode, model, dataset_dir, output_dir, monitor_on,
             bench_run = Benchmark.create_inference_instance(benchmark_name)
         else:
             bench_run = Benchmark.create_training_instance(benchmark_name)
-    else:
+   
+    if bench_run is None or mode not in bench_types:
         print(f'The benchmark {benchmark_name} does not support {mode}.')
         print(f'Terminating the execution')
         return 
     
     # Now try and launch
-    try:
+    try:    
         bench_run(params_in, params_out)
     except Exception as e:
         # kill system monitor thread
         params_out.system.abort()
         raise e
+    
 
     # report monitor
     params_out.report()

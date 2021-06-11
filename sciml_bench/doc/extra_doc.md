@@ -1,18 +1,3 @@
-# Installing Horovod 
-
-[Horovod](https://horovod.ai/) is a framework to support distributed learning in PyTorch, TensorFlow, MXNet, and other frameworks,  and can easily enable scaling our benchmarks across a number of GPUs.  Horovod supports various collective communication libraries, such as MPI,  [NCCL](https://bityl.co/79k6) and [Gloo](https://bityl.co/79kC) (only one is needed). Ideally, if you are planning to rely on distributed learning, we  strongly advice you to use container technology, which provides a means for running our benchmarks on production clusters (where directly running `sciml-bench` or installing various dependencies may not be possible). 
-
-If you are not using containers, you can either install Horovod manually (which is recommended) or through the `sciml-bench install` command. If horovod installation is attempted through SciMLBench, Horovod dependencies (such as `horovod.torch`, `horovod.tensorflow` or `horovod.mxnet`) are extracted from the Configuration file. Regardless whether the Horovod is installed manually or through SciMLBench, these dependencies are expected to be specified in the Configuration file. Please consult the [Configuration Options] section for more details. 
-
-## Manual Installation of Horovod 
-
-This is the **recommended** way to install Horovod. To install Horovod manually, please consult the Horovod [Installation Page](https://bityl.co/79kQ). Any dependencies on Horovod must be declared for each benchmark. 
-
-
-## Installation of Horovod through SciMLBench 
-
-If the installation is attempted through SciMLBenchIn essence, SciMLBench will automatically extract any Horovod dependencies from the configuration file and will attempt to install necessary bindings (for TensorFlow or PyTorch or  MXNet). Although the framework makes the best effort, horovod dependencies are usually system-specific and may require re-installation attempts to satisfy, which may leave the sandbox (or the environment) in an unusable state if it fails. However, the framework assumes that user is trying to do this inside an environment, and hence the damage is minimal.  
-
 # Configuration Options 
 
 SciMLBench relies on a single configuration file, `config.yml`, inside the `$SCIMLBENCHROOT/etc/configs/` folder. The configuration file has the following sections:
@@ -92,9 +77,6 @@ benchmarks:
 Here, the `dms_structure` benchmark covers both the training types. The `type` string can be any of *'training, inference'*, *'inference'*,  or *'training'*. If none specified, both training and inference are assumed. The order does not matter. 
 
 
-# Running Benchmarks 
-
-Benchmarks can be run either in training mode or in inference mode. 
 
 
 

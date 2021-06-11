@@ -20,6 +20,7 @@ from contextlib import contextmanager
 import sys
 from sciml_bench import __version__ as VERSION
 from bs4 import BeautifulSoup, Comment
+from subprocess import PIPE, run
 
 class SafeDict(dict):
     """
@@ -258,3 +259,9 @@ def extract_html_comments(file_name):
         return None
 
 
+def check_command(command_name):
+    result = run(command_name, stderr=PIPE, stdout=PIPE, shell=True)
+    if 'not found' in str(result.stderr):
+        return False
+
+    return True
