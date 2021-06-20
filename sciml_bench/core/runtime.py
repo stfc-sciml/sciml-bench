@@ -38,16 +38,6 @@ class RuntimeIn:
         self.valid = False
         self.error_msg = msg
 
-    def __set_modes(self, benchmark_name, execution_mode):
-        if execution_mode in ['training']:
-            self.execution_mode = 'training'
-        elif execution_mode ==  'inference':
-            self.execution_mode = 'inference' 
-        else:
-            self.__set_error_msg(f'\nBenchmark {benchmark_name} is executed \
-                                    in non-inferenceand non-training mode.')
-            return 
-
     def __init__(self, prog_env: ProgramEnv,  execution_mode, model_file, 
                  benchmark_name, dataset_dir, 
                  output_dir, bench_args_list):
@@ -59,47 +49,71 @@ class RuntimeIn:
         self.output_dir = None
         self.bench_args = None
         self.execution_mode = execution_mode
-        self.model = model_file
+        self.models = {}
 
 
         if prog_env.is_config_valid() == False:
+            self.valid = False
             self.__set_error_msg(self.prog_env.config_error)
             return 
 
         if benchmark_name not in prog_env.benchmarks.keys():
-            self.__set_error_msg(f'\nBenchmark {benchmark_name} is not part of the SciML-Bench.')
+            self.valid = False
+            self.__set_error_msg(f'\nBenchmark {benchmark_name} is not'\
+                                  'part of the SciML-Bench.')
             return 
 
-        # Execution mode
-        self.__set_modes(benchmark_name, execution_mode)
+        # Check whether this is inference mode 
+        # and we have the model to use
+        if self.execution_mode == 'inference':
+            if model_file is None:
+                model_file = prog_env.model_dir / benchmark_name / 'model.h5'
+                if not model_file.is_file():
+                    self.__set_error_msg(f'\nNo model file specified or available'\
+                                         f'\nfor inferencing on {benchmark_name}.'\
+                                         f'\nTerminating execution.\n')
+                    return 
+            else:
+                for file in model_file:
+                    if Path(file).is_file():
+                        p = (Path(file).name).split('.')[0]
+                        self.models[p] = file
 
-        # start time
-        self.start_time = datetime.utcnow().isoformat() + 'Z'
+            if dataset_dir is None:
+                self.__set_error_msg(f'\nNo dataset directory specified'\
+                                     f'\nfor inferencing on {benchmark_name}.'\
+                                     f'\nTerminating execution.\n')
+                return
+            else:
+                self.dataset_dir = Path(dataset_dir).expanduser()
 
         # At present, we will support only one dataset per benchmark
         # data dir
-        if dataset_dir is None:
-            # default
-            dataset_name = prog_env.benchmarks[benchmark_name]['datasets']
-            self.dataset_dir = (prog_env.dataset_dir / dataset_name).expanduser()
-        else:
-            self.dataset_dir = Path(dataset_dir).expanduser()
+        if self.execution_mode == 'training':
+            if dataset_dir is None:
+                # default
+                dataset_name = prog_env.benchmarks[benchmark_name]['datasets']
+                self.dataset_dir = (prog_env.dataset_dir / dataset_name).expanduser()
+            else:
+                self.dataset_dir = Path(dataset_dir).expanduser()
+
 
         # check data existence
         if not self.dataset_dir.exists():
+            self.valid = False
             self.__set_error_msg(f'\nDataset directory {self.dataset_dir} does not exist')
             return
 
         # output dir
         if output_dir is None:
             datestr = datetime.today().strftime('%Y%m%d')
-            self.output_dir = (prog_env.output_dir / benchmark_name / datestr ).expanduser()
+            self.output_dir = (prog_env.output_dir / benchmark_name / datestr / self.execution_mode).expanduser()
         elif output_dir[0] == '@':
             # special convention to use default root
             self.output_dir = prog_env.output_dir / benchmark_name / output_dir[1:]
 
         # If we have got this far, we can extract the arguments 
-        # Create the path in a thread-safe manner
+        # Create relevant paths in a thread-safe manner
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Extract benchmark-specific arguments
@@ -107,16 +121,18 @@ class RuntimeIn:
         for key, val in bench_args_list:
             self.bench_args[key] = val
 
+        # start time
+        self.start_time = datetime.utcnow().isoformat() + 'Z'
 
 class RuntimeOut:
     """
     Class for runtime output, including logging and system monitoring
 
-    Useful components of an object smlb_out:
-    * smlb_out.log.console: multi-level logger on root (rank=0)
-    * smlb_out.log.host: multi-level logger on host (local_rank=0)
-    * smlb_out.log.device: multi-level logger on device (rank=any)
-    * smlb_out.system: a set of system monitors
+    Useful components of an object params_out:
+    * params_out.log.console: multi-level logger on root (rank=0)
+    * params_out.log.host: multi-level logger on host (local_rank=0)
+    * params_out.log.device: multi-level logger on device (rank=any)
+    * params_out.system: a set of system monitors
     """
 
     class Loggers:
@@ -133,18 +149,18 @@ class RuntimeOut:
             """ Activate loggers """
             # console
             if rank == 0:
-                self.console.activate('smlb_log_console',
+                self.console.activate('sciml_bench_log_console',
                                       log_dir / 'console.log',
                                       screen=console_on_screen)
             # host
             # NOTE: rank rather than host ID is used in filename
             if activate_host and local_rank == 0:
-                self.host.activate(f'smlb_log_host{rank}',
+                self.host.activate(f'sciml_bench_log_host{rank}',
                                    log_dir / f'host{rank}.log',
                                    screen=False)
             # device
             if activate_device:
-                self.device.activate(f'smlb_log_device{rank}',
+                self.device.activate(f'sciml_bench_log_device{rank}',
                                      log_dir / f'device{rank}.log',
                                      screen=False)
 

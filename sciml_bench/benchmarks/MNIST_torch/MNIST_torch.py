@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# MNIST_torch.py
+# mnist_torch.py
 
 # SciML-Bench
 # Copyright © 2021 Scientific Machine Learning Research Group
@@ -10,12 +10,12 @@
 # All rights reserved.
 
 """
-Benchmark: MNIST_torch
+Benchmark: mnist_torch
 Classifying MNIST using a CNN implemented with pytorch.
 
 NOTES:
 * This is an example of how to build a benchmark into SciML-Benchmarks.
-* It is registered in registration.yml as MNIST_pytorch.
+* It is registered in registration.yml as mnist_pytorch.
 * In this example, we demonstrate how to
   1) handle complex benchmark-specific arguments such as workflow control;
   2) activate and use smlb_out for distributed learning;
@@ -34,24 +34,15 @@ import torch
 import horovod.torch as hvd
 
 # implementation from other files
-from sciml_bench.benchmarks.MNIST_torch.impl_mnist_torch \
+from sciml_bench.benchmarks.mnist_torch.impl_mnist_torch \
     import create_dataset_sampler_loader, MNISTNet, train, predict
 
 
-def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
+def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
     """
     Main entry of `sciml_bench run` for a benchmark instance
-
-    :param smlb_in: runtime input of `sciml_bench run`, useful components:
-        * smlb_in.start_time: start time of running as UTC-datetime
-        * smlb_in.dataset_dir: dataset directory
-        * smlb_in.output_dir: output directory
-        * smlb_in.bench_args: benchmark-specific arguments
-    :param smlb_out: runtime output of `sciml_bench run`, useful components:
-        * smlb_out.log.console: multi-level logger on root (rank=0)
-        * smlb_out.log.host: multi-level logger on host (local_rank=0)
-        * smlb_out.log.device: multi-level logger on device (rank=any)
-        * smlb_out.system: a set of system monitors
+    in the training mode.
+    Please consult the API documentation.
     """
 
     # -------------------------------

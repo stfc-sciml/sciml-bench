@@ -17,9 +17,11 @@ Main entry of the program
 import click
 import os
 from pathlib import Path
+import textwrap
 
 from click.core import Context
 from click.formatting import HelpFormatter
+import sciml_bench
 import sciml_bench.core.benchmark as Benchmark
 import sciml_bench.core.dataset as Dataset
 from sciml_bench.core.config import ProgramEnv
@@ -27,6 +29,7 @@ from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 from sciml_bench.core.system import all_sys_info, format_info
 from sciml_bench import __version__ as VERSION
 from sciml_bench.core.utils import display_logo
+from sciml_bench.core.utils import print_items
 from sciml_bench.core.utils import extract_html_comments
 
 # init a global ProgramEnv instance
@@ -42,16 +45,13 @@ class NaturalOrderGroup(click.Group):
         display_logo()
         super().format_help(ctx, formatter)
 
-
-
-@click.group(cls=NaturalOrderGroup)
-@click.version_option(
-    VERSION,  "--version", message="\nSciML-Bench Version %(version)s.\n"\
-              "Copyright © 2021 SciML, RAL, STFC, UK. All rights reserved.\n"
-)
-def cli():
-    pass
-
+@click.group(cls=NaturalOrderGroup, invoke_without_command=True)
+@click.option('--version', is_flag=True, default=False, 
+               help='\b\nDisplay the version of the software.')
+def cli(version):
+    if version:
+        display_logo()
+        click.echo(f' This is SciML-Bench Version. {VERSION}\n')
 
 #####################################################################
 # Primary Help                                                      #
@@ -70,57 +70,39 @@ def cli():
                   'Default: False.')
 def cmd_list(scope, verify):
     """ sciml_bench list """
-    # key width first
-    width_data = len(max(list(ENV.datasets.keys()), key=len))
-    width_ben = len(max(list(ENV.benchmarks.keys()), key=len))
-    width = max(width_data, width_ben)
 
     display_logo()
+
+
     # list datasets 
     if scope == 'summary' or scope == 'datasets' or scope=='all':
-        print(' List of Datasets:')
-        for name, props in ENV.datasets.items():
-            if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
-                output = f'  * {name.ljust(width + 4)}'
-                if verify: 
-                    dataset_status =  Dataset.get_status(name, ENV)
-                    output += f': {dataset_status}'
-                print(output)
+        dataset_names = ENV.list_main_datasets()
+        dataset_statuses = None
+        if verify:
+            dataset_statuses = Dataset.get_status(dataset_names, ENV)
+        
+        print_items('Datasets', dataset_names, dataset_statuses)
     
     # list benchmarks
     if scope == 'summary' or scope == 'benchmarks' or scope=='all':
-        print('\n List of Benchmarks:')
-        for name, props in ENV.benchmarks.items():
-            if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
-                output = f'  * {name.ljust(width + 4)}'
-                if verify: 
-                    bench_status = Benchmark.get_status(name)
-                    output += f': {bench_status}'
-                print(output)
+        benchmark_names = ENV.list_main_benchmarks()
+        benchmark_status = None
+        if verify:
+            benchmark_status = Benchmark.get_status(benchmark_names, ENV)
+        print_items('Benchmarks', benchmark_names, benchmark_status)
                 
     # list example datasets and benchmarks
     if scope == 'examples' or scope=='all':
-        n_ds_examples = sum(v["is_example"] == True for k, v in ENV.datasets.items() if v is not None and  'is_example' in v)
-        n_bm_examples = sum(v["is_example"] == True for k, v in ENV.benchmarks.items() if v is not None and  'is_example' in v)
+        benchmark_names_examples = ENV.list_example_benchmarks()
+        dataset_names_examples = ENV.list_example_datasets()
+        benchmark_status_examples, dataset_status_examples = None, None
+        if verify:
+            benchmark_status_examples = Benchmark.get_status(benchmark_names_examples, ENV)
+            dataset_status_examples = Dataset.get_status(dataset_names_examples, ENV)
+        
+        print_items('Example Datasets', dataset_names_examples, dataset_status_examples)
+        print_items('Example Benchmarks', benchmark_names_examples, benchmark_status_examples)
 
-        if n_ds_examples > 0:
-            print('\n List of Example Datasets:')
-            for name, props in ENV.datasets.items():
-                if props is not None and 'is_example' in props and props['is_example'] == True:
-                    output = f'  * {name.ljust(width + 4)}'
-                    if verify: 
-                        dataset_status = Dataset.get_status(name, ENV)
-                        output += f': {dataset_status}'
-                    print(output)
-        if n_bm_examples > 0:
-            print('\n List of Example Benchmarks:')
-            for name, props in ENV.benchmarks.items():
-                if props is not None and 'is_example' in props and props['is_example'] == True:
-                    output = f'  * {name.ljust(width + 4)}'
-                    if verify: 
-                        bench_status = Benchmark.get_status(name)
-                        output += f': {bench_status}'
-                    print(output)
     print('\n')
 
 
@@ -128,7 +110,8 @@ def cmd_list(scope, verify):
 # Info Command 
 ###################
 
-@cli.command(help='Obtain a detailed information about an entity.')
+@cli.command(help='Obtain a detailed information about an entity.\n'\
+                  'See the list command for available entities.')
 @click.argument('entity')
 def info(entity):
     """ sciml_bench info
@@ -149,10 +132,21 @@ def info(entity):
       content = extract_html_comments(str(info_path) + os.sep +  entity + '.md')
       if content:
         display_logo()
-        print(f'{content.ljust(75)}')
+        lines = content.split('\n')
+        wrapper = textwrap.TextWrapper(width=60, break_long_words=False, replace_whitespace=False)
+        for line in lines:
+            if len(line) > 60:
+                words_list = wrapper.wrap(text=content)
+                line = '\n '.join(wrapper.wrap(line))
+            print(f' {line}')
+            
         return
 
-    print(f'No information can be found on the entity {entity}.\n')
+    print(f' No information can be found on the entity {entity}.')
+    print(f' Possible options are:\n')
+    print_items('Benchmarks', ENV.list_main_benchmarks())
+    print_items('Datasets', ENV.list_main_datasets())
+    print()
 
 ###################
 # Install Command 
@@ -211,12 +205,15 @@ def download(dataset_name, dataset_dir, mode):
               type=click.Choice(['training', 'inference']),
               help='\b\nSets the mode to training or inference.\n'
                    'Default: training.')
-@click.option('--model', required=False,
-              help='\b\nSets the model to be used (only for inference.)\n'
+@click.option('--model', required=False, multiple=True,
+              help='\b\nSets the model(s) to be used (only for inference.)\n'
+                   'If not specified, framework will attempt to find\n' 
+                   'the model(s) in the models directory\n'
                    'Default: None.')                       
 @click.option('--dataset_dir', required=False, 
               help='\b\nDirectory for the dataset(s).\n'
-                   'Default: dataset directory from the config file')
+                   'Default: dataset directory from the config file\n'
+                             'if in training mode.\n')
 @click.option('--output_dir', required=False,
               help='\b\nOutput directory for this run.\n'
                    'If not specified, outputs will be logged under\n' 
@@ -262,13 +259,14 @@ def run(mode, model, dataset_dir, output_dir, monitor_on,
 
     # create instance and run
     bench_types = ENV.get_bench_types(benchmark_name)
+    bench_run = None
     if mode in bench_types:
         if mode ==  'inference':
             bench_run = Benchmark.create_inference_instance(benchmark_name)
         else:
             bench_run = Benchmark.create_training_instance(benchmark_name)
    
-    if bench_run is None or mode not in bench_types:
+    if (bench_run is None) or (mode not in bench_types):
         print(f'The benchmark {benchmark_name} does not support {mode}.')
         print(f'Terminating the execution')
         return 

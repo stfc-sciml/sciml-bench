@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# MNIST_tf_keras.py
+# mnist_tf_keras.py
 
 # SciML-Bench
 # Copyright © 2021 Scientific Machine Learning Research Group
@@ -10,15 +10,20 @@
 # All rights reserved.
 
 """
-Benchmark: MNIST_tf_keras
+Benchmark: mnist_tf_keras
 Classifying MNIST using a CNN implemented with tf.keras
+This is a single device training/inference example.
+
 
 NOTES:
-* This is an example of how to build a benchmark into SciML-Benchmarks.
-* It is registered in registration.yml as MNIST_tf_keras.
-* In this example, we put everything in MNIST_tf_keras.py; for a real
-  problem, it is always better to modularize the implementation, e.g.,
-  see MNIST_torch.py; only `sciml_bench_run()` must be implemented here.
+* This is an example of how to build a benchmark into SciML-Bench.
+* Please see the configuration options in config.yml.
+* Although this example relies on single file implementation,
+* in reality, it is always better to modularize the implementation, e.g.,
+  see mnist_torch.py. 
+  As this benchmark supports both training and inference,
+  both  `sciml_bench_training()` and `sciml_bench_inference()`
+  must be implemented here.
 """
 
 # libs from sciml_bench
@@ -30,6 +35,9 @@ import h5py
 import yaml
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras.models import load_model
+from pathlib import Path
+
 
 
 def create_dataset_mnist(file_path, batch_size):
@@ -73,70 +81,50 @@ def create_model_mnist():
 class LogEpochCallback(tf.keras.callbacks.Callback):
     """ Callback to log epoch """
 
-    def __init__(self, smlb_out):
+    def __init__(self, params_out):
         super().__init__()
         self._start_time = time.time()
-        self._smlb_out = smlb_out
+        self._params_out = params_out
 
     def on_epoch_begin(self, epoch, logs=None):
         # stamp epoch in system monitor
         self._start_time = time.time()
-        self._smlb_out.system.stamp_event(f'epoch {epoch}')
+        self._params_out.system.stamp_event(f'epoch {epoch}')
 
     def on_epoch_end(self, epoch, logs=None):
         msg = f'Epoch {epoch:2d}: '
         for key, val in logs.items():
             msg += f'{key}={val:f} '
         msg += f'elapsed={time.time() - self._start_time:f} sec'
-        self._smlb_out.log.message(msg)
+        self._params_out.log.message(msg)
 
 
-def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
+def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
     Main entry of `sciml_bench run` for a benchmark instance
-
-    :param smlb_in: runtime input of `sciml_bench run`, useful components:
-        * smlb_in.start_time: start time of running as UTC-datetime
-        * smlb_in.dataset_dir: dataset directory
-        * smlb_in.output_dir: output directory
-        * smlb_in.bench_args: benchmark-specific arguments
-    :param smlb_out: runtime output of `sciml_bench run`, useful components:
-        * smlb_out.log.console: multi-level logger on root (rank=0)
-        * smlb_out.log.host: multi-level logger on host (local_rank=0)
-        * smlb_out.log.device: multi-level logger on device (rank=any)
-        * smlb_out.system: a set of system monitors
+    in the training mode.
+    Please consult the API documentation. 
     """
-    # activate monitor
-    # Note: To use smlb_out, you must activate it, passing the rank
-    #       information initialized by your distributed learning environment;
-    #       for a non-distributed benchmark, simply pass rank=0, local_rank=0
-    #       and activate_log_on_host(_device)=False; here we use True for
-    #       demonstration -- the log on host0 and device0 will be the same as
-    #       that on console except for some small differences in time
-    #       measurements.
-    smlb_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
+    
+    params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
                       activate_log_on_device=True, console_on_screen=True)
 
-    # log top level process
-    # Note: Calling begin(), ended() and message() on smlb_out.log means
-    #       calling these functions on console, host and device; nothing
-    #       happens when calling these functions on an unactivated logger.
-    log = smlb_out.log
-    log.begin('Running benchmark MNIST_tf_keras')
+    log = params_out.log
+    log.begin('Running benchmark mnist_tf_keras on training mode')
 
     # parse input arguments (only batch_size and epochs)
     # Note: Use try_get() to get a benchmark-specific argument safely from
-    #       smlb_in.bench_args (passed by users via -b).
+    #       params_in.bench_args (passed by users via -b).
     with log.subproc('Parsing input arguments'):
         # hyperparameters
-        batch_size = smlb_in.bench_args.try_get('batch_size', default=64)
-        epochs = smlb_in.bench_args.try_get('epochs', default=2)
+        batch_size = params_in.bench_args.try_get('batch_size', default=64)
+        epochs = params_in.bench_args.try_get('epochs', default=2)
         log.message(f'batch_size = {batch_size}')
         log.message(f'epochs     = {epochs}')
 
     # create datasets
     with log.subproc('Creating datasets'):
-        dataset_dir = smlb_in.dataset_dir
+        dataset_dir = params_in.dataset_dir
         train_set = create_dataset_mnist(dataset_dir / 'train.hdf5', batch_size)
         test_set = create_dataset_mnist(dataset_dir / 'test.hdf5', batch_size)
         log.message(f'Dataset directory: {dataset_dir}')
@@ -150,20 +138,20 @@ def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
     # fit()
     with log.subproc('Running model.fit()'):
         # stamp model.fit in system monitor
-        # Note: smlb_out.system will monitor system usage regularly; use
-        #       smlb_out.system.stamp_event() to stamp an event in the report
-        smlb_out.system.stamp_event('model.fit')
+        # Note: params_out.system will monitor system usage regularly; use
+        #       params_out.system.stamp_event() to stamp an event in the report
+        params_out.system.stamp_event('model.fit')
         history = model.fit(train_set, epochs=epochs, batch_size=batch_size,
                             validation_data=test_set, verbose=0,
-                            callbacks=[LogEpochCallback(smlb_out)])
+                            callbacks=[LogEpochCallback(params_out)])
     # save model
-    with log.subproc('Saving model weights'):
-        weights_file = smlb_in.output_dir / 'model_weights.h5'
-        model.save(weights_file)
-        log.message(f'Saved to: {weights_file}')
+    with log.subproc('Saving the model'):
+        model_file = params_in.output_dir / 'mnist_tf_keras_model.h5'
+        model.save(model_file)
+        log.message(f'Saved to: {model_file}')
     # save history
     with log.subproc('Saving training history'):
-        history_file = smlb_in.output_dir / 'training_history.yml'
+        history_file = params_in.output_dir / 'training_history.yml'
         with open(history_file, 'w') as handle:
             yaml.dump(history.history, handle)
         log.message(f'Saved to: {history_file}')
@@ -173,11 +161,46 @@ def sciml_bench_run(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
     with log.subproc('Making predictions on test set'):
         with h5py.File(dataset_dir / 'test.hdf5', 'r') as h5_file:
             # stamp model.predict in system monitor
-            smlb_out.system.stamp_event('model.predict')
+            params_out.system.stamp_event('model.predict')
             pred = model.predict(np.expand_dims(h5_file['image'][:], -1) / 255)
             correct = np.sum(pred.argmax(axis=1) == h5_file['label'][:])
         log.message(f'{correct} correct predictions for {len(pred)} images '
                     f'(accuracy: {correct / len(pred) * 100:.2f}%)')
 
     # end top level
-    log.ended('Running benchmark MNIST_tf_keras')
+    log.ended('Running benchmark mnist_tf_keras on training mode')
+
+
+
+def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
+    """
+    Main entry of `sciml_bench run` for a benchmark instance 
+    in the inference mode.
+    Please consult the API documentation. 
+    """
+    params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
+                      activate_log_on_device=True, console_on_screen=True)
+
+    log = params_out.log
+    log.begin('Running benchmark mnist_tf_keras on inference mode')
+
+    output_file = params_in.output_dir  / 'mnist_tf_keras_inference.log'
+
+    # Load the model
+    with log.subproc('Loading model'):
+        # There is only one model we have - named tf_mnist_keras_model
+        model = load_model(params_in.models['mnist_tf_keras_model'])
+        p = params_in.dataset_dir.glob('**/*')
+        files = [x for x in p if x.is_file()]
+        with open(output_file, 'wt')as handle:
+            handle.write(f'File Name\tOutput\n')
+            for file in sorted(files):
+                with log.subproc(f'Processing file {file}'):
+                    image = tf.keras.preprocessing.image.load_img(file, color_mode='grayscale', target_size=(28,28))
+                    input_arr = tf.keras.preprocessing.image.img_to_array(image)/ 255.0
+                    input_arr = np.array([input_arr]).reshape(-1, 28, 28, 1) 
+                    out = model.predict(input_arr)
+                    out = np.argmax(out)
+                    handle.write(f'{file}\t{out}\n')
+
+    log.ended('Running benchmark mnist_tf_keras on inference mode')

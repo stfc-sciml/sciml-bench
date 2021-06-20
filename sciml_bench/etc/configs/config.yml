@@ -38,12 +38,10 @@ datasets:
     dms_sim:
         end_point: 'sciml-datasets/ms'
         download_command: download_command1
-    slstr_cloud_ds1:
+    cloud_slstr_ds1:
         end_point: 'sciml-datasets/es'
         download_command: download_command1
-    slstr_cloud_ds2:
-        end_point: 'sciml-datasets/es'
-        download_command: download_command1
+
 
 # List of benchmarks
 benchmarks:
@@ -51,16 +49,16 @@ benchmarks:
         datasets: mnist
         is_example: True
         dependencies: 'tensorflow'
-        types: 'training'
+        types: 'training, inference'
 
     mnist_torch:
         datasets: mnist
         is_example: True
-        dependencies: 'torch,horovod.torch'
+        dependencies: 'torch'
 
     em_denoise:
         datasets: em_graphene_sim
-        dependencies: 'mxnet-cu102'
+        dependencies: 'mxnet'
         types: 'training'
 
 
@@ -73,3 +71,4 @@ benchmarks:
         datasets: slstr_cloud_ds1
         dependencies: 'tensorflow,scikit-learn,horovod.tensorflow'
         types: 'training'
+

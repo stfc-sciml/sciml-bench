@@ -265,3 +265,57 @@ def check_command(command_name):
         return False
 
     return True
+
+def csv_to_stripped_set(dict, key):
+    """
+    Given a dictionary, and a key, returns 
+    the list of items under that key as a set. 
+    The white spaces are stripped 
+    """
+    if None in [dict, key]:
+        return set()
+
+    result = [x.strip() for x in dict[key].split(',')]
+    return set(filter(''.__ne__, result))
+
+def csv_string_to_stripped_set(string):
+    """
+    Given a csv string, returns 
+    the list of items as a set. 
+    The white spaces are stripped 
+    """
+    if string is None:
+        return set()
+    
+    result = [x.strip() for x in string.split(',')]
+    return set(filter(''.__ne__, result))
+
+
+def print_items(heading, column1, column2=[]):
+    """
+    Given two columns of strings  (each as a list)
+    prints them next to each other. 
+    """
+
+    if None in [heading, column1]:
+        return 
+    
+    if column2 is None:
+        column2 = []
+        
+    lengths = [len(x) for x in [column1, column2]]
+    
+    if lengths[0] ==0 or max(lengths)==0 or (lengths[1] > lengths[0]):
+        return 
+    
+    max_length = len(max(column1, key=len)) +1
+    print(f' {heading}\n ', end='')
+    print('-'*len(heading))
+    print()
+    for i in range(len(column1)):
+        flag_2 = i >= 0 and i < len(column2)
+        output = f'  * {column1[i].ljust(max_length)}'
+        if flag_2:
+            output += f': {column2[i]}' 
+        print(output)
+    print()

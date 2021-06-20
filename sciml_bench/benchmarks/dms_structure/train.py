@@ -6,25 +6,28 @@ from sklearn.preprocessing import OneHotEncoder
 from sciml_bench.benchmarks.dms_structure.model import DMSNet
 from sciml_bench.benchmarks.dms_structure.model import learn
 
-def train_model(dataset, args, smlb_in, smlb_out):
+# libs from sciml_bench
+from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
+
+def train_model(dataset, args, params_in: RuntimeIn, params_out: RuntimeOut):
     '''
     Trains a CNN to classify the DMS data
     :param dataset: the location of the dataset
     :param args: dictionary of user/environment arguments
-    :param smlb_in: RuntimeIn instance for logging
-    :param smlb_out: RuntimeOut instance for logging
+    :param params_in: RuntimeIn instance
+    :param params_out: RuntimeOut instance
     '''
 
-    console = smlb_out.log.console
-    device = smlb_out.log.device
+    console = params_out.log.console
+    device = params_out.log.device
 
     learning_rate = args['learning_rate']
     epochs = args['epochs']
     batch_size = args['batch_size']
     patience = args['patience']
-    model_filename = smlb_in.output_dir / args['model_filename']
-    best_validation_model = smlb_in.output_dir / args['validation_model_filename']
-    training_history = smlb_in.output_dir / args['training_history']
+    model_filename = params_in.output_dir / args['model_filename']
+    best_validation_model = params_in.output_dir / args['validation_model_filename']
+    training_history = params_in.output_dir / args['training_history']
 
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -55,4 +58,4 @@ def train_model(dataset, args, smlb_in, smlb_out):
           Y_test, epochs=epochs,
           lrate=learning_rate, batch_size=batch_size, patience=patience,
           model_filename=model_filename, best_validation_model=best_validation_model,
-          training_history=training_history, device=device, smlb_out=smlb_out)
+          training_history=training_history, device=device, smlb_out=params_out)

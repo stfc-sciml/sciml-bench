@@ -15,6 +15,8 @@ Configuration for the whole sciml-bench, including
 * datasets and benchmarks.
 """
 
+from sciml_bench.core.utils import csv_to_stripped_set
+from sciml_bench.core.utils import csv_string_to_stripped_set
 import yaml
 from pathlib import Path
 
@@ -50,7 +52,6 @@ class ProgramEnv:
 
         # benchmarks  
         self.benchmarks = cfg['benchmarks']
-
 
         # Now validate the file 
         self.is_valid = False
@@ -105,7 +106,7 @@ class ProgramEnv:
                 self.is_valid = False
                 self.config_error = 'No datasets are linked to at least one benchmark.'
                 return  
-
+        
         self.is_valid = True
 
     def is_config_valid(self):
@@ -137,7 +138,7 @@ class ProgramEnv:
 
         benchmark = self.benchmarks[benchmark_name]
         if 'types' in benchmark.keys():
-            return list(set(filter(''.__ne__, benchmark['types'].split(','))))
+            return list(csv_to_stripped_set(benchmark, 'types'))
         else:
             return  ['training', 'inference']
 
@@ -159,7 +160,7 @@ class ProgramEnv:
 
         benchmark = self.benchmarks[benchmark_name]
         if 'dependencies' in benchmark.keys():
-            return list(set(filter(''.__ne__, benchmark['dependencies'].split(','))))
+            return list(csv_to_stripped_set(benchmark, 'dependencies'))
         else:
             return  None
 
@@ -170,6 +171,34 @@ class ProgramEnv:
 
         benchmark = self.benchmarks[benchmark_name]
         if 'datasets' in benchmark.keys():
-            return list(set(filter(''.__ne__, benchmark['datasets'].split(','))))
+            return list(csv_to_stripped_set(benchmark, 'dependencies'))
         else:
             return  None
+
+    def list_main_benchmarks(self):
+        output = []
+        for name, props in self.benchmarks.items():
+            if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
+                output.append(name)
+        return output
+
+    def list_main_datasets(self):
+        output = []
+        for name, props in self.datasets.items():
+            if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
+                output.append(name)
+        return output
+
+    def list_example_benchmarks(self):
+        output = []
+        for name, props in self.benchmarks.items():
+            if (props is not None) and  ('is_example' in props):
+                output.append(name)
+        return output
+
+    def list_example_datasets(self):
+        output = []
+        for name, props in self.datasets.items():
+            if (props is not None) and  ('is_example' in props):
+                output.append(name)
+        return output

@@ -15,9 +15,8 @@ Benchmark management
 from datetime import datetime
 import importlib.util
 from pathlib import Path
-import os
 from sciml_bench.core.config import ProgramEnv
-from sciml_bench.core.utils import display_logo, query_yes_no, check_command
+from sciml_bench.core.utils import csv_to_stripped_set, display_logo, query_yes_no, check_command
 from subprocess import PIPE, STDOUT, run
 
 
@@ -47,7 +46,6 @@ def create_inference_instance(benchmark_name, return_none_on_except=True):
         spec = importlib.util.spec_from_file_location(benchmark_name, file)
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
-
         # create an instance by returning the sciml_bench_inference function
         return getattr(mod, 'sciml_bench_inference')
     except Exception as e:
@@ -86,10 +84,8 @@ def install_benchmark_dependencies(benchmark_list, prog_env: ProgramEnv):
     # now install the dependencies
     benchmarks = list(benchmarks)
     benchmarks = { k: prog_env.benchmarks[k] for k in benchmarks }
-
     regular_deps, horovod_deps = build_dependencies(benchmarks)
     succeeded, failed =  install_dependencies(regular_deps, horovod_deps, log_file)
-   
     # print benchmarks and dependencies
     print('\n ==================== Installation Summary ====================')
     print(' Benchmarks selected:')
@@ -137,11 +133,10 @@ def install_dependencies(regular_deps, horovod_deps, log_file):
 
 def build_dependencies(benchmarks):
     # verify each benchmark
-    print(benchmarks)
     regular_dependencies = set()
     horovod_dependencies  = set()
     for _,v in benchmarks.items():
-        bench_deps = set(filter(''.__ne__, v['dependencies'].split(',')))
+        bench_deps = csv_to_stripped_set(v,'dependencies')
         for dep in bench_deps:
             if 'horovod' in dep:
                 horovod_dependencies.add(dep)
@@ -226,7 +221,7 @@ def __install_horovod__(horovod_dependencies, log_file):
                 print(f'...DONE')
 
             with open(log_file, 'a') as f:
-                header = f'[Installing {p}]'
+                header = f'[Installing {dep}]'
                 f.write(f'\n\n{header}\n')
                 f.write("="*len(header))
                 f.write('\n')
@@ -235,9 +230,7 @@ def __install_horovod__(horovod_dependencies, log_file):
 
     return h_succeeded, h_failed
 
-def get_status(benchmark_name):
-    is_good_train = create_training_instance(benchmark_name, True)
-    is_good_inference = create_inference_instance(benchmark_name, True)
+def __get_runnable_status__(is_good_train, is_good_inference):
     if is_good_train and is_good_inference:
         str = "Runnable (Training & Inference)"
     elif is_good_train:
@@ -247,3 +240,21 @@ def get_status(benchmark_name):
     else:
         str = "Not runnable"
     return str
+
+def get_status(benchmark_names, ENV):
+    flag = False
+    status_str = []
+    if not isinstance(benchmark_names, list):
+        benchmark_names = [benchmark_names]
+        flag =True
+  
+    for benchmark_name in benchmark_names:
+        is_good_train = create_training_instance(benchmark_name, True)
+        is_good_inference = create_inference_instance(benchmark_name, True)
+        status_str.append(__get_runnable_status__(is_good_train, is_good_inference))
+    
+    if flag == True:
+        status_str = status_str[0]
+    
+    return status_str
+

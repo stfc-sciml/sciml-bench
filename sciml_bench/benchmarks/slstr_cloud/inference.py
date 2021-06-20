@@ -36,30 +36,38 @@ def reconstruct_from_patches(patches: tf.Tensor, nx: int, ny: int, patch_size: i
     return reconstructed
 
 
-def inference(model_file: Path, dataset_dir: Path, args: dict, smlb_in: RuntimeIn, smlb_out: RuntimeOut) -> None:
+def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
     """
-    Perform inference using a U-Net style model
+    Main entry of `sciml_bench run` for a benchmark instance 
+    in the inference mode.
 
-    :param model_file: model weights file to load
-    :param dataset_dir: path to find files for inference
-    :param args: dictionary of user/environment arguments
-    :param smlb_in: RuntimeIn instance for logging
-    :param smlb_out: RuntimeOut instance for logging
+    :param params_in: runtime input of `sciml_bench run`, useful components:
+        * params_in.start_time: start time of running as UTC-datetime
+        * params_in.dataset_dir: dataset directory for inference
+        * params_in.model: model file to use 
+        * params_in.output_dir: output directory
+        * params_in.bench_args: benchmark-specific arguments
+    :param params_out: runtime output of `sciml_bench run`, useful components:
+        * params_out.log.console: multi-level logger on root (rank=0)
+        * params_out.log.host: multi-level logger on host (local_rank=0)
+        * params_out.log.device: multi-level logger on device (rank=any)
+        * params_out.system: a set of system monitors
     """
-    console = smlb_out.log.console
-    device = smlb_out.log.device
 
-    crop_size = args['crop_size']
+    console = params_out.log.console
+    device = params_out.log.device
 
-    output_dir = Path(smlb_in.output_dir)
+    crop_size = params_in.bench_args['crop_size']
+
+    output_dir = Path(params_in.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    console.message('Loading model {}'.format(model_file))
-    assert Path(model_file).exists(), "Model file does not exist!"
-    model = hvd.load_model(str(model_file))
+    console.message('Loading model {}'.format(params_in.model_file))
+    assert Path(params_in.model_file).exists(), "Model file does not exist!"
+    model = hvd.load_model(str(params_in.model_file))
 
     console.message('Getting file paths')
-    file_paths = list(Path(dataset_dir).glob('**/S3A*.hdf'))
+    file_paths = list(Path(params_in.dataset_dir).glob('**/S3A*.hdf'))
     assert len(file_paths) > 0, "Could not find any HDF files!"
 
     console.message('Preparing data loader')

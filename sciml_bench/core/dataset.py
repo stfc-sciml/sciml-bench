@@ -60,7 +60,15 @@ def is_available(dataset_name, dataset_root_dir: Path):
     dataset_dir = (dataset_root_dir / dataset_name).expanduser()
     return dataset_dir.exists()
 
-def get_status(dataset_name, ENV):
-    is_downloaded =  is_available(dataset_name, ENV.dataset_dir) is not False
-    str = "Downloaded" if is_downloaded else "Not downloaded"
-    return str
+def get_status(dataset_names, ENV):
+    if type(dataset_names) is list:
+        output = []
+        for dataset_name in dataset_names:
+            is_downloaded =  is_available(dataset_name, ENV.dataset_dir) is not False
+            str = "Downloaded" if is_downloaded else "Not downloaded"
+            output.append(str)
+        return output
+    else:
+        is_downloaded =  is_available(dataset_names, ENV.dataset_dir) is not False
+        str = "Downloaded" if is_downloaded else "Not downloaded"
+        return str
