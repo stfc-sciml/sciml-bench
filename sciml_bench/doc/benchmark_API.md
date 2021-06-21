@@ -33,7 +33,7 @@ In a nutshell, adding a benchmark to SciML-Bench involves the following five ste
 
 # 3 Implementation of a Benchmark
 
-As mentioned in Section 1, the entry points, i.e. function definitions for  `sciml_bench_training` and `sciml_bench_inference` must be placed in a relevant file for the benchmark. We provide a template file in `sciml_bench/etc/templates`, named `example_benchmark.py`, which can be copied and modified as  desired from the source tree. Function definitions for both training and inference aspects should be modified (or deleted) as appropriate.
+In addition to naming your benchmarks fully in lower case, as mentioned in Section 1, the entry points, i.e. function definitions for  `sciml_bench_training` and `sciml_bench_inference` must be placed in a relevant file for the benchmark. We provide a template file in `sciml_bench/etc/templates`, named `example_benchmark.py`, which can be copied and modified as  desired from the source tree. Function definitions for both training and inference aspects should be modified (or deleted) as appropriate. 
 
 ## 3.1 Incoming and Outgoing Parameters 
 
