@@ -59,7 +59,7 @@ class RuntimeIn:
 
         if benchmark_name not in prog_env.benchmarks.keys():
             self.valid = False
-            self.__set_error_msg(f'\nBenchmark {benchmark_name} is not'\
+            self.__set_error_msg(f'\nBenchmark {benchmark_name} is not '\
                                   'part of the SciML-Bench.')
             return 
 
