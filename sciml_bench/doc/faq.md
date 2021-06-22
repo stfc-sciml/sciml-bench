@@ -63,7 +63,13 @@ If you would like to exploit multiple GPUs, your benchmark has to be explicitly 
 NCCL backend, by default, performs GPU-to-GPU communication, avoiding the cost of having to go through host memory. This can lead to significant improvement in performance. 
 
 
+1. I see lot of cluttering outputs when using TensorFlow. How can I stop these.
 
+These cluttering outputs are emitted by the TensorFlow library. This can be stopped by setting the TF_CPP_MIN_LOG_LEVEL flag to 2 as follows:
+
+```sh 
+export TF_CPP_MIN_LOG_LEVEL=2
+``
 
 
 https://www.xavor.com/blog/distributed-training-using-horovod-and-keras

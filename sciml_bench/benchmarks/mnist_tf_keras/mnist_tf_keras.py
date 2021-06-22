@@ -19,8 +19,7 @@ NOTES:
 * This is an example of how to build a benchmark into SciML-Bench.
 * Please see the configuration options in config.yml.
 * Although this example relies on single file implementation,
-* in reality, it is always better to modularize the implementation, e.g.,
-  see mnist_torch.py. 
+* in reality, it is always better to modularize the implementation.
   As this benchmark supports both training and inference,
   both  `sciml_bench_training()` and `sciml_bench_inference()`
   must be implemented here.
@@ -36,11 +35,12 @@ import yaml
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
+from tf.keras.preprocessing.image import load_img
+from tf.keras.preprocessing.image import img_to_array
 from pathlib import Path
 
 
-
-def create_dataset_mnist(file_path, batch_size):
+def load_dataset_mnist(file_path, batch_size):
     """ Create dataset """
 
     # generator
@@ -53,7 +53,7 @@ def create_dataset_mnist(file_path, batch_size):
                 labels = np.eye(10)[h5_file['label'][i:i + batch]]
                 yield images, labels
 
-    # create dataset
+    # load dataset
     dataset = tf.data.Dataset.from_generator(
         lambda: hdf5_generator(file_path, batch_size),
         output_types=(tf.float32, tf.float32),
@@ -112,21 +112,31 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     log = params_out.log
     log.begin('Running benchmark mnist_tf_keras on training mode')
 
-    # parse input arguments (only batch_size and epochs)
-    # Note: Use try_get() to get a benchmark-specific argument safely from
-    #       params_in.bench_args (passed by users via -b).
+    # We expect two benchmark-specific arguments here: 
+    # batch_size and epochs. If not, we will assign 
+    # default values.
     with log.subproc('Parsing input arguments'):
         # hyperparameters
-        batch_size = params_in.bench_args.try_get('batch_size', default=64)
-        epochs = params_in.bench_args.try_get('epochs', default=2)
+        suggested_args = {
+            'batch_size': 128,
+            'epochs': 2
+        } 
+        args = params_in.bench_args.try_get_dict(default_args=suggested_args)
+        batch_size = args['batch_size']
+        epochs = args['epochs']
         log.message(f'batch_size = {batch_size}')
         log.message(f'epochs     = {epochs}')
+
+    with log.subproc('Writing the argument file'):
+        args_file = params_in.output_dir / 'arguments_used.yml'
+        with open(args_file, 'w') as handle:
+            yaml.dump(args, handle)
 
     # create datasets
     with log.subproc('Creating datasets'):
         dataset_dir = params_in.dataset_dir
-        train_set = create_dataset_mnist(dataset_dir / 'train.hdf5', batch_size)
-        test_set = create_dataset_mnist(dataset_dir / 'test.hdf5', batch_size)
+        train_set = load_dataset_mnist(dataset_dir / 'train.hdf5', batch_size)
+        test_set = load_dataset_mnist(dataset_dir / 'test.hdf5', batch_size)
         log.message(f'Dataset directory: {dataset_dir}')
 
     # create model
@@ -135,11 +145,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # train model
     log.begin('Training CNN model')
-    # fit()
     with log.subproc('Running model.fit()'):
-        # stamp model.fit in system monitor
-        # Note: params_out.system will monitor system usage regularly; use
-        #       params_out.system.stamp_event() to stamp an event in the report
         params_out.system.stamp_event('model.fit')
         history = model.fit(train_set, epochs=epochs, batch_size=batch_size,
                             validation_data=test_set, verbose=0,
@@ -187,17 +193,18 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     output_file = params_in.output_dir  / 'mnist_tf_keras_inference.log'
 
     # Load the model
-    with log.subproc('Loading model'):
+    with log.subproc('Model loading and inference'):
         # There is only one model we have - named tf_mnist_keras_model
         model = load_model(params_in.models['mnist_tf_keras_model'])
+        # Process each file 
         p = params_in.dataset_dir.glob('**/*')
         files = [x for x in p if x.is_file()]
         with open(output_file, 'wt')as handle:
             handle.write(f'File Name\tOutput\n')
             for file in sorted(files):
                 with log.subproc(f'Processing file {file}'):
-                    image = tf.keras.preprocessing.image.load_img(file, color_mode='grayscale', target_size=(28,28))
-                    input_arr = tf.keras.preprocessing.image.img_to_array(image)/ 255.0
+                    image = load_img(file, color_mode='grayscale', target_size=(28,28))
+                    input_arr = img_to_array(image)/ 255.0
                     input_arr = np.array([input_arr]).reshape(-1, 28, 28, 1) 
                     out = model.predict(input_arr)
                     out = np.argmax(out)
