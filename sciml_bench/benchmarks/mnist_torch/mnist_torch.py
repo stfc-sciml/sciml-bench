@@ -12,15 +12,7 @@
 """
 Benchmark: mnist_torch
 Classifying MNIST using a CNN implemented with pytorch.
-
-NOTES:
-* This is an example of how to build a benchmark into SciML-Benchmarks.
-* It is registered in registration.yml as mnist_pytorch.
-* In this example, we demonstrate how to
-  1) handle complex benchmark-specific arguments such as workflow control;
-  2) activate and use smlb_out for distributed learning;
-  3) implement a benchmark with multiple files.
-* This example is adapted from
+Adopted from 
   github.com/horovod/horovod/blob/master/examples/pytorch/pytorch_mnist.py
 """
 
@@ -38,7 +30,7 @@ from sciml_bench.benchmarks.mnist_torch.impl_mnist_torch \
     import create_dataset_sampler_loader, MNISTNet, train, predict
 
 
-def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
+def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
     Main entry of `sciml_bench run` for a benchmark instance
     in the training mode.
@@ -46,22 +38,22 @@ def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
     """
 
     # -------------------------------
-    # initialize horovod and smlb_out
+    # initialize horovod and params_out
     # -------------------------------
     # initialize horovod
     hvd.init()
 
-    # initialize smlb_out with hvd.rank() and hvd.local_rank()
+    # initialize params_out with hvd.rank() and hvd.local_rank()
     # Note: in this example, we will log the concurrent sub-processes on
     #       console and the parallelized training loop on devices,
     #       leaving the host logger unactivated.
-    smlb_out.activate(rank=hvd.rank(), local_rank=hvd.local_rank(),
+    params_out.activate(rank=hvd.rank(), local_rank=hvd.local_rank(),
                       activate_log_on_host=False,
                       activate_log_on_device=True, console_on_screen=True)
 
     # top-level process
-    console = smlb_out.log.console
-    console.begin('Running benchmark MNIST_torch')
+    console = params_out.log.console
+    console.begin('Running benchmark mnist_torch on training mode')
     console.message(f'hvd.rank()={hvd.rank()}, hvd.size()={hvd.size()}')
 
     # -------------------------------------
@@ -83,8 +75,7 @@ def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
         'load_weights_file': '',  # do training if this is empty
     }
     # replace default_args with bench_args
-    # Note: try_get_dict() provides a way to do try_get() collectively.
-    args = smlb_in.bench_args.try_get_dict(default_args=default_args)
+    args = params_in.bench_args.try_get_dict(default_args=default_args)
 
     # torch environment
     torch.manual_seed(args['seed'])
@@ -103,7 +94,7 @@ def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
 
     # save actually used arguments
     if hvd.rank() == 0:
-        args_file = smlb_in.output_dir / 'arguments_used.yml'
+        args_file = params_in.output_dir / 'arguments_used.yml'
         with open(args_file, 'w') as handle:
             yaml.dump(args, handle)
         console.message(f'Arguments used are saved to:\n{args_file}')
@@ -114,13 +105,17 @@ def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
     # --------------------------------
     # data
     console.begin('Creating data sampler and loader')
-    dataset_dir = smlb_in.dataset_dir
+    dataset_dir = params_in.dataset_dir
     train_set, train_sampler, train_loader = create_dataset_sampler_loader(
-        dataset_dir / 'train.hdf5',
-        args['use_cuda'], args['batch_size'], hvd)
+                                                dataset_dir / 'train.hdf5',
+                                                args['use_cuda'], 
+                                                args['batch_size'], 
+                                                hvd)
     test_set, test_sampler, test_loader = create_dataset_sampler_loader(
-        dataset_dir / 'test.hdf5',
-        args['use_cuda'], args['batch_size_test'], hvd)
+                                                dataset_dir / 'test.hdf5',
+                                                args['use_cuda'], 
+                                                args['batch_size_test'], 
+                                                hvd)
     console.message(f'Dataset directory: {dataset_dir}')
     console.message(f'Batch size: {args["batch_size"]}')
     console.ended('Creating data sampler and loader')
@@ -137,7 +132,7 @@ def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
     if args['load_weights_file'] == '':
         console.begin('Training model')
         # stamp train() in system monitor
-        smlb_out.system.stamp_event('start train()')
+        params_out.system.stamp_event('start train()')
         # train model
         history = train(model,
                         train_sampler, train_loader, test_sampler, test_loader,
@@ -145,15 +140,15 @@ def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
                         loss_func=args['loss_func'],
                         optimizer_name=args['optimizer_name'], lr=args['lr'],
                         batch_log_interval=args['batch_log_interval'],
-                        hvd=hvd, smlb_out=smlb_out)
+                        hvd=hvd, params_out=params_out)
         # save weights and history
         if hvd.rank() == 0:
             # weights
-            weights_file = smlb_in.output_dir / 'model_weights.h5'
+            weights_file = params_in.output_dir / 'model_weights.h5'
             torch.save(model.state_dict(), weights_file)
             console.message(f'Model weights saved to:\n{weights_file}')
             # history
-            history_file = smlb_in.output_dir / 'training_history.yml'
+            history_file = params_in.output_dir / 'training_history.yml'
             with open(history_file, 'w') as handle:
                 yaml.dump(history, handle)
             console.message(f'Training history saved to:\n{history_file}')
@@ -165,12 +160,12 @@ def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
             model.load_state_dict(torch.load(weights_file))
             console.message(f'Weights loaded from:\n{weights_file}')
         # the device log will be empty, so better say something
-        smlb_out.log.device.message('Training skipped, no message here.')
+        params_out.log.device.message('Training skipped, no message here.')
 
     # predict
     if hvd.rank() == 0:
         # stamp predict() in system monitor
-        smlb_out.system.stamp_event('start predict()')
+        params_out.system.stamp_event('start predict()')
         with console.subproc('Making predictions on test set (on root only)'):
             pred = predict(model, test_set.images, args['use_cuda'],
                            to_classes=True)
@@ -180,4 +175,4 @@ def sciml_bench_training(smlb_in: RuntimeIn, smlb_out: RuntimeOut):
                             f'(accuracy: {correct / len(pred) * 100:.2f}%)')
 
     # top-level process
-    console.ended('Running benchmark MNIST_torch')
+    console.ended('Running benchmark mnist_torch on training mode')
