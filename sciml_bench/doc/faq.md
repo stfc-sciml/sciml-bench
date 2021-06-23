@@ -16,7 +16,9 @@ The official support is only for the Linux platform. However, the current versio
 
 You can use the `info` command. For example `sciml-bench info cloud_slstr_ds1` will display relevant info. You do not have to specify the type of entity. The framework will work this out for you. Please use the `sciml-bench info --help` command to see full usage information. 
 
-1. 
+1. Why should I name my benchmark fully in lower case?
+
+To avoid costly mistakes in coding or notations, we recommend all benchmarks to be named (both at the file level and at the implementation level) in lower case. For example, instead of *MNIST_tf_keras*, we use *mnist_tf_keras*.
 
 
 ## Data Transfers
@@ -51,6 +53,8 @@ b) In PyTorch
 
 c) In MXNet
 
+
+1. Why 
 
 1. What happens when I run my benchmark on a system with multiple GPUs and multiple machines?
 
