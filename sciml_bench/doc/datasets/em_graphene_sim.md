@@ -26,6 +26,7 @@ non-homogeneous noise of high-rate EM we scale across the image
 according to a beam profile, before adding Poisson noise and finally
 including a selection of random dead pixels. Other details are:
 
+* Entity Type: Dataset
 * Data Source: Simulated
 * Domain: Material Sciences
 * Sub-Domain: Condensed Matter

@@ -11,7 +11,6 @@ This part of the manual will guide you on installing and using the benchmark sui
 These are covered in the following sections. 
 
 
-
 # 2. Setting Up
 
 
