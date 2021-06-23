@@ -2,7 +2,7 @@
 
 # 1. Getting Started
 
-This part of the manual will guide you on installing and using the benchmark suite.  As stated in the main [README](../README.md), there are three components that underpins benchmarking, namely, 
+This part of the manual will guide you on installing and using the benchmark suite.  As stated in the main [README](../README.md).  There are three components that underpins benchmarking, namely, 
 
 1. The core framework,
 2. benchmarks, and 
@@ -19,22 +19,23 @@ These are covered in the following sections.
 
 * Supported Operating Systems: Linux (and derivatives).
 
-* Software: Python 3.6-upwards, pip, and nvidia-smi
+* Software: Python 3.8-upwards, pip, and nvidia-smi
 
-* Benchmark-specific Software: Horovod (which requires CMake). Please consult the benchmarks.
+* Benchmark-specific Software: Please consult the benchmarks.
 
 
 The framework and the benchmarks are primarily designed for large-scale systems (at least for training), and, as such,  windows or MacOS systems are not officially supported. However, these non-Linux systems can be used in some cases, for instance in inference mode.
 
-The core framework  heavily relies on machine learning frameworks, such as TensorFlow, PyTorch, MXNet, and as such,  supported Python versions are limited by these frameworks. In general, Python versions 3.0+ are generally supported. We also rely on GPU-specific libraries, such as nvidia-smi for core capabilities. 
+Although the core framework  does not heavily rely on machine learning frameworks, such as TensorFlow, PyTorch, or MXNet, benchmarks may rely on one or more of these. As such,  supported Python versions are limited by these frameworks. In general, Python versions 3.8+ are generally supported. We also rely on GPU-specific libraries, such as nvidia-smi for core capabilities. 
 
-Most of these benchmarks rely on distributed learning, for which the framework relies on Horovod. Although Horovod can be installed by our framework, Horovod primarily relies on CMake (and optionally MPI). These libraries cannot be installed by the SciML-Bench framework. We recommend a manual installaiton of Horovod. 
+Benchmarks may rely on distributed learning, and subsequently, dependencies on distributed learning frameworks, such as TensorFlow Distributed, PyTorch Distributed Data Paralle (DDP) or Horovod, are inevitable. Although some of these can be installed through our framework, these frameworks may have complex dependencies and in some cases, OS-level installations. As such, we recommend manual installation of these frameworks or we recommend using containers. 
+
 
 ## 2.2 Setting up the Framework (Default Installation)
 
-Installing the framework with default settings is very simple. Default installation will rely on preset directories for data, outputs and options for libraries installed during the setup stage. If a custom installation is needed, see Section "Custom Installation" below. 
+Installing the framework with default settings is very simple. Default installation  relies on preset directories for data, outputs and options for libraries installed during the setup stage. If a custom installation is needed, see Section "Custom Installation" below. 
 
-Although the installation can be performed on the system-wide setting, it is recommended to do that in a virtual or conda environment. 
+Although the installation can be performed on the system-wide setting, it is recommended to do that in a virtual or conda environment (also known as the sandboxed environment). This way, any damages are minimal and contained.
 
 1. Create a virtual environment and activate that (for example, `conda create --name bench python=3.9` or `python3 -m vent ....` )
 
@@ -75,11 +76,11 @@ A custom installation may be desirable if you would like to change the data or o
 [Horovod](https://horovod.ai/) is a framework to support distributed learning in PyTorch, TensorFlow, MXNet, and other frameworks,  and can easily enable scaling our benchmarks across a number of GPUs.  Horovod supports various controllers
 such as MPI,  and [Gloo](https://bityl.co/79kC) (only one is needed). Ideally, if you are planning to rely on distributed learning, we  strongly advice you to use container technology, which provides a means for running our benchmarks on production clusters (where directly running `sciml-bench` or installing various dependencies may not be possible). Furthrmore, horovod can be configured to use collective communication libraries, such as [NCCL](https://bityl.co/79k6). The combination of these are best handled through manual installation. 
 
-If you are not using containers, we strong suggest you to  install Horovod manually. Relevant Horovod dependencies (such as `horovod.torch`, `horovod.tensorflow` or `horovod.mxnet`) are specified in the Configuration file. This is to ensure that dependencies are handled well. You can also try installing Horovod through `sciml-bench install` command, but the complex dependency patterns of Horovod are not handled inside the SciML-Bench.  Please consult the [Configuration Options] section for more details. 
+If you are not using containers, we strong suggest you to  install Horovod manually. Relevant Horovod dependencies (such as `horovod.torch`, `horovod.tensorflow` or `horovod.mxnet`) are specified in the Configuration file. This is to ensure that dependencies are handled well. You can also try installing Horovod through `sciml-bench install b1` command, where Horovod is a dependency for the benchmark `b1`. Although this is, in theory, possible,  the complex dependency patterns of Horovod are not handled inside the SciML-Bench.  Please consult the [Configuration Options]() section for more details. 
 
-Manual installation  is the **recommended** way to install Horovod. To install Horovod manually, please consult the Horovod [Installation Page](https://bityl.co/79kQ). If the installation is attempted through SciMLBenchIn, SciMLBench will attempt to install necessary bindings (for TensorFlow or PyTorch or  MXNet) for Horovod. Although the framework makes the best effort, horovod dependencies are usually system-specific and may require re-installation attempts to satisfy, which may leave the sandbox (or the environment) in an unusable state if it fails. However, the framework assumes that user is trying to do this inside an environment, and hence the damage is minimal.  
+Manual installation  is the **recommended** way to install Horovod. To install Horovod manually, please consult the Horovod [Installation Page](https://bityl.co/79kQ). If the installation is attempted through SciMLBench, SciMLBench will attempt to install necessary bindings (for TensorFlow or PyTorch or  MXNet) for Horovod. Although the framework makes the best effort, Horovod dependencies are usually system-specific and may require re-installation attempts to satisfy, which may leave the sandbox (or the environment) in an unusable state if it fails. When done so, the damage is minimal.  
 
-An ideal option for handling clashes with system-wide libraries is to use containers, such as singularity, where the installation is sandboxed with minimal impact on performance.   
+An ideal option for handling clashes with system-wide libraries is,  using containers, such as Singularity, where the installation is sandboxed with minimal impact on performance.   
 
 ### 2.5 Setting up Container Images 
 
@@ -97,7 +98,7 @@ This will produce the  Docker image, `sciml_bench`. Please see Section 3.3 for u
 
 **Building a Singularity Image**
 
-The Singularity container is built in two stages: In the first,  a container with *openmpi4* compatible with the host node is created.  This is then used in the second stage to build a  container with all other `sciml-bench`-specific  dependencies. The Singularity image(s) can be built by running the following set of commands. 
+The Singularity container is built in two stages: In the first stage,  a container with *openmpi4* compatible with the host node is created.  This is then used in the second stage to build a  container with all other `sciml-bench`-specific  dependencies. The Singularity image(s) can be built by running the following set of commands. 
 
 ```sh 
 singularity build ompi4.sif etc/recipes/ompi4.def
@@ -110,7 +111,7 @@ Please check and modify the `def` files any platform-specific aspects as necessa
 
 Benchmarks supplied by the suite can either be installed at once, or selectively. 
 
-* To install  all  benchmarks:
+* To install all benchmarks:
 
   ```sh
   sciml-bench install all
@@ -144,7 +145,7 @@ Each benchmark relies on one or more datasets, and in particular on specific ver
   or
 
   ```sh
-  sciml-bench download MNIST
+  sciml-bench download mnist
   ```
 
   or
@@ -161,11 +162,19 @@ Each benchmark relies on one or more datasets, and in particular on specific ver
 
 The dataset names are case sensitive, and are, by default, downloaded to the default directory.  The default directory can be overridden through two different methods: (1) by modifying the `etc/configs/config.yml` file, or (2) by using an optional argument  `--dataset_root_dir` when  using the download command.  Additional options for the download command can be found via the `sciml-bench download --help` command.
 
-Furthermore, by default, the `download` command operates in foreground mode. However, this can be set to background mode if desired, particularly, when downloading large files. This can be achieved as follows:
+Furthermore, by default, the `download` command operates in foreground mode. However, this can be set to background mode if desired, particularly, when downloading large datasets. This can be achieved as follows:
 
 ```sh
 sciml-bench download --mode background all
 ```
+
+Finally, the datasets can be verified to see whether they have been downloaded or not as follows:
+
+ ```sh
+  sciml-bench list datasets --verify
+ ```
+
+This, however, does not check the completeness or the integrity of the downloaded files.
 
 # 3. Using the Suite and Benchmarks
 
@@ -177,14 +186,14 @@ Before running a benchmark,  any issues with the relevant datasets and modules c
 sciml-bench list --verify
 ```
 
-The results from the verify flag indicates whether the relevant dataset(s) has/have been downloaded,  and whether the dependencies of the benchmark are fully satisfied. If the verify command outputs  `Not Runnable` for any benchmark, the relevant datasets dependencies have to be downloaded /  installed.  
+The results from the verify flag indicates whether the relevant dataset(s) has/have been downloaded,  and whether the dependencies of the benchmark are fully satisfied. If the verify command outputs  *Not Runnable* for any benchmark, the relevant datasets dependencies have to be downloaded /  installed. The *Not Runnable*  output can also be the result of benchmark codes not being able to import the depenendencies.
 
 
 ## 3.2 Running Benchmarks
 
 **Running Benchmarks from the Source Tree**
 
-The framework provides the `sciml-bench run` command to  run a single benchmark. This command can directly be used to run the benchmark interactively. However, this may not be possible always (such as on production systems). If this is the case, please use containers. 
+The framework provides the `sciml-bench run` command to  run a single benchmark. This command can directly be used to run the benchmark interactively. However, this may not be possible always (such as on production systems or where job submission is necessary). If this is the case, please use containers. 
 
 If the benchmarks were to be run  interactively,  the`sciml-bench run` command  can be used. Please execute the command  `sciml-bench run --help`  to see the full list of options. 
 
@@ -195,10 +204,13 @@ Usage: sciml-bench run [OPTIONS] BENCHMARK_NAME
   Run a given benchmark on a training/inference mode.
 
 Options:
-  --mode [training|inference]     Sets the mode to training or inference.
+  --mode [training|inference]     Sets the mode to training or
+                                  inference.
                                   Default: training.
-  --model TEXT                    Sets the model to be used (only for inference.)
-                                  Default: None.
+  --model TEXT                    Sets the model(s) to be used 
+                                  (only for inference.)
+                                  If not specified, framework will attempt to find the model(s) in the models directory
+                                  Default: None.    
   --dataset_dir TEXT              Directory for the dataset(s).
                                   Default: dataset directory from the config file
   --output_dir TEXT               Output directory for this run.
@@ -208,9 +220,11 @@ Options:
                                   Use --output_dir=@foo to save outputs under
                                           output_root_dir/benchmark_name/foo/
                                   If "@" is omitted, absolute path is assumed.
-  --monitor_on / --monitor_off    Monitor system usage during runtime.
+  --monitor_on / --monitor_off    Monitor system usage during 
+                                  runtime.
                                   Default: Monitor On.
-  --monitor_interval FLOAT        Time interval for system monitoring.
+  --monitor_interval FLOAT        Time interval for system
+                                  monitoring.
                                   Default: 1.0s.
   --monitor_report_style [pretty|yaml|hdf5]
                                   Report style for system monitor.
@@ -224,30 +238,27 @@ Options:
 
 The options are elaborated below:
 
-* `--mode`: specifies whether the benchmark is to be run on training mode 
-  or inference mode. 
-* `--model`: This option applies only if the inference mode is specified.
-* `--dataset_dir`: the dataset directory, useful when the dataset is 
-  stored somewhere other than the default location.
-* `--output_dir`: the output directory, either absolute or relative to 
-  the current directory, required.
-  By convention, you can use `--output_dir=@foo` to set the directory to
-  `output_root_dir/benchmark_name/foo/` (it will be `./foo/` without the `@` prefix).
+* `--mode`: specifies whether the benchmark is to be run on training mode or inference mode. 
+* `--model`: This option applies only if the inference mode is specified, and this an avenue for specifying the model file for 
+performing the inference option. It is also possible to specify multiple model files by repeating the option in the form of `--model file1 --model file2`
+* `--dataset_dir`: the dataset directory, useful when the dataset is stored somewhere other than the default location.
+* `--output_dir`: the output directory, either absolute or relative to the current directory, required. By convention, you can use `--output_dir=@foo` to set the directory to
+  `output_root_dir/benchmark_name/foo/` (it will be `./foo/` without the `@` prefix). If not specified, the framework will create a folder with the current date.
 * `--monitor_*`: system monitor options. 
   During the runtime, `sciml-bench` will automatically
-  monitor system usage (such as CPU, memory, disk and GPU usage) and 
-  generate reports at the end of the run. We strive to minimize the overheads for system monitoring. If such overheads turn out noticeable, you can switch off the system monitor using the
+  monitor system usage (such as CPU, memory, disk and GPU usage) and generate reports at the end of the run. We strive to minimize the overheads for system monitoring. If such overheads turn out noticeable, you can switch off the system monitor using the
   `--monitor_off` option or increase the time interval between snapshots using the 
   `--monitor_interval` option, which is, by default, set to 1 second interval.
 
 * `--benchmark-specific` or `-b`: benchmark-specific arguments,
-  Can be used to specify benchmark-specific parameters, such as hyper-parameters, system configurations and workflow control.  Each argument to the `-b` command must be specified in the form key value pair. For example,  `-b epochs 50` and `-b batch_size 16`. 
+  Can be used to specify benchmark-specific parameters, such as hyper-parameters, files, system configurations and other workflow controls.  Multiple arguments can be specified by repeating the `-b` option, in the form of `-b epochs 50 -b batch_size 16`. 
 
+Please see the benchmarks for example usage of some of these options, such as `--model` or `-b`. 
 
 
 **Running Benchmarks Using Container Images**
 
-If the benchmarks were to be run on a production cluster, ideally they may have to be run using one of the container technologies, such as Singularity of Docker. Assuming  relevant images are in place,  
+If the benchmarks were to be run on a production cluster, ideally they may have to be run using one of the container technologies, such as Singularity of Docker. Although both methods need elevated previleges (equivalent to root access) for building containers, Singularity does not demand elevated previleges for running the containers. Please see Section [Building Containers]() about building containers. 
 
 **Using the Docker Image** 
 
@@ -256,12 +267,12 @@ Assuming that the Docker image is named `sciml-bench`, the standard commands of 
 ```sh 
 sudo docker run --gpus all -v /tmp/bench_data:/root/bench_data sciml-bench list
 
-sudo docker run --gpus all -v /tmp/bench_data:/root/bench_data sciml-bench download MNIST
+sudo docker run --gpus all -v /tmp/bench_data:/root/bench_data sciml-bench download mnist
 
 sudo docker run --gpus all -v /tmp/bench_data:/root/bench_data sciml-bench run MNIST_torch --output_dir=test-mnist
 ```
 
-Here, the `-v` option here helps mounting the datasets into the host operating system. 
+Here, the `-v` option here helps mounting the datasets on the host operating system. 
 
 **Using the Singularity Image**
 
@@ -269,8 +280,8 @@ Assuming that the Singularity image is named `sciml-bench.sif`, the standard com
 
 ```sh
 singularity run --nv sciml-bench.sif list
-singularity run --nv sciml-bench.sif download MNIST
-singularity run --nv sciml-bench.sif run MNIST_torch \
+singularity run --nv sciml-bench.sif download mnist
+singularity run --nv sciml-bench.sif run mnist_torch \
                 --output_dir=test-mnist
 ```
 
@@ -278,15 +289,15 @@ Here, relevant folders are automatically accessible inside the host operating sy
 
 **Using with Third-Party Applications**
 
-In addition to running the framework directly or through containers, it can also be passed on to third-party applications, such as `horovodrun`, which is essential when run across multiple nodes or even multiple GPUs. For example, 
+In addition to running the framework directly or through containers, it can also be passed on to third-party applications, such as `horovodrun`. For example, 
 
 ```sh
-horovodrun -np 2 sciml-bench run MNIST_torch --output_dir=demo_output__MNIST_torch --monitor_interval=0.1 -b use_cuda false -b epochs 2
+horovodrun -np 2 sciml-bench run mnist_torch --output_dir=demo_output_mnist_torch --monitor_interval=0.1 -b use_cuda false -b epochs 2
 ```
 
-##  3.3 Outputs from the Framework 
+##  3.3 Outputs of the Runs 
 
-Outputs of the benchmark runs are automatically logged into a sub-directory inside the main output directory, which is specified in the `/etc/config/config.yml` file. This is, by default, set to `~/sciml_bench_user/outputs/` but can be overridden.  The sub-directory name is same as the benchmark name. All the arguments used for a run are saved to the `arguments_used.yml` file in this  directory. The sub-directory will also contain all log files capturing the outputs of the run. 
+Outputs of the benchmark runs are automatically logged into a sub-directory inside the main output directory, which is specified in the Configuration file. This is, by default, set to `~/sciml_bench_user/outputs/` but can be overridden.  The sub-directory name is same as the benchmark name, followed by date of run and type of run (training or inference). All the arguments used for a run are usually saved to the `arguments_used.yml` file in this  directory, subject to individual benchmarks deciding to do this. The sub-directory will also contain all log files capturing the outputs of the run. 
 
 <div style="text-align: right"> ◼︎ </div>
 
