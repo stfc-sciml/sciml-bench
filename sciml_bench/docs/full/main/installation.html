@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Installation - </title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../index.html"></a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Benchmarks <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../benchmarks/dms_structure.html" class="dropdown-item">dms_structure Benchmark</a>
+</li>
+                                    
+<li>
+    <a href="../benchmarks/em_denoise.html" class="dropdown-item">em-denoise Benchmark</a>
+</li>
+                                    
+<li>
+    <a href="../benchmarks/slstr_cloud.html" class="dropdown-item">slstr_cloud Benchmark</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Datasets <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../datasets/cloud_slstr_ds1.html" class="dropdown-item">Cloud slstr ds1</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/dms_sim.html" class="dropdown-item">Dms sim</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/em_graphene_sim.html" class="dropdown-item">em_graphene_sim</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Main <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="api.html" class="dropdown-item">SciML-Bench API</a>
+</li>
+                                    
+<li>
+    <a href="configuration.html" class="dropdown-item">Configuration Options</a>
+</li>
+                                    
+<li>
+    <a href="contributing.html" class="dropdown-item">Contributing Benchmarks and Datasets</a>
+</li>
+                                    
+<li>
+    <a href="faq.html" class="dropdown-item">Frequently Asked Questions</a>
+</li>
+                                    
+<li>
+    <a href="installation.html" class="dropdown-item active">Installation</a>
+</li>
+                                    
+<li>
+    <a href="intro.html" class="dropdown-item">Intro</a>
+</li>
+                                    
+<li>
+    <a href="usage.html" class="dropdown-item">Using the Suite and Benchmarks</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                            <li class="nav-item">
+                                <a rel="prev" href="faq.html" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="intro.html" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#installation" class="nav-link">Installation</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#1-installing-the-framework" class="nav-link">1. Installing the Framework</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#2-configuring-the-framework" class="nav-link">2 Configuring the Framework</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#3-setting-up-container-images" class="nav-link">3 Setting up Container Images</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="installation">Installation</h1>
+<p><br>
+<br></p>
+<p>This part of the manual will guide you on installing and the benchmark suite.  There are three components that underpins benchmarking, namely, </p>
+<ol>
+<li>The core framework,</li>
+<li>benchmarks, and </li>
+<li>datasets</li>
+</ol>
+<p>The overall installation is divided into two parts, namely installation of the framework, and setting up the installation for usage.  Once configured, the framework and the suite can be used. These are covered in the following sections.  </p>
+<p><br></p>
+<h2 id="1-installing-the-framework">1. Installing the Framework</h2>
+<p>It is worth noting that:</p>
+<ul>
+<li>
+<p><strong>Supported Operating Systems</strong>: Linux (and derivatives).</p>
+</li>
+<li>
+<p><strong>Software</strong>: Python 3.8-upwards, pip, and nvidia-smi (if using CUDA/GPUs).</p>
+</li>
+<li>
+<p><strong>Benchmark-specific dependencies</strong>: Please consult the benchmarks.</p>
+</li>
+</ul>
+<p>The framework and the benchmarks are primarily designed for large-scale systems (at least for training), and, as such,  windows or MacOS systems are not officially supported. However, these non-Linux systems can be used in some cases, for instance in inference mode.</p>
+<p>Although the core framework  does not heavily rely on machine learning frameworks, such as TensorFlow, PyTorch, or MXNet, benchmarks may rely on one or more of these. As such,  supported Python versions are limited by these frameworks. In general, Python versions 3.8+ are generally supported. We also rely on GPU-specific libraries, such as nvidia-smi for core capabilities. </p>
+<p>Benchmarks may rely on distributed learning, and subsequently, dependencies on distributed learning frameworks, such as TensorFlow Distributed, PyTorch Distributed Data Parallel (DDP) or Horovod, are inevitable. Although some of these can be installed through our framework, these frameworks may have complex dependencies and in some cases, OS-level installations. As such, we recommend manual installation of these frameworks or we recommend using containers. </p>
+<p><br></p>
+<p>Installing the framework with default settings is very simple. Default installation  relies on preset directories for data, outputs and options for libraries installed during the setup stage. If a custom installation is needed, see Section "Custom Installation" below. </p>
+<p>Although the installation can be performed on the system-wide setting, it is recommended to do that in a virtual or conda environment (also known as the sandboxed environment). This way, any damages are minimal and contained.</p>
+<ol>
+<li>
+<p>Create a virtual environment and activate that (for example, <code>conda create --name bench python=3.9</code> or <code>python3 -m vent ....</code> )</p>
+</li>
+<li>
+<p>Download and navigate to the repository folder.</p>
+</li>
+<li>
+<p>Install <code>sciml-bench</code> with the following command, accepting all default suggestions:</p>
+</li>
+</ol>
+<pre><code class="language-sh">   pip install  --use-feature=in-tree-build .
+</code></pre>
+<ol>
+<li>Once installed, verify the basic functionality of the framework with one or more of the following basic commands:</li>
+</ol>
+<pre><code class="language-sh">   # print the version 
+   sciml-bench --version
+
+   # print help messages
+   sciml-bench --help
+
+   # print About info
+   sciml-bench about
+
+   # print system information
+   sciml-bench sysinfo
+
+   # print registered datasets and benchmarks
+   sciml-bench list
+</code></pre>
+<p>The <code>pip install</code> command installs framework-level packages within the Python environment you are using. Typing <code>which sciml-bench</code> can reveal you this directory. </p>
+<h2 id="2-configuring-the-framework">2 Configuring the Framework</h2>
+<p>The installation covers framework-level dependencies and does not cover documentation or potential customisations,  datasets,  benchmarks and dependencies of those benchmarks. As such, installation leaves the framework partially configured. Some of these settings are available inside the Configuration file. Please see the <a href="configuration.html">Configuration</a> section for more details.</p>
+<p>Setting up the framework involves installing benchmarks, their dependencies, and downloading relevant datasets. </p>
+<p><br></p>
+<h3 id="21-installing-benchmarks">2.1 Installing Benchmarks</h3>
+<p>Benchmarks supplied by the suite can either be installed at once, or selectively. </p>
+<ul>
+<li>To install all benchmarks:</li>
+</ul>
+<pre><code class="language-sh">  sciml-bench install all
+</code></pre>
+<ul>
+<li>To install a selected benchmark, for example, to install the em_denoise benchmark</li>
+</ul>
+<pre><code class="language-sh">  sciml-bench install em_denoise
+</code></pre>
+<ul>
+<li>To install more than one benchmark, separate them using commas, e.g, </li>
+</ul>
+<pre><code class="language-sh">  sciml-bench install em_denoise,dms_scatter
+</code></pre>
+<p>Each benchmark in the suite has its own dependencies, and these dependencies are automatically installed. We make our best efforts in ensuring that these dependencies do not conflict each other, but there can be cases of conflicts. In such cases, you may be required to install these manually (and may have to follow the on-screen instructions). Alternatively, you can use the container technology. </p>
+<p>The framework provides only a high-level summary for the installations, and a detailed log can be found inside the outputs folder. This is usually found in the <code>${HOME}/sciml_bench/install_logs</code> folder.</p>
+<p><br></p>
+<h3 id="22-downloading-the-datasets">2.2 Downloading the Datasets</h3>
+<p>Each benchmark relies on one or more datasets, and in particular on specific version of the datasets, if applicable. As most of these datasets are considerably large in size, they are not supplied along with the suite by default. Instead, they must be downloaded explicitly.  </p>
+<ul>
+<li>Similar to benchmarks, datasets can also be downloaded collectively, or selectively  </li>
+</ul>
+<pre><code class="language-sh">  sciml-bench download all
+</code></pre>
+<p>or</p>
+<pre><code class="language-sh">  sciml-bench download mnist
+</code></pre>
+<p>or</p>
+<pre><code class="language-sh">  sciml-bench download dms_sim, em_noise_sim, mnist
+</code></pre>
+<ul>
+<li>Relevant datasets can be queried through the <code>list</code> command as follows: </li>
+</ul>
+<pre><code class="language-sh">  sciml-bench list datasets
+</code></pre>
+<p>The dataset names are case sensitive, and are, by default, downloaded to the default directory.  The default directory can be overridden through two different methods: (1) by modifying the <code>etc/configs/config.yml</code> file, or (2) by using an optional argument  <code>--dataset_root_dir</code> when  using the download command.  Additional options for the download command can be found via the <code>sciml-bench download --help</code> command.</p>
+<p>Furthermore, by default, the <code>download</code> command operates in foreground mode. However, this can be set to background mode if desired, particularly, when downloading large datasets. This can be achieved as follows:</p>
+<pre><code class="language-sh">sciml-bench download --mode background all
+</code></pre>
+<p>Finally, the datasets can be verified to see whether they have been downloaded or not as follows:</p>
+<pre><code class="language-sh">  sciml-bench list datasets --verify
+</code></pre>
+<p>This, however, does not check the completeness or the integrity of the downloaded files.</p>
+<p><br></p>
+<h3 id="23-installing-dependencies">2.3 Installing Dependencies</h3>
+<p>Some of these benchmarks may have specific dependencies and these are, by default, installed. The framework makes the best effort for this and does not guarantee successful installations.  For example, <a href="https://horovod.ai/">Horovod</a> is a framework used by a number of benchmarks, and may pose a challenge when installing automatically. In such cases, we recommend manual installation or using containers.  Please consult the FAQ section for specific discussions on Horovod. </p>
+<p><br></p>
+<h2 id="3-setting-up-container-images">3 Setting up Container Images</h2>
+<p>When using the benchmark suite on a production cluster, we recommend using containers.  Container technologies, such as <a href="https://sylabs.io/">Singularity</a>  or <a href="https://www.docker.com/">Docker</a>, permits sandboxed execution of self-contained installation images. This is ideal to run on production- or large-scale systems, and  through submission scripts.  The  source tree includes necessary configuration files for building both the Docker and Singularity images. These can be found inside the  <code>/etc/recipes</code> folder. </p>
+<p><strong>Building a Docker Image</strong> </p>
+<p>The configuration file for building the Docker image, the <code>Dockerfile</code>, does not support multi-node execution. In other words, the resulting Docker image, in its present form, can only be used on a single host (but multiGPU support is enabled).  The docker image can be built by </p>
+<pre><code class="language-sh">sudo docker build -t sciml-bench -f etc/recipes/Dockerfile .
+</code></pre>
+<p>This will produce the  Docker image, <code>sciml_bench</code>. Please see Section 3.3 for using Docker images for running the benchmarks. </p>
+<p><strong>Building a Singularity Image</strong></p>
+<p>The Singularity container is built in two stages: In the first stage,  a container with <em>openmpi4</em> compatible with the host node is created.  This is then used in the second stage to build a  container with all other <code>sciml-bench</code>-specific  dependencies. The Singularity image(s) can be built by running the following set of commands. </p>
+<pre><code class="language-sh">singularity build ompi4.sif etc/recipes/ompi4.def
+singularity build sciml-bench.sif etc/recipes/sciml-bench.def
+</code></pre>
+<p>Please check and modify the <code>def</code> files any platform-specific aspects as necessary. This build process may take a while, producing a container named  <code>sciml-bench.sif</code> which can be used to run the benchmarks. Please see Section 3.3 for using Singularity images for running the benchmarks. </p>
+<div style="text-align: right"> ◼︎ </div></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+
+        <div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

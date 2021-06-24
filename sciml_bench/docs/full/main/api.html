@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>SciML-Bench API - </title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../index.html"></a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Benchmarks <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../benchmarks/dms_structure.html" class="dropdown-item">dms_structure Benchmark</a>
+</li>
+                                    
+<li>
+    <a href="../benchmarks/em_denoise.html" class="dropdown-item">em-denoise Benchmark</a>
+</li>
+                                    
+<li>
+    <a href="../benchmarks/slstr_cloud.html" class="dropdown-item">slstr_cloud Benchmark</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Datasets <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../datasets/cloud_slstr_ds1.html" class="dropdown-item">Cloud slstr ds1</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/dms_sim.html" class="dropdown-item">Dms sim</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/em_graphene_sim.html" class="dropdown-item">em_graphene_sim</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Main <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="api.html" class="dropdown-item active">SciML-Bench API</a>
+</li>
+                                    
+<li>
+    <a href="configuration.html" class="dropdown-item">Configuration Options</a>
+</li>
+                                    
+<li>
+    <a href="contributing.html" class="dropdown-item">Contributing Benchmarks and Datasets</a>
+</li>
+                                    
+<li>
+    <a href="faq.html" class="dropdown-item">Frequently Asked Questions</a>
+</li>
+                                    
+<li>
+    <a href="installation.html" class="dropdown-item">Installation</a>
+</li>
+                                    
+<li>
+    <a href="intro.html" class="dropdown-item">Intro</a>
+</li>
+                                    
+<li>
+    <a href="usage.html" class="dropdown-item">Using the Suite and Benchmarks</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                            <li class="nav-item">
+                                <a rel="prev" href="../datasets/em_graphene_sim.html" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="configuration.html" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#sciml-bench-api" class="nav-link">SciML-Bench API</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#1-basic-notions" class="nav-link">1 Basic Notions</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#2-implementation-of-a-benchmark" class="nav-link">2 Implementation of a Benchmark</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#3-monitor-activation-logging" class="nav-link">3 Monitor Activation &amp; Logging</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#33-event-stamping" class="nav-link">3.3 Event Stamping</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#4-handling-benchmark-specific-arguments" class="nav-link">4 Handling Benchmark-Specific Arguments</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#5-setting-up-the-configuration-file" class="nav-link">5 Setting up the Configuration File</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#6-documenting-benchmarks-and-datasets" class="nav-link">6 Documenting Benchmarks and Datasets</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#8-example-implementation-a-walk-through" class="nav-link">8 Example Implementation - A Walk-through</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="sciml-bench-api">SciML-Bench API</h1>
+<p>This document outlines the API and necessary examples for developing a benchmark for the SciML-Bench framework.</p>
+<p><br> </p>
+<h2 id="1-basic-notions">1 Basic Notions</h2>
+<p>To retain the framework flexible enough to include any complex benchmarks, SciML-Bench framework enforces very minimal API points on  the implementation of a benchmark. A benchmark can focus on training, or inference or both. As such, the API requirements are such that each benchmark implementation to have two function definitions: </p>
+<ul>
+<li><code>sciml_bench_training</code>, and</li>
+<li><code>sciml_bench_inference</code>. </li>
+</ul>
+<p>In the absence of any of these methods, the framework will conclude that the benchmark does not support training or inference. The API primarily relies on two SciML-Bench-defined objects, <code>RuntimeIn</code>, and <code>RuntimeOut</code>.  The former carries in parameters from command line interface (CLI) or from configuration file to the benchmark while the latter carries out the results back to CLI or log files. </p>
+<p>Although a benchmark can be implemented on a single file, we recommend them to be modularised as necessary. Sources relating to a benchmark called <code>foo</code> should be located in a folder <code>sciml_bench/benchmarks/foo</code> and the entry points for the training and inference routines should be placed in a file named as <code>foo.py</code>. </p>
+<p>In a nutshell, adding a benchmark to SciML-Bench involves the following five steps:</p>
+<ol>
+<li>Implementation of a benchmark,</li>
+<li>Handling benchmark-specific arguments,</li>
+<li>Logging and monitoring, and</li>
+<li>Setting up the Configuration file,</li>
+<li>Documentation.</li>
+</ol>
+<p><br>
+<br></p>
+<h2 id="2-implementation-of-a-benchmark">2 Implementation of a Benchmark</h2>
+<p>In addition to naming your benchmarks fully in lower case, as mentioned in Section 1, the entry points, i.e. function definitions for  <code>sciml_bench_training</code> and <code>sciml_bench_inference</code> must be placed in a relevant file for the benchmark. We provide a template file in <code>sciml_bench/etc/templates</code>, named <code>example_benchmark.py</code>, which can be copied and modified as  desired from the source tree. Function definitions for both training and inference aspects should be modified (or deleted) as appropriate. </p>
+<h3 id="21-incoming-and-outgoing-parameters">2.1 Incoming and Outgoing Parameters</h3>
+<p>Function signature for both the training and inference aspects are almost similar with two parameter types: <code>RuntimeIn</code> and <code>RuntimeOut</code>. The <code>RuntimeIn</code> parameter carries useful values into the benchmark function (training or inference) from CLI (mostly what user supplies) or from the Configuration file. The exact definitions of <code>RuntimeIn</code> and <code>RuntimeOut</code> can be found in <code>sciml_bench/core/runtime.py</code>.  The instances of these are named as <code>params_in</code> and <code>params_out</code>.</p>
+<p><strong>RuntimeIn</strong></p>
+<p>The <strong><code>RuntimeIn</code></strong> type carries the following attributes: </p>
+<ul>
+<li>valid: Indicates whether this RuntimeIn is valid. This is usually set to False, if the configuration file is invalid or benchmark name is invalid. </li>
+<li>error_msg: This contains the last error message when attempting to initialise the RuntimeIn variable.</li>
+<li>start_time: This marks the time when entering a function block (i.e. when the object has been instantiated)</li>
+<li>dataset_dir: Contains the dataset directory relevant to the benchmark. If none specified by the user, default value is set based on the benchmark and Configuration file.</li>
+<li>output_dir: Contains the output directory where the run / output logs are placed. If none specified by the user, default value is set based on the Configuration file.</li>
+<li><code>bench_args</code>: These are benchmark-specific arguments, specified using the <code>-b</code> flag. </li>
+<li>execution_mode: This specifies whether the benchmark is used on the inference or training mode. This can be specified by the user using the <code>--mode</code> flag during the <code>sciml_bench run</code> command. If the user does not specify the mode, it is set to training by default (provided that the entry point exists.)</li>
+<li>model: Contains the model file to be used for the inference purpose. This is only valid if the current execution mode is set to inference. User can specify the model file using the <code>--model</code> flag.</li>
+</ul>
+<p>These can be access using the standard object notation, such as <code>params_in.dataset_dir</code> or <code>params_in.execution_mode</code>. Although all these attributes are available, not all of them are often used. In majority of the cases, <code>start_time</code>, <code>dataset_dir</code>, <code>output_dir</code>, <code>bench_args</code> and <code>model</code> are useful. </p>
+<p><strong>RuntimeOut</strong></p>
+<p>The <strong><code>RuntimeOut</code></strong> mostly concerns about the logs, and loggers used to drive these logs. The SciML-Bench relies on a custom developed multi-level logging system that accounts not only for the hierarchical logging, but also logging on different hosts, nodes and processes, which is often demanded when using distributed training using multi-GPU or multi-node systems. With multiple nodes, each with multiple GPUs available, it soon becomes very confusing to differentiate which GPU resulted in which log. For this purpose, we use their <code>rank</code> information, which is usually supported / provided by distributed learning frameworks, such as Horovod or TensorFlowDistributed or PyTorch DistributedDataParallel (DDP).  To avoid confusion, there are two levels of rank information: <code>rank</code> and <code>local_rank</code>. For example, if there are four compute nodes each with four GPUs, there will be 16 workers, with each worker being assigned a <code>rank</code> [0, 15], and every worker will also have a <code>local_rank</code> [0, 3]. It carries the following attributes: </p>
+<ul>
+<li>log.console: This is a handle to the multi-level logger on the global host / root device (i.e. device with <code>rank</code>=0)</li>
+<li>log.host: multi-level logger on host (i.e. <code>local_rank</code>=0)</li>
+<li>log.device: multi-level logger on device (i.e. <code>rank</code> can be anything)</li>
+<li>system: a set of system monitors</li>
+</ul>
+<p>Unlike <code>RuntimeIn</code> or its instance <code>params_in</code>, to use <code>RuntimeOut</code> or its instance <code>params_out</code>, it must be activated. The <code>activate</code> function has the following arguments: <code>rank</code>, <code>local_rank</code>,<code>activate_log_on_host</code>,
+<code>activate_log_on_device</code>, and <code>console_on_screen</code>. Here, the rank information is essential for enabling logging from various processes. These  <code>rank</code> or <code>local_rank</code> information are usually available from the distributed learning environment used by the benchmark. A typical call for activating the monitor will look like </p>
+<pre><code class="language-python">params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
+                      activate_log_on_device=True, console_on_screen=True)
+</code></pre>
+<p>For a non-distributed benchmark, both <code>rank</code> and <code>local_rank</code> can be set to <code>0</code>, as in <code>rank=0</code>, <code>local_rank=0</code>. 
+, and by setting the <code>activate_log_on_host=False</code>. There is nothing wrong in setting this to <code>True</code> as the log on <code>host:0</code> and <code>device:0</code> will be the same as that on console except for some small differences in time measurements. Usually, the boolean flags do not need to be set explicitly, unless to turn them off. This activation is tightly coupled to logging system used by the framework. The framework supplies an auxiliary set of  APIs for producing attractive runtime logs and system reports, supporting distributed learning to facilitate minimum coding from benchmark developers. This is discussed in the next section. </p>
+<p><br>
+<br></p>
+<h2 id="3-monitor-activation-logging">3 Monitor Activation &amp; Logging</h2>
+<h3 id="31-activation">3.1 Activation</h3>
+<p>As discussed in Section 2.1, activating the instance of RuntimeOut is essential for enabling the logging process, which inherently relies on the rank information, which are crucial for differentiating the logs produced by different GPUs from different nodes. Each process carries the following information: <code>rank</code>, <code>local_rank</code>, and a set of boolean flags for <code>root</code>, <code>host</code> and <code>device</code>. Consider a system with three nodes each with two GPUs (in other words,  three hosts with two GPUs each). </p>
+<ul>
+<li><strong>Table 1: DLE of 3 hosts ✕ 2 GPUs per host</strong></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Process on</th>
+<th align="center"><code>rank</code></th>
+<th align="center"><code>local_rank</code></th>
+<th>root</th>
+<th>host</th>
+<th>device</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host 1, GPU 1</td>
+<td align="center">0</td>
+<td align="center">0</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Host 1, GPU 2</td>
+<td align="center">1</td>
+<td align="center">1</td>
+<td>False</td>
+<td>False</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Host 2, GPU 1</td>
+<td align="center">2</td>
+<td align="center">0</td>
+<td>False</td>
+<td>True</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Host 2, GPU 2</td>
+<td align="center">3</td>
+<td align="center">1</td>
+<td>False</td>
+<td>False</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Host 3, GPU 1</td>
+<td align="center">4</td>
+<td align="center">0</td>
+<td>False</td>
+<td>True</td>
+<td>True</td>
+</tr>
+<tr>
+<td>Host 3, GPU 2</td>
+<td align="center">5</td>
+<td align="center">1</td>
+<td>False</td>
+<td>False</td>
+<td>True</td>
+</tr>
+</tbody>
+</table>
+<p>As we will see in latter sections, developing benchmarks relying on distributed training requires the support of a distributed learning/training environment. The rank information are usually supplied by them.  With the notions of <code>root</code>, <code>host</code> and <code>device</code> being cleared, it is worth noting that, <code>RuntimeOut.log.console</code> refers to the logger on root, and will always be activated. This can be made available to the screen by setting <code>console_on_screen=True</code>. 
+Developers can enable  <code>RuntimeOut.log.host</code> or <code>RuntimeOut.log.device</code> as appropriate. The latter refers to the actual compute device and enabling logging at the device level provides very fine-grained granularity. </p>
+<p>In a  non-distributed training setting, there is no need to activate the host and the device loggers. Here, all the system monitors will be activated. Those on host will monitor the total system usage on that node or machine, including all existing CPUs and GPUs. However, this monitoring does not differentiate whether  they are actually used by the running benchmark or not, and we hope to improve this soon. In contrast, those on device will monitor all types of resources  used by this running instance. In other words, those on host monitor the machine while  those on device monitor the processes.</p>
+<h3 id="32-logging">3.2 Logging</h3>
+<p>Logging within the SciML-Bench is event triggered. The contributors need to add logging routines wherever necessary. Once the monitor is activated, a handle for the suitable logger can be obtained. For instance  </p>
+<pre><code class="language-python">console = params_out.log.console
+</code></pre>
+<p>provides a handle for the console logger (which is enabled by default). The logger provides the following top-level methods for enabling logging: <code>begin()</code>, <code>ended()</code> and <code>message()</code>. Calling these functions results in the method to be invoked on console, host and device loggers at the same time. The API also provides another function <code>subproc()</code> to be used with the <code>with</code> clause, which can be used to simplify things. Consider the following logging example: </p>
+<pre><code class="language-python">console = params_out.log.console
+console.begin('foo')
+# do something
+console.message('bar')  
+console.ended('foo')
+</code></pre>
+<p>This is equivalent to the following, simplified version: </p>
+<pre><code class="language-python">with logger.subproc('foo'):
+    # do something
+    logger.message('bar')  
+</code></pre>
+<p>The logging can be nested as needed, enabling the framework to produce an elegant log reports, like the following: </p>
+<pre><code class="language-sh">    &lt;BEGIN&gt; Running benchmark lr_sklearn
+    ....&lt;BEGIN&gt; Randomizing input data
+    ....&lt;ENDED&gt; Randomizing input data [ELAPSED = 0.000105 sec]
+    ....&lt;BEGIN&gt; Getting benchmark-specific argument
+    ........&lt;MESSG&gt; normalize = False
+    ....&lt;ENDED&gt; Getting benchmark-specific argument [ELAPSED = 0.000078 sec]
+    ....&lt;BEGIN&gt; Training
+    ........&lt;BEGIN&gt; Fitting data
+    ........&lt;ENDED&gt; Fitting data [ELAPSED = 0.001196 sec]
+    ........&lt;BEGIN&gt; Saving coefficients and intercepts
+    ........&lt;ENDED&gt; Saving coefficients and intercepts [ELAPSED = 0.002882 sec]
+    ....&lt;ENDED&gt; Training [ELAPSED = 0.004370 sec]
+    ....&lt;BEGIN&gt; Computing score
+    ........&lt;MESSG&gt; score = 1.0
+    ....&lt;ENDED&gt; Computing score [ELAPSED = 0.000685 sec]
+    ....&lt;BEGIN&gt; Making predictions
+    ....&lt;ENDED&gt; Making predictions [ELAPSED = 0.000095 sec]
+    &lt;ENDED&gt; Running benchmark lr_sklearn [ELAPSED = 0.005910 sec]
+</code></pre>
+<p>This is usually achieved using the calling the <code>subproc</code> method of the appropriate logger. The following code produces the log output above: </p>
+<pre><code class="language-python">  # libs from sciml_bench
+  from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
+
+  # libs required by implementation
+  import numpy as np
+  from sklearn.linear_model import LinearRegression
+
+    def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
+
+        params_out.activate(rank=0, local_rank=0)
+
+        # begin top-level
+        console = params_out.log.console
+        console.begin('Running benchmark lr_sklearn')
+
+        # input
+        with console.subproc('Creating some input data'):
+            X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
+            y = np.dot(X, np.array([1, 2])) + 3
+
+        # get benchmark-specific arguments
+        with console.subproc('Getting benchmark-specific arguments'):
+            normalize = params_in.bench_args.try_get('normalize', default=False)
+            console.message(f'normalize = {normalize}')
+
+        # fit
+        console.begin('Training')
+        with console.subproc('Fitting data'):
+            reg = LinearRegression(normalize=normalize).fit(X, y)
+
+        # save coefficients and intercepts
+        with console.subproc('Saving coefficients and intercepts'):
+            np.savetxt(params_in.output_dir / 'coefficients.txt', reg.coef_)
+            np.savetxt(params_in.output_dir / 'intercepts.txt', [reg.intercept_])
+        console.ended('Training')
+
+        # score
+        with console.subproc('Computing score'):
+            console.message(f'score = {reg.score(X, y)}')
+
+        # predict
+        with console.subproc('Making predictions'):
+            reg.predict(np.array([[3, 5]]))
+
+        # end top_level
+        console.ended('Running benchmark lr_sklearn')
+</code></pre>
+<p>Inevitably, these logging may make the code less readable and longer.</p>
+<h2 id="33-event-stamping">3.3 Event Stamping</h2>
+<p>In addition to the logging, system usage is sampled by the framework at a regular interval of one second (which can be modified  through the <code>--monitor_interval</code>  flag). The system usage, usually, will not have any log-specific messages To facilitate correlating the logs with system usage, events can be stamped, This can be achieved by calling the <code>stamp_event()</code> method with the appropriate message. For instance, the following code will stamp <em>&lt;&lt;LR.fit &lt;<begin>&gt;</em> and <em>LR.fit &lt;<end>&gt;</em> stamps into the system usage log. </p>
+<pre><code class="language-python">    with console.subproc('Fitting data'):
+          params_out.system.stamp_event('LR.fit &lt;&lt;begin&gt;&gt;')
+          reg = LinearRegression(normalize=normalize).fit(X, y)
+          time.sleep(10)  # sleep, as if it is doing fit()
+          params_out.system.stamp_event('LR.fit &lt;&lt;end&gt;&gt;'')
+</code></pre>
+<p><br>
+<br></p>
+<h2 id="4-handling-benchmark-specific-arguments">4 Handling Benchmark-Specific Arguments</h2>
+<p><br></p>
+<p>Benchmark-specific arguments can be specified using the  <code>-b</code> option for the <code>sciml-bench run</code> command. Internally, these arguments are passed to <code>sciml_bench_training()</code> and <code>sciml_bench_inference()</code> routines through the <code>RuntimeIn</code> instance, namely, <code>params_in</code>. These can be accessed by <code>params_in.bench_args</code>. These benchmark-specific arguments are specified through the <code>-b</code> flag followed by key-value pair. If there are are more than one key-value pair, each of them are expected to be specified using the <code>-b</code> flag. These can extracted through the <code>try_get</code> method as in the example below:</p>
+<pre><code class="language-python"># hyperparameters
+batch_size = params_in.bench_args.try_get('batch_size', default=64)
+epochs = params_in.bench_args.try_get('epochs', default=2)
+</code></pre>
+<p>The <code>try_get()</code> method will return the default value if the key is missing. The value presented in <code>params_in.bench_args</code> will be returned with an appropriate typecasting (based on the type of <code>default</code> value), failing which, an error will be raised.  It is also possible to extract these arguments in bulk by using the <code>try_get_dict</code> method by passing in a Python dictionary of arguments, as shown in the example below: </p>
+<pre><code class="language-python"># default arguments
+default_args = {
+    # torch env
+    'seed': 1234, 'use_cuda': True,
+    # network parameters
+    'n_filters': 32, 'n_unit_hidden': 128,
+    # hyperparameters
+    'epochs': 2, 'batch_size': 64, 'loss_func': 'CrossEntropyLoss',
+    'optimizer_name': 'Adam', 'lr': 0.001,
+    'batch_size_test': 2000,  # use a large one for validation
+    'batch_log_interval': 100,  # interval to log batch loop
+    # workflow control
+    'load_weights_file': '',  # do training if this is empty
+}
+# replace default_args with bench_args
+# Note: try_get_dict() provides a way to do try_get() collectively.
+args = params_in.bench_args.try_get_dict(default_args=default_args)
+</code></pre>
+<p>In this case, the <code>try_get_dict()</code> method will perform <code>try_get()</code> on each key-value pair
+in <code>default_args</code>. When specifying flags, such as whether to normalise or not, the <code>-b</code> flag accepts all possible alternatives, including  <code>true/false</code>, <code>t/f</code>, <code>yes/no</code>, <code>y/n</code>, and <code>1/0</code>,  treating indifferently and without being sensitive to their cases. For example, the following are the same: </p>
+<pre><code class="language-sh">python -m sciml_bench.core.command run lr_sklearn --output_dir=lr_out -b normalize YES
+</code></pre>
+<p>and </p>
+<pre><code class="language-sh">python -m sciml_bench.core.command run lr_sklearn --output_dir=lr_out -b normalize 1
+</code></pre>
+<p>Finally, where there are  too many arguments, the  default key-value pairs can be read from a text file a well. </p>
+<h2 id="5-setting-up-the-configuration-file">5 Setting up the Configuration File</h2>
+<p><br> </p>
+<p>Each benchmark / dataset should have an entry in the configuration file. Although this configuration file is provided with the SciML-Bench release, you can modify the configuration file for developmental and testing purposes. Please see the documentation around Configuration File for more information. </p>
+<h2 id="6-documenting-benchmarks-and-datasets">6 Documenting Benchmarks and Datasets</h2>
+<p><br></p>
+<p>Each benchmark should come with a detailed documentation outlining the challenge and the scope. It should provide the following information:</p>
+<ul>
+<li>Main scientific domain where the benchmark problem originates from</li>
+<li>Sub scientific domain of the benchmark </li>
+<li>What is the scope of the learning Task. Is it classification or regression and so on.</li>
+<li>Relevant datasets to these benchmarks (See the documentation around datasets).</li>
+<li>Authors of the benchmark. </li>
+</ul>
+<p>In addition to the detailed description, each benchmark should also provide a short description not exceeding 120 words. This short description is used for the <code>info</code> command. </p>
+<h2 id="8-example-implementation-a-walk-through">8 Example Implementation - A Walk-through</h2>
+<p>For instance, assume that we would like to create an example based on sklearn-based linear regression as in <a href="https://bityl.co/7OON">here</a>, and assume that we would like to name it as <em>lr_sklearn</em>. We will also assume that this benchmark will support both training and inference. Thus, the benchmark must have entry points for <code>sciml_bench_training</code> and <code>sciml_bench_inference</code>. </p>
+<p>We can start off by copying the template and renaming the file. </p>
+<pre><code class="language-sh"># copy and rename the core file
+cp -r sciml_bench/etc/templates/example_benchmark.py sciml_bench/benchmarks/lr_sklearn
+mv sciml_bench/benchmarks/lr_sklearn/example_benchmark.py sciml_bench/benchmarks/lr_sklearn/lr_sklearn.py
+</code></pre>
+<p>Next, implement the <code>sciml_bench_training</code> as below:</p>
+<pre><code class="language-python"># libs from sciml_bench
+from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
+
+# libs required by implementation
+import numpy as np
+from sklearn.linear_model import LinearRegression
+
+
+def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
+
+        params_out.activate(rank=0, local_rank=0)
+
+        # begin top-level
+        console = params_out.log.console
+        console.begin('Running benchmark lr_sklearn')
+
+        # input
+        with console.subproc('Creating some input data'):
+            X = np.array([[1, 1], [1, 2], [2, 2], [2, 3]])
+            y = np.dot(X, np.array([1, 2])) + 3
+
+        # get benchmark-specific arguments
+        with console.subproc('Getting benchmark-specific arguments'):
+            normalize = params_in.bench_args.try_get('normalize', default=False)
+            console.message(f'normalize = {normalize}')
+
+        # fit
+        console.begin('Training')
+        with console.subproc('Fitting data'):
+            reg = LinearRegression(normalize=normalize).fit(X, y)
+
+        # save coefficients and intercepts
+        with console.subproc('Saving coefficients and intercepts'):
+            np.savetxt(params_in.output_dir / 'coefficients.txt', reg.coef_)
+            np.savetxt(params_in.output_dir / 'intercepts.txt', [reg.intercept_])
+        console.ended('Training')
+
+        # score
+        with console.subproc('Computing score'):
+            console.message(f'score = {reg.score(X, y)}')
+
+        # end top_level
+        console.ended('Running benchmark lr_sklearn')
+</code></pre>
+<p>In the above implementation, we save the model coefficients and intercept as outputs. In general,  benchmark-specific outputs are not managed by SciML-Bench, as different benchmarks may have different requirements for output. Common outputs of this kind include used hyperparameters, model weights, metrics and training history.</p>
+<p>Next, we will implement the <code>sciml_bench_inference</code>. For this, we will assume that the user specifies the model files. Here, there are two model files to be used <code>coefficients.txt</code> and <code>intercepts.txt</code>. This can be specified using multiple <code>--model</code> argument.  Here, it has to be specified as: <code>--model /tmp/coefficients.txt --model /tmp/intercepts.txt</code>. Not all inference routines rely on multiple models, but this is an example and these must be handled in the inference routine as required. It is worth noting that models are automatically named based on the file names of the models. The inference can be performed in a number of different ways: on all files from the dataset directory for inference (which has no default value) or through a benchmark-specific argument. Here, we will assume that we would like to do the inference on a number of files situated inside a dataset directory that the user specifies.  In a nutshell, it can be assumed that the user performed the inference as follows: </p>
+<pre><code class="language-sh">sciml-bench run --mode inference --model /tmp/coefficients.txt --model /tmp/intercepts.txt -dataset_dir /tmp/inference lr_sklearn 
+</code></pre>
+<p>Instead of using the <code>dataset_dir</code> argument, the benchmark-specific argument can also be used, say using a file name or similar. Now, we will load these models and perform inference.  For clarity, we have avoided extensive logging:</p>
+<pre><code class="language-python">
+
+def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
+
+        params_out.activate(rank=0, local_rank=0)
+
+        output_file = params_in.output_dir  / 'lr_inference.log'
+
+        # begin top-level
+        console = params_out.log.console
+        console.begin('Running benchmark lr_sklearn on inference mode')
+
+        # input
+        with console.subproc('Building the model'):
+            model = linear_model.LinearRegression()
+            model.coef_ = np.loadtxt(params_in.model['coefficients])
+            model.intercept_ = np.loadtxt(params_in.model['intercepts'])
+
+        # Do prediction for each data file 
+        p = params_in.dataset_dir.glob('**/*')
+        files = [x for x in p if x.is_file()]
+        with open(output_file, 'w') as out_f:
+        for f in files:
+            data = np.loadtxt(f)
+            with console.subproc('Fitting data'):
+                y = model.predict(data)
+                out_f.write(f'{f}\t{y}\n')
+
+
+        # end top_level
+        console.ended('Running benchmark lr_sklearn on inference mode')
+</code></pre></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+
+        <div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

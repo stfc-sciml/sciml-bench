@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Configuration Options - </title>
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
+
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
+    </head>
+
+    <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="../index.html"></a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Benchmarks <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../benchmarks/dms_structure.html" class="dropdown-item">dms_structure Benchmark</a>
+</li>
+                                    
+<li>
+    <a href="../benchmarks/em_denoise.html" class="dropdown-item">em-denoise Benchmark</a>
+</li>
+                                    
+<li>
+    <a href="../benchmarks/slstr_cloud.html" class="dropdown-item">slstr_cloud Benchmark</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Datasets <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../datasets/cloud_slstr_ds1.html" class="dropdown-item">Cloud slstr ds1</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/dms_sim.html" class="dropdown-item">Dms sim</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/em_graphene_sim.html" class="dropdown-item">em_graphene_sim</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Main <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="api.html" class="dropdown-item">SciML-Bench API</a>
+</li>
+                                    
+<li>
+    <a href="configuration.html" class="dropdown-item active">Configuration Options</a>
+</li>
+                                    
+<li>
+    <a href="contributing.html" class="dropdown-item">Contributing Benchmarks and Datasets</a>
+</li>
+                                    
+<li>
+    <a href="faq.html" class="dropdown-item">Frequently Asked Questions</a>
+</li>
+                                    
+<li>
+    <a href="installation.html" class="dropdown-item">Installation</a>
+</li>
+                                    
+<li>
+    <a href="intro.html" class="dropdown-item">Intro</a>
+</li>
+                                    
+<li>
+    <a href="usage.html" class="dropdown-item">Using the Suite and Benchmarks</a>
+</li>
+                                </ul>
+                            </li>
+                        </ul>
+
+                    <ul class="nav navbar-nav ml-auto">
+                            <li class="nav-item">
+                                <a rel="prev" href="api.html" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="contributing.html" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#configuration-options" class="nav-link">Configuration Options</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#data-mirrors" class="nav-link">Data Mirrors</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#download-commands" class="nav-link">Download Commands</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#directories" class="nav-link">Directories</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#datasets" class="nav-link">Datasets</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#benchmarks" class="nav-link">Benchmarks</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="configuration-options">Configuration Options</h1>
+<p>SciMLBench relies on a single configuration file, <code>config.yml</code>, inside the <code>$SCIMLBENCHROOT/etc/configs/</code> folder. The configuration file has the following sections:</p>
+<ol>
+<li>Data Mirrors, </li>
+<li>Download Commands, </li>
+<li>Directories, </li>
+<li>Datasets, and </li>
+<li>Benchmarks.</li>
+</ol>
+<p>Each of these sections contains subsections or (key:value) pairs.  These are discussed in the following subsections.</p>
+<h2 id="data-mirrors">Data Mirrors</h2>
+<p>SciMLBench datasets are mirrored at various locations, and this section includes the URLs for those mirrors. Usually, these are not supposed to be modified. However, if you are developing a benchmark, you can add your own servers. The framework decides which mirrors based on the bandwidth information, but this can be overridden. </p>
+<h2 id="download-commands">Download Commands</h2>
+<p>A number of different types of download commands can be defined, and then can be used in latter sections / subsections. Some examples of download commands are: </p>
+<pre><code class="language-yaml">    download_command1: &quot;aws s3 --no-sign-request --endpoint-url $SERVER sync $DATASET_URI $DATASET_DIR&quot;
+    download_command2: &quot;wget -c https://www.dropbox.com/s/6xhviply27tw3yu/mnist.tar.bz2 -O -
+            | tar -jx -C $DATASET_DIR&quot;
+</code></pre>
+<p>where variables like <code>$SERVER</code>, <code>$DATASET_URI</code> and <code>$DATASET_DIR</code> refers to one of the data mirrors (defined above), location of the dataset in the mirror, and local directory where the dataset should be saved (see below). </p>
+<h2 id="directories">Directories</h2>
+<p>This section specifies where the downloaded datasets, outputs of the benchmark runs and downloaded pre-trained models, to be saved locally on the system, respectively.  An example entry would look like the following:</p>
+<pre><code class="language-yaml">directories:
+    dataset_root_dir: ~/sciml_bench/datasets
+    output_root_dir: ~/sciml_bench/outputs
+    models_dir: ~/sciml_bench/models
+</code></pre>
+<p>In the case of containers, these directories can be specified as part of the run. </p>
+<h2 id="datasets">Datasets</h2>
+<p>Datasets are included in the main section <code>datasets</code>. Each benchmark can have following sub-sections: datasets, <em>is_example</em>, <em>download_command</em>, and <em>end_point</em>.</p>
+<h3 id="is_example"><code>is_example</code></h3>
+<p>Possible Values are <code>True</code> or <code>False</code>. This flag indicates whether this dataset is an example / demo dataset. Functionally, this does not make any  difference, but can be listed separately using the <code>list</code> command. If ignored, it is assumed as <code>False</code>.</p>
+<h3 id="end_point"><code>end_point</code></h3>
+<p>The datasets are usually supplied from one of the STFC servers or mirrors. This should not be modified, unless you are developing your own benchmark and testing this. This end point is used as part of the predefined download command. If you are using your own download command, you may ignore this variable. </p>
+<h3 id="download_command"><code>download_command</code></h3>
+<p>This can be one of the predefined variables from the <code>download_commands</code> section, or can be a raw string. This is used to download the actual dataset. An example of using a predefined download command is:</p>
+<pre><code class="language-sh">datasets: 
+    mnist:
+        end_point: 'sciml-datasets/ts'
+        download_command: download_command1
+</code></pre>
+<p>In this case, the dataset is assumed to be a non-example (<code>is_example=False</code>) and will be downloaded using the predefined command <code>download_command1</code> defined in the <code>download_commands</code> section. An alternative example, where a direct command being used is:</p>
+<pre><code class="language-sh">datasets: 
+    mnist:
+        end_point: 'sciml-datasets/ts'
+        download_command:  &quot;wget -c https://www.server.com/mnist.tar.bz2 -O - | tar -jx -C DATASET_DIR&quot;
+</code></pre>
+<p>The variable <code>DATASET_DIR</code> is used to ensure that the downloaded files are stored inside <code>dataset_dir</code> directory specified in the <code>directories</code> section.</p>
+<h2 id="benchmarks">Benchmarks</h2>
+<p>Benchmarks are included in the main section <code>benchmarks</code>. Each benchmark can have following sub-sections: datasets, <em>is_example</em>, <em>dependencies</em>, and <em>types</em>.</p>
+<h3 id="datasets_1"><code>datasets</code></h3>
+<p>These are dataset(s) used by the current benchmark. A benchmark can rely on one or more datasets, and can be specified using comma separated values. However, a corresponding entry must exist in the <code>datasets</code> section.</p>
+<h3 id="is_example_1"><code>is_example</code></h3>
+<p>Possible Values are <code>True</code> or <code>False</code>. This flag indicates whether this benchmark is an example / demo benchmark. Functionally, this does not make any  difference, but can be listed separately using the <code>list</code> command and can be used as templates for building complex benchmarks. </p>
+<h3 id="dependencies"><code>dependencies</code></h3>
+<p>These are actual library dependencies that the current benchmark relies on specified inside a string in a comma separated form. An example entrY would be: <code>torch, tensorflow, scikit-learn,horovod.torch</code>. For the framework to succeed, it must be possible to install each of these dependencies using the <code>pip install</code> command if the user opts to do so. Not all dependencies are easy to manage. For instance, horovod-based dependencies are known to be very difficult, and may warrant separate manual installation at the system level. These dependencies can also be platform specific. Regardless whether they have been pre-installed or already available on the system, these dependencies must be specified for the framework to function correctly.</p>
+<h3 id="types"><code>types</code></h3>
+<p>Specifies the type of benchmark, and permissible values are '<em>training</em>', '<em>inference</em>' or '<em>training,inference</em>' (or <em>'inference,training'</em>). This provides a way for the framework to know whether a particular benchmark supports training or inference or both. If ignored, the framework would assume that the benchmark supports both training and inference. If the benchmark actually does not support any of these, it will fail at runtime. An example section of the Configuration file is:</p>
+<pre><code class="language-yaml">benchmarks:
+    dms_structure:
+        datasets: dms_sim
+        dependencies: 'torch'
+        types: 'training, inference'
+</code></pre></div>
+            </div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+
+        <div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

@@ -126,9 +126,9 @@ def info(entity):
 
     if entity in ENV.datasets.keys() or entity in ENV.benchmarks.keys():
       if entity in ENV.datasets.keys():
-        info_path = Path(__file__).parents[1] / 'doc/datasets/' 
+        info_path = Path(__file__).parents[1] / 'docd/datasets/' 
       else:
-        info_path = Path(__file__).parents[1] / 'doc/benchmarks/' 
+        info_path = Path(__file__).parents[1] / 'docs/benchmarks/' 
       content = extract_html_comments(str(info_path) + os.sep +  entity + '.md')
       if content:
         display_logo()
