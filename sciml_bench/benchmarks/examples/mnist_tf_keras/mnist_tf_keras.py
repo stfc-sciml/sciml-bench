@@ -13,20 +13,11 @@
 Benchmark: mnist_tf_keras
 Classifying MNIST using a CNN implemented with tf.keras
 This is a single device training/inference example.
-
-
-NOTES:
-* This is an example of how to build a benchmark into SciML-Bench.
-* Please see the configuration options in config.yml.
-* Although this example relies on single file implementation,
-* in reality, it is always better to modularize the implementation.
-  As this benchmark supports both training and inference,
-  both  `sciml_bench_training()` and `sciml_bench_inference()`
-  must be implemented here.
 """
 
 # libs from sciml_bench
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
+from sciml_bench.core.utils import list_all_files_in_dir
 
 # libs required by implementation
 import time
@@ -35,9 +26,10 @@ import yaml
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-from tf.keras.preprocessing.image import load_img
-from tf.keras.preprocessing.image import img_to_array
+from tensorflow.keras.preprocessing.image import load_img
+from tensorflow.keras.preprocessing.image import img_to_array
 from pathlib import Path
+import matplotlib.pyplot as plt
 
 
 def load_dataset_mnist(file_path, batch_size):
@@ -179,35 +171,52 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
 
 def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
-    """
-    Main entry of `sciml_bench run` for a benchmark instance 
-    in the inference mode.
-    Please consult the API documentation. 
-    """
+
     params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
                       activate_log_on_device=True, console_on_screen=True)
 
     log = params_out.log
-    log.begin('Running benchmark mnist_tf_keras on inference mode')
 
-    output_file = params_in.output_dir  / 'mnist_tf_keras_inference.log'
+    log.begin('Running benchmark mnist_tf_keras on inference mode')
+    model = load_model(params_in.model)
 
     # Load the model
     with log.subproc('Model loading and inference'):
-        # There is only one model we have - named tf_mnist_keras_model
-        model = load_model(params_in.models['mnist_tf_keras_model'])
-        # Process each file 
-        p = params_in.dataset_dir.glob('**/*')
-        files = [x for x in p if x.is_file()]
-        with open(output_file, 'wt')as handle:
-            handle.write(f'File Name\tOutput\n')
-            for file in sorted(files):
-                with log.subproc(f'Processing file {file}'):
-                    image = load_img(file, color_mode='grayscale', target_size=(28,28))
-                    input_arr = img_to_array(image)/ 255.0
-                    input_arr = np.array([input_arr]).reshape(-1, 28, 28, 1) 
-                    out = model.predict(input_arr)
-                    out = np.argmax(out)
-                    handle.write(f'{file}\t{out}\n')
+        for file_name in list_all_files_in_dir(params_in.dataset_dir):
+            with log.subproc(f'Processing file {file_name}'):
+                image = load_img(file_name, color_mode='grayscale', target_size=(28,28,1))
+                input_arr = img_to_array(image)/ 255.0
+                input_arr = input_arr[np.newaxis,:,:,:] 
+                out = np.argmax(model.predict(input_arr))
+                log.message(f'{file_name} => {out}')
 
     log.ended('Running benchmark mnist_tf_keras on inference mode')
+
+
+
+
+
+def sciml_bench_inference2(params_in: RuntimeIn, params_out: RuntimeOut):
+
+    params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
+                      activate_log_on_device=True, console_on_screen=True)
+
+    log = params_out.log
+
+    log.begin('Running benchmark mnist_tf_keras on inference mode')
+    model = load_model(params_in.model)
+
+    # Load the model
+    with log.subproc('Model loading and inference'):
+        images  = [plt.imread(x) for x in list_all_files_in_dir(params_in.dataset_dir)]
+
+
+        for file_name in list_all_files_in_dir(params_in.dataset_dir):
+            with log.subproc(f'Processing file {file_name}'):
+                image = load_img(file_name, color_mode='grayscale', target_size=(28,28,1))
+                input_arr = img_to_array(image)/ 255.0
+                input_arr = input_arr[np.newaxis,:,:,:] 
+                out = np.argmax(model.predict(input_arr))
+                log.message(f'{file_name} => {out}')
+
+    log.ended('Running benchmark mnist_tf_keras on inference mode') 

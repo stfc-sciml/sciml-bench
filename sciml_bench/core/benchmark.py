@@ -20,11 +20,14 @@ from sciml_bench.core.utils import csv_to_stripped_set, display_logo, query_yes_
 from subprocess import PIPE, STDOUT, run
 
 
-def create_training_instance(benchmark_name, return_none_on_except=True):
+def create_training_instance(benchmark_name, is_example, return_none_on_except=True):
     """ Create a benchmark instance for training"""
     try:
         # validate module
-        bench_dir = Path(__file__).parents[1] / 'benchmarks'
+        bench_dir = Path(__file__).parents[1] / 'benchmarks' 
+        if is_example:
+            bench_dir = Path(bench_dir / 'examples')
+
         file = str(bench_dir / benchmark_name / benchmark_name) + '.py'
         spec = importlib.util.spec_from_file_location(benchmark_name, file)
         mod = importlib.util.module_from_spec(spec)
@@ -37,11 +40,14 @@ def create_training_instance(benchmark_name, return_none_on_except=True):
 
 
 
-def create_inference_instance(benchmark_name, return_none_on_except=True):
+def create_inference_instance(benchmark_name, is_example, return_none_on_except=True):
     """ Create a benchmark instance for inference"""
     try:
         # validate module - but models cannot be verified at this stage
         bench_dir = Path(__file__).parents[1] / 'benchmarks'
+        if is_example:
+            bench_dir = Path(bench_dir / 'examples')
+
         file = str(bench_dir / benchmark_name / benchmark_name) + '.py'
         spec = importlib.util.spec_from_file_location(benchmark_name, file)
         mod = importlib.util.module_from_spec(spec)
@@ -170,7 +176,7 @@ def __install_horovod__(horovod_dependencies, log_file):
 
     # Next cmake - without cmake, we can't move an inch.
     if check_command('cmake') is False:
-        with open(log_file):
+        with open(log_file) as f:
             header = f'[Installing Horovod Dependencies]'
             f.write(f'\n\n{header}\n')
             f.write("="*len(header))
@@ -241,20 +247,20 @@ def __get_runnable_status__(is_good_train, is_good_inference):
         str = "Not runnable"
     return str
 
-def get_status(benchmark_names, ENV):
+def get_status(benchmark_names, ENV:ProgramEnv):
     flag = False
     status_str = []
     if not isinstance(benchmark_names, list):
         benchmark_names = [benchmark_names]
         flag =True
-  
+
     for benchmark_name in benchmark_names:
-        is_good_train = create_training_instance(benchmark_name, True)
-        is_good_inference = create_inference_instance(benchmark_name, True)
+        is_example = ENV.get_bench_example_flag(benchmark_name)
+        is_good_train = create_training_instance(benchmark_name, is_example, True)
+        is_good_inference = create_inference_instance(benchmark_name, is_example, True)
         status_str.append(__get_runnable_status__(is_good_train, is_good_inference))
     
     if flag == True:
         status_str = status_str[0]
     
     return status_str
-

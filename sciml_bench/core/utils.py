@@ -319,3 +319,8 @@ def print_items(heading, column1, column2=[]):
             output += f': {column2[i]}' 
         print(output)
     print()
+
+    def list_all_files_in_dir(dataset_dir: Path):
+        p = dataset_dir.glob('**/*')
+        files = [x for x in p if x.is_file()]
+        return sorted(files)

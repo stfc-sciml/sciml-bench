@@ -49,7 +49,7 @@ class RuntimeIn:
         self.output_dir = None
         self.bench_args = None
         self.execution_mode = execution_mode
-        self.models = {}
+        self.model = None
 
 
         if prog_env.is_config_valid() == False:
@@ -74,10 +74,7 @@ class RuntimeIn:
                                          f'\nTerminating execution.\n')
                     return 
             else:
-                for file in model_file:
-                    if Path(file).is_file():
-                        p = (Path(file).name).split('.')[0]
-                        self.models[p] = file
+                self.model  = model_file
 
             if dataset_dir is None:
                 self.__set_error_msg(f'\nNo dataset directory specified'\

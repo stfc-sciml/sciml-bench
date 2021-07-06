@@ -126,7 +126,7 @@ def info(entity):
 
     if entity in ENV.datasets.keys() or entity in ENV.benchmarks.keys():
       if entity in ENV.datasets.keys():
-        info_path = Path(__file__).parents[1] / 'docd/datasets/' 
+        info_path = Path(__file__).parents[1] / 'docs/datasets/' 
       else:
         info_path = Path(__file__).parents[1] / 'docs/benchmarks/' 
       content = extract_html_comments(str(info_path) + os.sep +  entity + '.md')
@@ -205,10 +205,10 @@ def download(dataset_name, dataset_dir, mode):
               type=click.Choice(['training', 'inference']),
               help='\b\nSets the mode to training or inference.\n'
                    'Default: training.')
-@click.option('--model', required=False, multiple=True,
+@click.option('--model', required=False, multiple=False,
               help='\b\nSets the model(s) to be used (only for inference.)\n'
                    'If not specified, framework will attempt to find\n' 
-                   'the model(s) in the models directory\n'
+                   'the model in the models directory\n'
                    'Default: None.')                       
 @click.option('--dataset_dir', required=False, 
               help='\b\nDirectory for the dataset(s).\n'
@@ -259,12 +259,13 @@ def run(mode, model, dataset_dir, output_dir, monitor_on,
 
     # create instance and run
     bench_types = ENV.get_bench_types(benchmark_name)
+    is_bench_example = ENV.get_bench_example_flag(benchmark_name)
     bench_run = None
     if mode in bench_types:
         if mode ==  'inference':
-            bench_run = Benchmark.create_inference_instance(benchmark_name)
+            bench_run = Benchmark.create_inference_instance(benchmark_name, is_bench_example)
         else:
-            bench_run = Benchmark.create_training_instance(benchmark_name)
+            bench_run = Benchmark.create_training_instance(benchmark_name, is_bench_example)
    
     if (bench_run is None) or (mode not in bench_types):
         print(f'The benchmark {benchmark_name} does not support {mode}.')

@@ -20,7 +20,7 @@ from sciml_bench.core.utils import display_logo
 def download(dataset_name: str, dataset_root_dir: Path, prog_env: ProgramEnv, mode):
 
     if prog_env.is_config_valid() == False:
-        print('The configuration file is malformed. Please verify the contents.')
+        print('The configuration file is malformed. Please verify the contents of the config file!')
         return
 
     datasets = prog_env.datasets
