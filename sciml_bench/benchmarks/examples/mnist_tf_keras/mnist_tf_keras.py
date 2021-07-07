@@ -19,18 +19,17 @@ This is a single device training/inference example.
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 from sciml_bench.core.utils import list_all_files_in_dir
 
-# libs required by implementation
 import time
 import h5py
 import yaml
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.image import load_img
-from tensorflow.keras.preprocessing.image import img_to_array
 from pathlib import Path
-import matplotlib.pyplot as plt
+import skimage.io
 
+
+# Some utility codes
 
 def load_dataset_mnist(file_path, batch_size):
     """ Create dataset """
@@ -90,6 +89,17 @@ class LogEpochCallback(tf.keras.callbacks.Callback):
         msg += f'elapsed={time.time() - self._start_time:f} sec'
         self._params_out.log.message(msg)
 
+
+def load_images(image_dir_path):
+    file_names =  list_all_files_in_dir(image_dir_path)
+    images = np.zeros((len(file_names), 28, 28, 1))
+    for idx, url in enumerate(file_names):
+        images[idx, :, :, 0] = skimage.io.imread(url)
+    return images, file_names
+
+
+
+# Training Code
 
 def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
@@ -170,6 +180,9 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
 
 
+
+# Inference Code
+
 def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
@@ -178,45 +191,19 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     log = params_out.log
 
     log.begin('Running benchmark mnist_tf_keras on inference mode')
-    model = load_model(params_in.model)
 
-    # Load the model
+    # Load the model and perform bulk inference 
     with log.subproc('Model loading and inference'):
-        for file_name in list_all_files_in_dir(params_in.dataset_dir):
-            with log.subproc(f'Processing file {file_name}'):
-                image = load_img(file_name, color_mode='grayscale', target_size=(28,28,1))
-                input_arr = img_to_array(image)/ 255.0
-                input_arr = input_arr[np.newaxis,:,:,:] 
-                out = np.argmax(model.predict(input_arr))
-                log.message(f'{file_name} => {out}')
+        model = load_model(params_in.model)
+        raw_images, file_names = load_images(params_in.dataset_dir)
+        images = tf.constant(raw_images, dtype=np.float32)
+        outputs = model.predict(images)
+        mappings = np.argmax(outputs, axis=1)
+
+    # Write out the results
+    with log.subproc('Writing to outputs'):
+        for i in range(len(file_names)):
+            log.message(f'{file_names[i]}\t{mappings[i]}')
+    
 
     log.ended('Running benchmark mnist_tf_keras on inference mode')
-
-
-
-
-
-def sciml_bench_inference2(params_in: RuntimeIn, params_out: RuntimeOut):
-
-    params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
-                      activate_log_on_device=True, console_on_screen=True)
-
-    log = params_out.log
-
-    log.begin('Running benchmark mnist_tf_keras on inference mode')
-    model = load_model(params_in.model)
-
-    # Load the model
-    with log.subproc('Model loading and inference'):
-        images  = [plt.imread(x) for x in list_all_files_in_dir(params_in.dataset_dir)]
-
-
-        for file_name in list_all_files_in_dir(params_in.dataset_dir):
-            with log.subproc(f'Processing file {file_name}'):
-                image = load_img(file_name, color_mode='grayscale', target_size=(28,28,1))
-                input_arr = img_to_array(image)/ 255.0
-                input_arr = input_arr[np.newaxis,:,:,:] 
-                out = np.argmax(model.predict(input_arr))
-                log.message(f'{file_name} => {out}')
-
-    log.ended('Running benchmark mnist_tf_keras on inference mode') 

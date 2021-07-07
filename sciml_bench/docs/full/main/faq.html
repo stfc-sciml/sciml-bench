@@ -34,7 +34,7 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="navitem">
-                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b260621_2028)</a>
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b070721_0148)</a>
                             </li>
                             <li class="navitem">
                                 <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
@@ -163,7 +163,7 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#system" class="nav-link">System</a>
+            <li class="nav-item" data-level="2"><a href="#system-development" class="nav-link">System &amp; Development</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -220,7 +220,7 @@
 <li>What happens when I run my benchmark on a system with multiple GPUs and multiple machines?</li>
 </ol>
 <p>If you would like to exploit multiple GPUs, your benchmark has to be explicitly designed for distributed learning/training. There are several ways of doing this, starting with Distributed TensorFlow, PyTorch DistributedDataParallel (DDP), or Horovod. Each of these methods have their own advantages and disadvantages. </p>
-<h2 id="system">System</h2>
+<h2 id="system-development">System &amp; Development</h2>
 <ol>
 <li>Why NCCL is preferred over other options? </li>
 </ol>
@@ -229,8 +229,8 @@
 <li>I see a lot of cluttered outputs when using TensorFlow. How can I stop these?</li>
 </ol>
 <p>These cluttering outputs are emitted by the TensorFlow library and not by the framework. One method is to set the TF_CPP_MIN_LOG_LEVEL variable as follows:</p>
-<p><code>`sh 
-export TF_CPP_MIN_LOG_LEVEL=2</code></p>
+<pre><code class="language-sh">export TF_CPP_MIN_LOG_LEVEL=2
+</code></pre>
 <ol>
 <li>What is Horovod?</li>
 </ol>
@@ -250,8 +250,12 @@ export TF_CPP_MIN_LOG_LEVEL=2</code></p>
 <ol>
 <li>How can I simplify the usage of benchmarks that rely on distributed learning?</li>
 </ol>
-<p>Ideally, if you are planning to rely on distributed learning, we  strongly advice you to use container technology, which provides a means for running our benchmarks on production clusters (where directly running <code>sciml-bench</code> or installing various dependencies may not be possible).  </p>
-<p>https://www.xavor.com/blog/distributed-training-using-horovod-and-keras</p></div>
+<p>Ideally, if you are planning to rely on distributed learning, we  strongly advice you to use the container technology, which provides a means for running our benchmarks on production clusters (where directly running <code>sciml-bench</code> or installing various dependencies may not be possible).  </p>
+<ol>
+<li>When list or run benchmarks, I see the message <code>The benchmark mnist_tf_keras does not support training. Terminating the execution</code>. Why is that?</li>
+</ol>
+<p>When verifying a given benchmark, the framework instantiates the relevant Python code (without actually running the benchmark code). This instantiation may easily fail for a number of reasons, including, missing imports in the python code, the benchmakr lacking <code>sciml_bench_training</code> or <code>sciml_bench_inference</code> routines may be missing or may have an error. As a result, the invocation may fail. This is signalled by the call site.  Debugging this can be little tricky. </p>
+<p>https://www.xavor.com/blog/distributed-training-using-horovod-and-kerass</p></div>
             </div>
         </div>
 

@@ -48,7 +48,7 @@ benchmarks:
     mnist_tf_keras:
         datasets: mnist
         is_example: True
-        dependencies: 'tensorflow'
+        dependencies: 'tensorflow,scikit-image'
         types: 'training, inference'
 
     mnist_torch:
