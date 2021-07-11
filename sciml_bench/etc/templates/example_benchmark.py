@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# template.py
+# example_benchmark.py
 
 # SciML-Bench
 # Copyright © 2021 Scientific Machine Learning Research Group
@@ -10,7 +10,7 @@
 # All rights reserved.
 
 """
-A template for benchmark implementation
+Template file for a benchmark implementation
 
 To build a benchmark named 'exbench' into SciMLBench:
 

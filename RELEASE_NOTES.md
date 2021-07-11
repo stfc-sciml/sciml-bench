@@ -16,11 +16,19 @@
 
 1. Separation of example benchmarks/datasets from mainstream benchmarks/datasets.
 
+1. Separation of examples benchmarks into a separate folder.
+
 1. Support for background download mode.
 
 1. Horovod installation woes. Mostly the enough documentation has been added around this, and the user is encouraged to install all these manually. Improved error handling has also been added. 
 
-1. 
+1. Converted the em_denoise benchmark to PyTorch for better support
+
+1. Removed the use of files for logo and messages. They are now incorporated as part of the files. 
+
+1. Added a full documentation in html format using MKDocs.
+
+1. Added an FAQ file.
 
 
 
