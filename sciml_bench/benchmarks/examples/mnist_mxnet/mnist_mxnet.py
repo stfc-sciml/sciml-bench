@@ -23,8 +23,12 @@ import time
 import h5py
 import yaml
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import load_model
+import mxnet as mx
+from mxnet import gluon
+from mxnet.gluon import nn
+import mxnet.ndarray as nd
+from mxnet import autograd as ag
+from mxnet.gluon.utils import split_and_load
 from pathlib import Path
 import skimage.io
 
@@ -55,39 +59,20 @@ def load_dataset_mnist(file_path, batch_size):
 def create_model_mnist():
     """ Create model """
     # create model
-    model = tf.keras.Sequential()
-    model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu',
-                                     input_shape=(28, 28, 1)))
-    model.add(tf.keras.layers.MaxPooling2D((2, 2)))
-    model.add(tf.keras.layers.Flatten())
-    model.add(tf.keras.layers.Dense(128, activation='relu'))
-    model.add(tf.keras.layers.Dense(10, activation='softmax'))
+    # model = tf.keras.Sequential()
+    # model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu',
+    #                                  input_shape=(28, 28, 1)))
+    # model.add(tf.keras.layers.MaxPooling2D((2, 2)))
+    # model.add(tf.keras.layers.Flatten())
+    # model.add(tf.keras.layers.Dense(128, activation='relu'))
+    # model.add(tf.keras.layers.Dense(10, activation='softmax'))
 
     # compile model
-    model.compile(optimizer='adam', loss='categorical_crossentropy',
-                  metrics=['accuracy'])
+    # model.compile(optimizer='adam', loss='categorical_crossentropy',
+                #   metrics=['accuracy'])
+
+    model = None
     return model
-
-
-class LogEpochCallback(tf.keras.callbacks.Callback):
-    """ Callback to log epoch """
-
-    def __init__(self, params_out):
-        super().__init__()
-        self._start_time = time.time()
-        self._params_out = params_out
-
-    def on_epoch_begin(self, epoch, logs=None):
-        # stamp epoch in system monitor
-        self._start_time = time.time()
-        self._params_out.system.stamp_event(f'epoch {epoch}')
-
-    def on_epoch_end(self, epoch, logs=None):
-        msg = f'Epoch {epoch:2d}: '
-        for key, val in logs.items():
-            msg += f'{key}={val:f} '
-        msg += f'elapsed={time.time() - self._start_time:f} sec'
-        self._params_out.log.message(msg)
 
 
 def load_images(image_dir_path):
@@ -112,7 +97,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
                       activate_log_on_device=True, console_on_screen=True)
 
     log = params_out.log
-    log.begin('Running benchmark mnist_tf_keras on training mode')
+    log.begin('Running benchmark mnist_mxnet on training mode')
 
     # We expect two benchmark-specific arguments here: 
     # batch_size and epochs. If not, we will assign 
@@ -154,7 +139,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
                             callbacks=[LogEpochCallback(params_out)])
     # save model
     with log.subproc('Saving the model'):
-        model_file = params_in.output_dir / 'mnist_tf_keras_model.h5'
+        model_file = params_in.output_dir / 'mnist_mxnet_model.h5'
         model.save(model_file)
         log.message(f'Saved to: {model_file}')
     # save history
@@ -165,18 +150,9 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message(f'Saved to: {history_file}')
     log.ended('Training CNN model')
 
-    # predict
-    with log.subproc('Making predictions on test set'):
-        with h5py.File(dataset_dir / 'test.hdf5', 'r') as h5_file:
-            # stamp model.predict in system monitor
-            params_out.system.stamp_event('model.predict')
-            pred = model.predict(np.expand_dims(h5_file['image'][:], -1) / 255)
-            correct = np.sum(pred.argmax(axis=1) == h5_file['label'][:])
-        log.message(f'{correct} correct predictions for {len(pred)} images '
-                    f'(accuracy: {correct / len(pred) * 100:.2f}%)')
 
     # end top level
-    log.ended('Running benchmark mnist_tf_keras on training mode')
+    log.ended('Running benchmark mnist_mxnet on training mode')
 
 
 
@@ -190,7 +166,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     log = params_out.log
 
-    log.begin('Running benchmark mnist_tf_keras on inference mode')
+    log.begin('Running benchmark mnist_mxnet on inference mode')
 
     # Load the model and perform bulk inference 
     with log.subproc('Model loading and inference'):
@@ -206,4 +182,4 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
             log.message(f'{file_names[i]}\t{mappings[i]}')
     
 
-    log.ended('Running benchmark mnist_tf_keras on inference mode')
+    log.ended('Running benchmark mnist_mxnet on inference mode')

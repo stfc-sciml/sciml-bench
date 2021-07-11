@@ -20,7 +20,7 @@ This release of the benchmark suite consists of three benchmarks, namely, *cloud
 
 * The *dms_structure* benchmark was developed by Keith Butler, Gareth Nisbet (Diamond Light Source), Steve Collins (Diamond Light Source), Jeyan Thiyagalingam, and Tony Hey.
 
-* The *em_denoise* benchmark was developed by Keith Butler, Kuangdai Leng, Patrick Austin (RAL, STFC), Jeyan Thiyagalingam, and Tony Hey.
+* The *em_denoise* benchmark was developed by Keith Butler, Patrick Austin (RAL, STFC), Jeyan Thiyagalingam, and Tony Hey.
 
 Please consult the main documentation for details on individual benchmarks. 
 

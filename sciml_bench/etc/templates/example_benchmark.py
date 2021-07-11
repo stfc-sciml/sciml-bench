@@ -33,7 +33,7 @@ Step 4: Make necessary entries in the config file located at
 Step 5: Once fully tested, please contact us for final integration 
         as part of the SciMLBench suite.
 
-You may also want to consult the documentation around this. 
+You should also consult the documentation around this. 
 """
 
 # libs from sciml_bench

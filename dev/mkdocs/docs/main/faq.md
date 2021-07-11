@@ -99,9 +99,9 @@ Assuming benchmark B relies on Horovod, the exact dependency may be around speci
 Ideally, if you are planning to rely on distributed learning, we  strongly advice you to use the container technology, which provides a means for running our benchmarks on production clusters (where directly running `sciml-bench` or installing various dependencies may not be possible).  
 
 
-8. When list or run benchmarks, I see the message `The benchmark mnist_tf_keras does not support training. Terminating the execution`. Why is that?
+8. When list or run benchmarks, I see the message `The benchmark [...] does not support training. Terminating the execution`. Why is that?
 
-When verifying a given benchmark, the framework instantiates the relevant Python code (without actually running the benchmark code). This instantiation may easily fail for a number of reasons, including, missing imports in the python code, the benchmakr lacking `sciml_bench_training` or `sciml_bench_inference` routines may be missing or may have an error. As a result, the invocation may fail. This is signalled by the call site.  Debugging this can be little tricky. 
+Benchmarks can either focus on training or inference or both. One of the reasons for this message can be that the benchmark does not support the requested mode (training or inference). However, in some cases, despite having the relevant implementation, it may still produce this or similar error message. When verifying or running a given benchmark, the framework instantiates the relevant Python code (on training or inference mode).  The training or inference routine may fail for a number of reasons, including, bug in the code, and platform incompatibility of underlying libraries. As a result, the invocation may fail. This is signalled by the call site. Debugging this can be little tricky. If this error is reported on one of our benchmarks, please report this bug.
 
 
 

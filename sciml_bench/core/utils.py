@@ -21,6 +21,7 @@ import sys
 from sciml_bench import __version__ as VERSION
 from bs4 import BeautifulSoup, Comment
 from subprocess import PIPE, run
+from sciml_bench.core.statics  import *
 
 class SafeDict(dict):
     """
@@ -231,9 +232,7 @@ def query_yes_no(question, default=None):
 
 def display_logo():
     """ sciml_bench logo """
-    fqfn = Path(__file__).parents[1] / 'etc/messages/logo.txt'
-    with open(fqfn, 'r') as file:
-        logo = file.read()
+    logo = SCIMLBENCH_TXT_LOGO
     logo = logo.replace('ver xx'.rjust(len(VERSION) + 4), f'ver {VERSION}')
     print(logo)
 

@@ -14,6 +14,7 @@
 Main entry of the program
 """
 
+from sciml_bench.core.statics import ABOUT_MSG
 import click
 import os
 from pathlib import Path
@@ -302,8 +303,7 @@ def sysinfo():
 @cli.command(help='About SciML-Benchmarks.')
 def about():
     """ sciml_bench about """
-    with open(Path(__file__).parents[1] / 'etc/messages/about.txt', 'r') as file:
-        about_info = file.read()
+    about_info = ABOUT_MSG
     display_logo()
     print(about_info)
 
