@@ -40,5 +40,6 @@ Estimation of sea surface temperature (SST) from space-borne sensors, such as sa
 * Device Support: CPU / GPUs / Clusters
 * Authors: Samuel Jackson, Caroline Cox, 
            Jeyan Thiyagalingam, and Tony Hey 
-
+ 
+  Check the full documentation for more details. 
 -->

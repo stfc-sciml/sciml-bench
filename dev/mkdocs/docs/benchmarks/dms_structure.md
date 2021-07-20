@@ -37,4 +37,6 @@ Diffuse Multiple Scattering (DMS) is a phenomenon that has been observed in X-ra
 * Authors: Keith Butler, Patrick Austin, Jeyan Thiyagalingam, and Tony Hey 
 * Authors: Keith Butler, Gareth Nisbet, Steve Collins
            Jeyan Thiyagalingam, and Tony Hey
+
+  Check the full documentation for more details.          
 -->

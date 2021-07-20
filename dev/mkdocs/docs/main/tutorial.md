@@ -198,6 +198,26 @@ Then running the `sciml-bench list --verify` command is useful to know the statu
 
 <br>
 
+## Finding More about Datasets
+
+In addition to the `list` command the `info` command can be used  for obtaining short description around each dataset. The documentation on datasets provide a full coverage around each dataset. To use the `info` command, issue the following command:
+
+```
+sciml-bench info <DATASET_NAME>
+```
+
+where <DATASET_NAME> is one of the datasets supplied by the SciML-Bench. for example, the following command sows the information for the *em_denoise* benchmark
+
+```
+sciml-bench info em_graphene_sim
+```
+
+This displays a limited information around the *em_graphene_sim* benchmark. The example output for the above command will look like the following: 
+
+<img src="../resources/tutorial/info_output_em_graphene_sim.png"  width="400"/>
+
+<br>
+
 ## Installing Benchmarks
 
 As highlighted before, the `list --verify` or `list --deps` commands can provide the status of the benchmarks (as *runnable* or *not runnable*). Each benchmark comes with its own set of dependencies (python packages), and these are not installed by default. For this reason, each benchmark must be installed separately, which will force relevant dependencies to be installed. An example is:
@@ -230,6 +250,21 @@ or
 sciml-bench install em_denoise,dms_scatter
 ```
 
+## Finding More about Benchmarks
+
+Benchmarks are runnable entities, with dependencies on a number of packages, datasets and contains many tunable parameters. The SciML-Bench framework provides a number of commands to obtain various pieces of information about a given benchmark. These, however, do not replace the documentation. Therefore, we recommend using these in conjunction with the documentation.  
+
+The `info` command used to find information about datasets can also be used for obtaining a short description around each benchmark. The documentation on benchmarks provide a full coverage of various options for each and every benchmark. To use the `info` command,
+
+```
+sciml-bench info em_denoise
+```
+
+This displays a limited information around the *em_denoise* benchmark. The example output for the above command will look like the following: 
+
+<img src="../resources/tutorial/info_output_em_denoise.png"  width="400"/>
+
+
 ## Running Benchmarks
 
 Once the benchmarks are installed, please issue the `list` command with `--verify` option, which will indicate whether each benchmark is runnable or not. There can be several reasons for a benchmark to be marked as *not runnable*, including
@@ -238,9 +273,9 @@ Once the benchmarks are installed, please issue the `list` command with `--verif
 1. The relevant datasets have not been downloaded,
 1. The benchmark fails to launch (due to conflicting dependencies or invalid command or similar). This situation is very rare, and we encourage you to contact us. 
 
-Let's assume  that the command `sciml-bench list --verify` lists the *em_denoise* benchmark as runnable. In other words, the dataset *em_grphene_sim* must also have been downloaded. This can be seen in the list,  as in the figure below.
+Let's assume  that the command `sciml-bench list --verify` lists the *em_denoise* benchmark as runnable. In other words, the dataset *em_graphene_sim* must also have been downloaded. This can be seen in the list,  as in the figure below.
 
-<img src="../resources/tutorial/list_output_em_denoise.png" alt="Output of the list command for emdenoise"/>
+<img src="../resources/tutorial/list_output_em_denoise.png" alt="Output of the list command for em_denoise"/>
 
 <br>
 <br>
@@ -255,8 +290,13 @@ The benchmark can be run in a number of different ways.  Simply issuing the `run
 * Outputs will be stored in `~/sciml_bench/outputs/<benchmark_name>/<yyyymmdd>/training` or `../inference` directories. These include benchmark runs, logs, saves models and training or inference history.  
 * Will use the datasets from the default dataset folder, which is, `~/sciml_bench/datasets/<benchmark_name>
 
+To run the *em_denoise* benchmark with default settings, 
 
-An example run screen may look like the following:
+```
+sciml-bench run em_denoise
+```
+
+An example output of a run will  look like the following:
 
 <img src="../resources/tutorial/run_screen_1.png" />
 

@@ -40,6 +40,6 @@ This benchmark includes seven baseline models - Class-aware Fully Convolutional 
 * Authors: Keith Butler, Patrick Austin, 
            Jeyan Thiyagalingam, and Tony Hey 
 
-
+  Check the full documentation for more details. 
 -->
 

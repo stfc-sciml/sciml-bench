@@ -34,7 +34,7 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="navitem">
-                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_1220)</a>
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_1524)</a>
                             </li>
                             <li class="navitem">
                                 <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
@@ -184,7 +184,15 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#finding-more-about-datasets" class="nav-link">Finding More about Datasets</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#installing-benchmarks" class="nav-link">Installing Benchmarks</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#finding-more-about-benchmarks" class="nav-link">Finding More about Benchmarks</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -305,6 +313,16 @@
 </code></pre>
 <p>Then running the <code>sciml-bench list --verify</code> command is useful to know the status of the datasets. However, the <code>--verify</code> option does not verify the integrity of individual files. This may be supported in future versions. </p>
 <p><br></p>
+<h2 id="finding-more-about-datasets">Finding More about Datasets</h2>
+<p>In addition to the <code>list</code> command the <code>info</code> command can be used  for obtaining short description around each dataset. The documentation on datasets provide a full coverage around each dataset. To use the <code>info</code> command, issue the following command:</p>
+<pre><code>sciml-bench info &lt;DATASET_NAME&gt;
+</code></pre>
+<p>where <DATASET_NAME> is one of the datasets supplied by the SciML-Bench. for example, the following command sows the information for the <em>em_denoise</em> benchmark</p>
+<pre><code>sciml-bench info em_graphene_sim
+</code></pre>
+<p>This displays a limited information around the <em>em_graphene_sim</em> benchmark. The example output for the above command will look like the following: </p>
+<p><img src="../resources/tutorial/info_output_em_graphene_sim.png"  width="400"/></p>
+<p><br></p>
 <h2 id="installing-benchmarks">Installing Benchmarks</h2>
 <p>As highlighted before, the <code>list --verify</code> or <code>list --deps</code> commands can provide the status of the benchmarks (as <em>runnable</em> or <em>not runnable</em>). Each benchmark comes with its own set of dependencies (python packages), and these are not installed by default. For this reason, each benchmark must be installed separately, which will force relevant dependencies to be installed. An example is:</p>
 <pre><code>sciml-bench install em_denoise
@@ -321,6 +339,13 @@ Again, as highlighted before, the version, and the exact location of the logs ar
 <p>or</p>
 <pre><code>sciml-bench install em_denoise,dms_scatter
 </code></pre>
+<h2 id="finding-more-about-benchmarks">Finding More about Benchmarks</h2>
+<p>Benchmarks are runnable entities, with dependencies on a number of packages, datasets and contains many tunable parameters. The SciML-Bench framework provides a number of commands to obtain various pieces of information about a given benchmark. These, however, do not replace the documentation. Therefore, we recommend using these in conjunction with the documentation.  </p>
+<p>The <code>info</code> command used to find information about datasets can also be used for obtaining a short description around each benchmark. The documentation on benchmarks provide a full coverage of various options for each and every benchmark. To use the <code>info</code> command,</p>
+<pre><code>sciml-bench info em_denoise
+</code></pre>
+<p>This displays a limited information around the <em>em_denoise</em> benchmark. The example output for the above command will look like the following: </p>
+<p><img src="../resources/tutorial/info_output_em_denoise.png"  width="400"/></p>
 <h2 id="running-benchmarks">Running Benchmarks</h2>
 <p>Once the benchmarks are installed, please issue the <code>list</code> command with <code>--verify</code> option, which will indicate whether each benchmark is runnable or not. There can be several reasons for a benchmark to be marked as <em>not runnable</em>, including</p>
 <ol>
@@ -328,8 +353,8 @@ Again, as highlighted before, the version, and the exact location of the logs ar
 <li>The relevant datasets have not been downloaded,</li>
 <li>The benchmark fails to launch (due to conflicting dependencies or invalid command or similar). This situation is very rare, and we encourage you to contact us. </li>
 </ol>
-<p>Let's assume  that the command <code>sciml-bench list --verify</code> lists the <em>em_denoise</em> benchmark as runnable. In other words, the dataset <em>em_grphene_sim</em> must also have been downloaded. This can be seen in the list,  as in the figure below.</p>
-<p><img src="../resources/tutorial/list_output_em_denoise.png" alt="Output of the list command for emdenoise"/></p>
+<p>Let's assume  that the command <code>sciml-bench list --verify</code> lists the <em>em_denoise</em> benchmark as runnable. In other words, the dataset <em>em_graphene_sim</em> must also have been downloaded. This can be seen in the list,  as in the figure below.</p>
+<p><img src="../resources/tutorial/list_output_em_denoise.png" alt="Output of the list command for em_denoise"/></p>
 <p><br>
 <br></p>
 <p>The <em>Runnable (Training &amp; Inference)</em> indicates that the benchmark can be run either in training mode or in inference mode.  </p>
@@ -340,7 +365,10 @@ Again, as highlighted before, the version, and the exact location of the logs ar
 <li>Outputs will be stored in <code>~/sciml_bench/outputs/&lt;benchmark_name&gt;/&lt;yyyymmdd&gt;/training</code> or <code>../inference</code> directories. These include benchmark runs, logs, saves models and training or inference history.  </li>
 <li>Will use the datasets from the default dataset folder, which is, `~/sciml_bench/datasets/<benchmark_name></li>
 </ul>
-<p>An example run screen may look like the following:</p>
+<p>To run the <em>em_denoise</em> benchmark with default settings, </p>
+<pre><code>sciml-bench run em_denoise
+</code></pre>
+<p>An example output of a run will  look like the following:</p>
 <p><img src="../resources/tutorial/run_screen_1.png" /></p>
 <p>Once you are comfortable with the default runs, you can begin to alter the defaults.  Since the default running mode is training, the following two commands are equivalent: </p>
 <pre><code>sciml-bench run em_denoise
