@@ -34,7 +34,7 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="navitem">
-                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_0954)</a>
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_1220)</a>
                             </li>
                             <li class="navitem">
                                 <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
@@ -176,14 +176,14 @@
 </ul>
 <p>The benchmark, when run, by default, utilises the GPU if one available.  The benchmark does not support distributed training, and such, will not make use of more than one GPU, even if available. The benchmark relies on the following default parameters: </p>
 <ul>
-<li>Batch Size: <code>batch_size</code> = 32</li>
-<li>Number of Epochs: <code>epochs</code> = 30</li>
-<li>Learning Rate: <code>lr</code> = 0.001</li>
-<li>Clipping Offset: <code>clip_offset</code> = 15</li>
-<li>Train/Test Split Ratio <code>train_split</code> = 0.8</li>
-<li>Cropping Size <code>crop_size</code> = 80</li>
-<li>Use Caching during training <code>no_cache</code> = False</li>
-<li>WBCE Value <code>wbce</code>  = 0.5</li>
+<li>Batch size: <code>batch_size</code> = 32</li>
+<li>Number of epochs: <code>epochs</code> = 30</li>
+<li>Learning rate: <code>lr</code> = 0.001</li>
+<li>Clipping offset: <code>clip_offset</code> = 15</li>
+<li>Train/Test split ratio <code>train_split</code> = 0.8</li>
+<li>Cropping size (to remove potential NaN values) <code>crop_size</code> = 80</li>
+<li>Use TensorFlow dataset caching during training <code>no_cache</code> = False</li>
+<li>Value for the weighted binary cross entropy <code>wbce</code>  = 0.5</li>
 </ul>
 <p>These can be tuned further by supplying the values of when running the benchmark in training mode using the <code>--benchmark_specific</code> or <code>-b</code> option.  </p>
 <!--

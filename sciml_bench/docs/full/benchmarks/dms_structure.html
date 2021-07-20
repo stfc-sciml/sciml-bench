@@ -34,7 +34,7 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="navitem">
-                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_0954)</a>
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_1220)</a>
                             </li>
                             <li class="navitem">
                                 <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
@@ -182,7 +182,7 @@
 <li>Early termination threshold: <code>patience</code> = 10</li>
 </ul>
 <p>These can be tuned further by supplying the values of when running the benchmark in training mode using the <code>--benchmark_specific</code> or <code>-b</code> option.  </p>
-<p>The model file for the <em>em_denoise</em> is stored as a single file in HDF format. </p>
+<p>The model file for the <em>dms_structure</em> is stored as a single file in HDF format under the name of <code>dms_structure_model.h5</code> in the outputs folder. </p>
 <!--
 Diffuse Multiple Scattering (DMS) is a phenomenon that has been observed in X-ray patterns for many years, but has only become accessible as a useful tool for analysis with the advent of modern X-ray sources and sensitive detectors in the past decade. The method is very promising, allowing for investigation of multi-phase materials from a single measurement – something not possible with standard X-ray experiments. However, analysis currently relies on extremely laborious searching of patterns to identify important motifs (triple intersections) that allow for inference of information. This task can only be performed by expert beam scientists and severely limits the application of this promising technique. This benchmark aims to measure the possibility of automating this. There are two benchmark cases here: (i) a simple binary classification to distinguish between two possible phases, and (ii) A multi phase classification problem where we classify between six different phases or (possibly) combinations of two of the phases.
 

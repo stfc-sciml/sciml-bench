@@ -1,4 +1,4 @@
-# SciML-Bench Documentation (Version 1.1.0.b200721_0954)
+# SciML-Bench Documentation (Version 1.1.0.b200721_1220)
 
 1. [Introduction](main/intro.md)
 1. [Credits and Acknowledgments](credits.md)

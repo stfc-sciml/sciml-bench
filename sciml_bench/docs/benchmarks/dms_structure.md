@@ -20,7 +20,7 @@ The benchmark, when run, by default, utilises the GPU if one available.  The ben
 
 These can be tuned further by supplying the values of when running the benchmark in training mode using the `--benchmark_specific` or `-b` option.  
 
-The model file for the *em_denoise* is stored as a single file in HDF format. 
+The model file for the *dms_structure* is stored as a single file in HDF format under the name of `dms_structure_model.h5` in the outputs folder. 
 
 
 <!--

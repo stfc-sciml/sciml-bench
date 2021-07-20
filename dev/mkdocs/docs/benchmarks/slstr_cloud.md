@@ -15,18 +15,16 @@ Estimation of sea surface temperature (SST) from space-borne sensors, such as sa
 
 The benchmark, when run, by default, utilises the GPU if one available.  The benchmark does not support distributed training, and such, will not make use of more than one GPU, even if available. The benchmark relies on the following default parameters: 
 
-* Batch Size: `batch_size` = 32
-* Number of Epochs: `epochs` = 30
-* Learning Rate: `lr` = 0.001
-* Clipping Offset: `clip_offset` = 15
-* Train/Test Split Ratio `train_split` = 0.8
-* Cropping Size `crop_size` = 80
-* Use Caching during training `no_cache` = False
-* WBCE Value `wbce`  = 0.5
+* Batch size: `batch_size` = 32
+* Number of epochs: `epochs` = 30
+* Learning rate: `lr` = 0.001
+* Clipping offset: `clip_offset` = 15
+* Train/Test split ratio `train_split` = 0.8
+* Cropping size (to remove potential NaN values) `crop_size` = 80
+* Use TensorFlow dataset caching during training `no_cache` = False
+* Value for the weighted binary cross entropy `wbce`  = 0.5
 
 These can be tuned further by supplying the values of when running the benchmark in training mode using the `--benchmark_specific` or `-b` option.  
-
-
 
 
 <!--
