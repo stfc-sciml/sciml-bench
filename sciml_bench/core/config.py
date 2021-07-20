@@ -46,6 +46,7 @@ class ProgramEnv:
         self.dataset_dir = Path(cfg_dirs['dataset_root_dir']).expanduser()
         self.output_dir  = Path(cfg_dirs['output_root_dir']).expanduser()
         self.model_dir   = Path(cfg_dirs['models_dir']).expanduser()
+        self.docs_dir    = Path(cfg_dirs['docs_dir']).expanduser()
 
         # datasets 
         self.datasets = cfg['datasets']
@@ -171,7 +172,7 @@ class ProgramEnv:
 
         benchmark = self.benchmarks[benchmark_name]
         if 'datasets' in benchmark.keys():
-            return list(csv_to_stripped_set(benchmark, 'dependencies'))
+            return list(csv_to_stripped_set(benchmark, 'datasets'))
         else:
             return  None
 

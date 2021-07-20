@@ -4,6 +4,8 @@ import h5py
 import tensorflow as tf
 import numpy as np
 import horovod.tensorflow as hvd
+from sklearn.model_selection import train_test_split
+
 
 from .constants import PATCH_SIZE, IMAGE_H, IMAGE_W
 from typing import Union, List
@@ -132,3 +134,17 @@ class SLSTRDataLoader:
 
         dataset = dataset.batch(self.batch_size, drop_remainder=True)
         return dataset
+
+
+# Dataloader specific to this benchmark
+def load_datasets(dataset_dir: Path, args: dict):
+    data_paths = list(Path(dataset_dir).glob('**/S3A*.hdf'))
+    train_paths, test_paths = train_test_split(data_paths, train_size=args['train_split'], random_state=42)
+
+    train_data_loader = SLSTRDataLoader(train_paths, batch_size=args['batch_size'], no_cache=args['no_cache'])
+    train_dataset = train_data_loader.to_dataset()
+
+    test_data_loader = SLSTRDataLoader(test_paths, batch_size=args['batch_size'], no_cache=args['no_cache'])
+    test_dataset = test_data_loader.to_dataset()
+
+    return train_dataset, test_dataset

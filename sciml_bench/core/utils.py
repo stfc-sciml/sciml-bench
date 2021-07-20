@@ -323,3 +323,14 @@ def list_all_files_in_dir(dataset_dir: Path):
     p = dataset_dir.glob('**/*')
     files = [x for x in p if x.is_file()]
     return sorted(files)
+
+def print_bullet_list(items: list, intend: int=1):
+    """
+    Given a list of items, 
+    print them one item per line 
+    with a given intend
+    """
+
+    for item in items:
+        print(' ' *  intend, end='')
+        print(f'* {item.strip()}')

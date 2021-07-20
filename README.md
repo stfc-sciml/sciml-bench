@@ -1,4 +1,4 @@
-<img src="./sciml_bench/doc/resources/logo.png" alt="logo" width="500"/>
+<img src="./sciml_bench/docs/resources/logo.png" alt="logo" width="500"/>
 
 
 
@@ -20,7 +20,7 @@ Benchmarking is a valuable tool in computational science that allows effective c
 
 With an ever-growing number of machine learning models and algorithms, a range of scientific problems, and the proliferation of AI systems, the development of cutting-edge ML/AI algorithms requires a detailed understanding of all of these aspects as well as effective mechanisms for measuring their effectiveness.
 
-The SciMLBench toolkit aims to provide such mechanisms. It is an open-source initiative and covers a range of scientific problems from various domains of science, including materials, the life sciences and environmental science, as well as particle physics and astronomy. The benchmarks are implemented in Python and rely on one or more machine learning frameworks, such as TensorFlow, PyTorch or SciKit-Learn.
+The SciML-Bench toolkit aims to provide such mechanisms. It is an open-source initiative and covers a range of scientific problems from various domains of science, including materials, life and environmental scienceS, as well as particle physics and astronomy. The benchmarks are implemented in Python and rely on one or more machine learning frameworks, such as TensorFlow, PyTorch or SciKit-Learn.
 
 The overarching purpose of this initiative is to support the ‘*AI for Science*’ community in the development of more powerful, robust and understandable machine learning solutions.
 
@@ -33,38 +33,29 @@ The overarching purpose of this initiative is to support the ‘*AI for Science*
 
 The suite has three components, namely, 
 
-1. **Benchmarks**: The benchmarks are machine learning applications performing a specific scientific task, written in Python. These are included as part of the distribution, and can be found inside the ``./sciml_bench/benchmarks`` directory. In the scale of *micro-apps*, *mini-apps*, and *apps*, these are full-fledged applications. 
+1. **Benchmarks**: In our case, a benchmark is a machine learning application performing a specific scientific task, written in Python. These are included as part of the distribution, and can be found inside the ``./sciml_bench/benchmarks`` directory. In the scale of *micro-apps*, *mini-apps*, and *apps*, benchmarks are full-fledged applications. 
 
-2. **Datasets**: Each benchmark in (1) relies on one or more datasets, for example for training and/or inferencing. These datasets are open, task- or domain-specific, and FAIR compliant. Most of these datasets being large, they are hosted separately,  on one of the servers (or mirrors), and are automatically or explicitly downloaded on demand. The framework (see (3)), supports manual downloading of these datasets. 
+2. **Datasets**: Each benchmark in (1) relies on one or more datasets, for example for training and/or inference. These datasets are open, task- or domain-specific, and FAIR compliant. Most of these datasets being large, they are hosted separately,  on one of the servers (or mirrors), and are downloaded separately on demand. The framework (see (3)), supports manual downloading of these datasets. 
 
-3. **Framework**:  The framework serves two purposes: first, at the user level, it facilitates an easier approach to benchmarking, logging and reporting of the results. Secondly, at the developer level, it provides a coherent API for unifying and simplifying the development of AI benchmarks. This can be found in ``./sciml_bench/core`` directory. 
+3. **Framework**:  The framework serves two purposes: first, at the user level, it facilitates an easier approach to benchmarking, logging and reporting of the results. Secondly, at the developer level, it provides a coherent API for unifying and simplifying the development of AI benchmarks. Sources related to the framework can be found inside the ``./sciml_bench/core`` directory. 
 
 The source tree, which captures these aspects,  is organised as follows:
 
 ```bash
-├── README.md                  <This file>
-├── config                     <Container configuration files>
-│   ├── Dockerfile
-│   ├── ompi4.def
-│   └── sciml-bench.def
-├── doc                        <User documentation>
-│   ├── benchmarks_datasets.md <List of benchmarks / datasets>
-│   ├── contributing.md        <How to contribute>
-│   ├── credits.md
-│   ├── demo_output__MNIST_torch
-│   │   └──                    <Sample benchmark outputs> 
-│   ├── resources
-│   │   └──                    <Various resources> 
-│   └── usage.md               <Usage documentation> 
-├── requirements.txt
-├── sciml_bench
-    ├── benchmarks             <Benchmark sources> 
-    │   ├── registration.yml   <Key registration file>
-    │   └── template
-    │       └── template.py    <Benchmark Template>
-    ├── core                   <Core scripts> 
-    │   ├── messages           <Display messages>
-    └── sciml_bench_config.yml <Directory configurations>
+├── README.md                   <This file>
+└── sciml_bench/                <Root folder for the framework>
+    ├── core/                   <Core scripts> 
+    └── docs/                   <Main documentation folder>
+        ├── full/               <Full HTML documentation> 
+        ├── benchmarks/         <Documentation on benchmarks>
+        ├── benchmarks/         <Documentation on datasets>
+        ├── resources/          <image and other resources for documentation> 
+    ├── benchmarks/             <Benchmark sources> 
+    |   └──.../                 <Various benchmarks>
+    └── etc/                    <Extra core files>
+        ├── configs/            <Configuration files> 
+        ├── recipes/            <Container and other recipes>
+        └── templates/          <Template files> 
 
 ```
 
@@ -72,26 +63,26 @@ We have annotated the purpose of each folder/directory within `<>`.
 
 ## 2.2 Features 
 
-A typical user-base for the benchmarking framework may include a number of user communities, such as system manufacturers and integrators (for assessing system performance), scientists (for developing new algorithms), and ML enthusiasts (for understanding the basics of various machine learning models and algorithms). It is a challenging task to design for and cover all these requirements in a single framework. Here, with SciMLBench, we have attempted to cover these requirements through the following set of features:
+A typical user-base for the benchmarking framework may cover a broad spectrum of user communities, such as system manufacturers and integrators (for assessing system performance), scientists (for developing new algorithms), and computer scientists  or ML enthusiasts (for understanding the basics of various machine learning models and algorithms). It is a challenging task to design for and cover all these requirements in a single framework. Here, with SciML-Bench, we have attempted to cover these requirements through the following set of features:
 
 * Very flexible, customisable and lightweight framework,
 * Powerful logging and monitoring capabilities, 
-* Support for multiple machine learning frameworks (Tensorflow, PyTorch, and SciKit-Learn), 
+* Support for multiple machine learning frameworks (TensorFlow, PyTorch, Apache MXNet, and SciKit-Learn), 
 * Simplified application programming interface (API), to support easier development of benchmarks, 
 * Fully customisable installation, 
-* Simplified use of framework encouraging a wide range of users, and
-* Fully decoupled,  on-demand, and user-initiated data downloads. 
+* Simplified use of framework that encourages a wide range of users, and
+* Fully decoupled, on-demand, and user-initiated data downloads. 
 
 
 
 ## 2.3 Benchmarks and Datasets 
+The number of datasets and benchmarks may vary with every release. Please consult the [Benchmarks](./sciml_bench/docs/full/benchmarks/summary.html) and  [Datasets](./sciml_bench/docs/full/datasets/summary.html) documents for more details. You can also check out the full documentation [here](./sciml_bench/docs/full/index.html). A number of authors have contributed towards the development of the benchmarks,  and these contributions are stated in [Credits](./sciml_bench/docs/full/credits.html). If you are thinking of contributing towards the benchmarks or datasets, please see the [Contributing Datasets & Benchmarks](./sciml_bench/docs/full/main/contributing.html).
 
-The number of datasets and benchmarks may vary with every release. Please consult the [Benchmarks](./doc/benchmarks_datasets.md) document for this. A number of authors have contributed towards the development of the benchmarks,  and these can be see in the [Credits](./doc/credits.md). If you are thinking of contributing towards the benchmarks or datasets, please see the [Contributing Datasets & Benchmarks](./doc/contributing.md).
 
 
 # 3. Installation and Usage
 
-Please consult the [Installation & Usage](./doc/usage.md) file, placed inside the `doc` folder,  for getting started. 
+Please consult  [Installation & Usage](./sciml_bench/docs/full/main/usage.html) for getting started. The [Frequently Asked Questions (FAQ)](./sciml_bench/docs/full/main/faq.html) covers a number of installation issues. Please consult that if necessary. 
 
 
 
@@ -101,7 +92,7 @@ Cite this benchmark suite as follows:
 
     ```
     @misc{scimlbench:2021,
-        title  = {SciMLBench: A Benchmarking Suite for AI for Science},
+        title  = {SciML-Bench: A Benchmarking Suite for AI for Science},
         author = {Jeyan Thiyagalingam, Juri Papay, Kuangdai Leng, Samuel Jackson, Mallikarjun Shankar, Geoffrey Fox,  Tony Hey},
         url    = {https://github.com/stfc-sciml/sciml-bench},
         year   = {2021}

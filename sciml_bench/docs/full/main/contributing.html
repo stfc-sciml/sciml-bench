@@ -34,7 +34,7 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="navitem">
-                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b110721_2342)</a>
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_0954)</a>
                             </li>
                             <li class="navitem">
                                 <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
@@ -54,6 +54,10 @@
 <li>
     <a href="../benchmarks/slstr_cloud.html" class="dropdown-item">slstr_cloud Benchmark</a>
 </li>
+                                    
+<li>
+    <a href="../benchmarks/summary.html" class="dropdown-item">Summary of Benchmarks</a>
+</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -61,15 +65,23 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="../datasets/cloud_slstr_ds1.html" class="dropdown-item">Cloud slstr ds1</a>
+    <a href="../datasets/cloud_slstr_ds1.html" class="dropdown-item">cloud_slstr_ds1 Dataset</a>
 </li>
                                     
 <li>
-    <a href="../datasets/dms_sim.html" class="dropdown-item">Dms sim</a>
+    <a href="../datasets/cloud_slstr_ds2.html" class="dropdown-item">cloud_slstr_ds2 Dataset</a>
 </li>
                                     
 <li>
-    <a href="../datasets/em_graphene_sim.html" class="dropdown-item">em_graphene_sim</a>
+    <a href="../datasets/dms_sim.html" class="dropdown-item">dms_sim Dataset</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/em_graphene_sim.html" class="dropdown-item">em_graphene_sim Dataset</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/summary.html" class="dropdown-item">Summary of Datasets</a>
 </li>
                                 </ul>
                             </li>
@@ -99,6 +111,10 @@
                                     
 <li>
     <a href="intro.html" class="dropdown-item">Intro</a>
+</li>
+                                    
+<li>
+    <a href="tutorial.html" class="dropdown-item">Using & Contributing to SciML-Bench: A Tutorial</a>
 </li>
                                     
 <li>
@@ -192,7 +208,7 @@ python -m sciml_bench.core.command --help</code></p>
 <br></p>
 <h2 id="2-the-configuration-file">2.  The Configuration File</h2>
 <p>As outlined in the main README file, a single benchmark in SciML-Bench includes two key elements, namely, (one or more) dataset(s), and a reference implementation in Python that solves a particular scientific problem.  We carefully curate the benchmarks (and relevant datasets) included in every release. </p>
-<p>The association between benchmarks and datasets is, as outlined before, is many-to-many. These relationships, relevant dependencies,  exact location of the datasets, and download methods (if any) are maintained in a single configuration file <code>etc/configs</code> folder. We recommend you to read the <a href="configurations.md">Configuration File</a> section. </p>
+<p>The association between benchmarks and datasets is, as outlined before, is many-to-many. These relationships, relevant dependencies,  exact location of the datasets, and download methods (if any) are maintained in a single configuration file <code>etc/configs</code> folder. We recommend you to read the <a href="configuration.html">Configuration File</a> section. </p>
 <p>During the development phase, the datasets do not have to  be deposited  in STFC servers.  Instead, they can be maintained at a location of your choice, for example a local directory. If datasets are locally stored, the <code>download</code> method can be left empty (or ignored), and instead the directory can be specified using the <code>--dataset_dir</code> option when launching the <code>sciml-bench run</code>.  By default, for all the benchmarks distributed by us, the datasets are maintained in the STFC servers (or its mirrors),  and you do not have to modify the download command. </p>
 <p><br></p>
 <h2 id="3-developing-benchmarks">3. Developing Benchmarks</h2>

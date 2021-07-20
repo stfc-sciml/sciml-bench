@@ -1,5 +1,4 @@
-
-# em_graphene_sim
+# em_graphene_sim Dataset
 
 em_graphene_sim is dataset from material sciences domain, specifically
 from electron microscopes. The dataset is made of pairs of noised and
@@ -14,6 +13,7 @@ including a selection of random dead pixels. Other details are:
 * Domain: Material Sciences
 * Sub-Domain: Condensed Matter
 * Data Type: Images [256 x 256 x 1]
+* Enclosing Benchmark: em_denoise
 * Data Size: 5GB
 
 <!--
@@ -31,5 +31,6 @@ including a selection of random dead pixels. Other details are:
 * Domain: Material Sciences
 * Sub-Domain: Condensed Matter
 * Data Type: Images [256 x 256 x 1]
+* Enclosing Benchmark: em_denoise
 * Data Size: 5GB
 -->

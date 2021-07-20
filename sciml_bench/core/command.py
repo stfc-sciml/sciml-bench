@@ -22,7 +22,6 @@ import textwrap
 
 from click.core import Context
 from click.formatting import HelpFormatter
-import sciml_bench
 import sciml_bench.core.benchmark as Benchmark
 import sciml_bench.core.dataset as Dataset
 from sciml_bench.core.config import ProgramEnv
@@ -69,11 +68,30 @@ def cli(version):
 @click.option('--verify', is_flag=True, default=False,
               help='\b\nVerify existence of datasets, and modules of benchmarks.\n'\
                   'Default: False.')
-def cmd_list(scope, verify):
+@click.option('--deps', is_flag=True, default=False,
+              help='\b\List benchmarks and their dependencies.\n'\
+                  'Default: False.')                
+def cmd_list(scope, verify, deps):
     """ sciml_bench list """
 
     display_logo()
 
+    ####### The deps flag is only applicable to Benchmarks ######
+    if deps == True:
+        benchmark_names = ENV.list_main_benchmarks()
+        for bench in benchmark_names:
+            dataset_deps  = ENV.get_bench_datasets(bench)
+            soft_deps = ENV.get_bench_dependencies(bench)
+            runnable_status = Benchmark.get_status(bench, ENV)
+            dataset_deps = ','.join(dataset_deps)
+            soft_deps = ','.join(soft_deps)
+
+            print(f'  Benchmark: {bench}')
+            print(f'\tSoftware Dependencies: {soft_deps}')
+            print(f'\tDatasets: {dataset_deps}')
+            print(f'\tRunnable Status: {runnable_status}')
+            print()
+        return 
 
     # list datasets 
     if scope == 'summary' or scope == 'datasets' or scope=='all':
@@ -81,7 +99,6 @@ def cmd_list(scope, verify):
         dataset_statuses = None
         if verify:
             dataset_statuses = Dataset.get_status(dataset_names, ENV)
-        
         print_items('Datasets', dataset_names, dataset_statuses)
     
     # list benchmarks
@@ -310,3 +327,4 @@ def about():
 
 if __name__ == '__main__':
     cli(auto_envvar_prefix='SCIML_BENCH')
+

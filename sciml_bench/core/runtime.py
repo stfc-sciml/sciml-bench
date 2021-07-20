@@ -108,6 +108,8 @@ class RuntimeIn:
         elif output_dir[0] == '@':
             # special convention to use default root
             self.output_dir = prog_env.output_dir / benchmark_name / output_dir[1:]
+        else:
+            self.output_dir = Path(output_dir).expanduser()
 
         # If we have got this far, we can extract the arguments 
         # Create relevant paths in a thread-safe manner

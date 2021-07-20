@@ -2,7 +2,7 @@
 
 ## 1. This Version
 
-This is SciML-Bench Release Version: **1.1.0.b110721_2342.**
+This is SciML-Bench Release Version: **1.1.0.b200721_0954.**
 Please consult the RELEASE NOTES for more information. 
 <br>
 
@@ -36,13 +36,12 @@ The source tree, which captures these aspects,  is organised as follows:
 
 ├── etc/                        <Contains essential extras>
 │   ├── configs/                <Framework configurations>
-│   ├── messages/               <Various messages used by the framework>
 │   └── recipes/                <Various container build recipes>
 │   └── templates/              <Benchmark template(s)>
 ├── doc                         <Documentation files>
 │   └── benchmarks/             <Documentation about benchmarks>
 │   └── datasets/               <Documentation about datasets>
-│   └── main/                   <Documentation about key aspects>
+│   └── full/                   <Documentation in HTML format>
 │   └── resources/              <Documentation resources>
 ├── benchmarks                  <Source tree for various benchmarks> 
 
@@ -66,7 +65,7 @@ A typical user-base for the benchmarking framework may include a number of user 
 
 **3.3 Benchmarks and Datasets**
 
-The number of [datasets](datasets/dsummary.md) and [benchmarks](benchmarks/bsummary.md) may vary with every release. A number of authors have contributed towards the development of the benchmarks,  and these can be see in the [Credits and Acknowledgment](credits.md) file. If you are thinking of contributing towards the benchmarks or datasets, please see the [Contributing Datasets & Benchmarks](contributing.md) section.
+The number of [datasets](../datasets/summary.md) and [benchmarks](../benchmarks/summary.md) may vary with every release. A number of authors have contributed towards the development of the benchmarks,  and these can be see in the [Credits and Acknowledgment](../credits.md) file. If you are thinking of contributing towards the benchmarks or datasets, please see the [Contributing Datasets & Benchmarks](contributing.md) section.
 
 
 ## 4. Installation and Usage

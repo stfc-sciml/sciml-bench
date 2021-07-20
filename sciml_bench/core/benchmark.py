@@ -16,9 +16,9 @@ from datetime import datetime
 import importlib.util
 from pathlib import Path
 from sciml_bench.core.config import ProgramEnv
-from sciml_bench.core.utils import csv_to_stripped_set, display_logo, query_yes_no, check_command
+from sciml_bench.core.utils import csv_to_stripped_set, display_logo, print_bullet_list, check_command
 from subprocess import PIPE, STDOUT, run
-
+import sciml_bench.core.dataset as Dataset
 
 def create_training_instance(benchmark_name, is_example, return_none_on_except=True):
     """ Create a benchmark instance for training"""
@@ -67,13 +67,19 @@ def install_benchmark_dependencies(benchmark_list, prog_env: ProgramEnv):
     if 'all' in [bench.lower() for bench in benchmarks]:
         if len(benchmarks) != 1:
             print('"all" is presented - ignoring rest of the entries')
-            benchmarks = set(prog_env.benchmarks.keys())
+        benchmarks = set(prog_env.benchmarks.keys())
 
     # check benchmarks
-    if benchmarks > set(prog_env.benchmarks.keys()):
-        print(f'One or more benchmarks in the list')
-        print(f'* {benchmarks}')
-        print(f'is not part of the SciML-Bench' )
+    if not benchmarks.issubset(set(prog_env.benchmarks.keys())):
+        print('\n\n')
+        print(' ===============================================================\n')
+        print(f' ERROR!!! One or more benchmarks in the list')
+        print(f'  {benchmarks}')
+        print(f' are not part of the SciML-Bench. Possible benchmark candidates are:')
+        print_bullet_list(list(prog_env.benchmarks.keys()), 2)
+        print()
+        print(f' Aborting installation.')
+        print(' ===============================================================\n')
         return 
 
 
@@ -101,8 +107,12 @@ def install_benchmark_dependencies(benchmark_list, prog_env: ProgramEnv):
     if len(failed) > 0:
         print(' Dependencies failed:')
         [print(f'  - {failed_dep}') for failed_dep in failed]
-    print(f'\n Detailed Errors/Outputs are logged to\n   {log_file}')
+        print(f'\n Detailed errors are logged to\n   {log_file}')
+
+    else:
+        print(f'\n Detailed outputs are logged to\n   {log_file}')
     print(' ===============================================================\n')
+
 
 
 def install_dependencies(regular_deps, horovod_deps, log_file):
@@ -110,6 +120,7 @@ def install_dependencies(regular_deps, horovod_deps, log_file):
     succeeded = set()
     failed = set()
     dependencies_copy = regular_deps.copy()
+
     for dep in dependencies_copy:
         print(f'\t- Attempting to install {dep}', end='', flush=True)
         result = run(f'pip install --no-cache-dir {dep}', stdout=PIPE, stderr=STDOUT, universal_newlines=True,  shell=True)
@@ -141,6 +152,7 @@ def build_dependencies(benchmarks):
     # verify each benchmark
     regular_dependencies = set()
     horovod_dependencies  = set()
+    reverse_lookup = {}
     for _,v in benchmarks.items():
         bench_deps = csv_to_stripped_set(v,'dependencies')
         for dep in bench_deps:
@@ -236,18 +248,21 @@ def __install_horovod__(horovod_dependencies, log_file):
 
     return h_succeeded, h_failed
 
-def __get_runnable_status__(is_good_train, is_good_inference):
-    if is_good_train and is_good_inference:
+def __get_runnable_status__(is_good_train, is_good_inference, all_datasets_available):
+    if is_good_train and is_good_inference and all_datasets_available:
         str = "Runnable (Training & Inference)"
-    elif is_good_train:
+    elif is_good_train and all_datasets_available:
         str = "Runnable (Training)"
-    elif is_good_inference:
+    elif is_good_inference and all_datasets_available:
         str = "Runnable (Inference)"
     else:
         str = "Not runnable"
     return str
 
 def get_status(benchmark_names, ENV:ProgramEnv):
+    """
+    Return benchmark status as runnable/not-runnable
+    """
     flag = False
     status_str = []
     if not isinstance(benchmark_names, list):
@@ -258,9 +273,33 @@ def get_status(benchmark_names, ENV:ProgramEnv):
         is_example = ENV.get_bench_example_flag(benchmark_name)
         is_good_train = create_training_instance(benchmark_name, is_example, True)
         is_good_inference = create_inference_instance(benchmark_name, is_example, True)
-        status_str.append(__get_runnable_status__(is_good_train, is_good_inference))
+        dep_datasets = ENV.get_bench_datasets(benchmark_name)
+        all_datasets_available = True
+        for ds in dep_datasets:
+            all_datasets_available = all_datasets_available and Dataset.get_status(ds, ENV) == 'Downloaded' 
+        status_str.append(__get_runnable_status__(is_good_train, is_good_inference, all_datasets_available))
     
     if flag == True:
         status_str = status_str[0]
     
     return status_str
+
+def get_benchmark_dataset_links(benchmark_names: dict, ENV: ProgramEnv):
+    """
+    returns the list of datasets that benchmarks are associated to
+    as a list. 
+    """
+    is_single_item = False
+    deps_str = []
+    if not isinstance(benchmark_names, list):
+        benchmark_names = [benchmark_names]
+        is_single_item =True
+
+    for benchmark_name in benchmark_names:
+        datasets = ENV.get_bench_datasets(benchmark_name)
+        deps_str.append(datasets)
+    
+    if is_single_item == True:
+        deps_str = deps_str[0]
+    
+    return deps_str

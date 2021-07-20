@@ -24,6 +24,7 @@ directories:
     dataset_root_dir: ~/sciml_bench/datasets
     output_root_dir: ~/sciml_bench/outputs
     models_dir: ~/sciml_bench/models
+    docs_dir: ~/sciml_bench/docs
 
 
 # List of datasets
@@ -54,11 +55,11 @@ benchmarks:
 
     dms_structure:
         datasets: dms_sim
-        dependencies: 'torch'
+        dependencies: 'torch, sklearn'
         types: 'training, inference'
 
     slstr_cloud:
-        datasets: slstr_cloud_ds1
+        datasets: cloud_slstr_ds1
         dependencies: 'tensorflow,scikit-learn,horovod.tensorflow'
         types: 'training'
 

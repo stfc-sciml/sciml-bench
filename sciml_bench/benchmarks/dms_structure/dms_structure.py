@@ -82,7 +82,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         device = "cpu"
         log.message('Using CPU')
 
-    # save parameters
+    # save arguments
     args_file = params_in.output_dir / 'training_arguments_used.yml'
     with log.subproc('Saving arguments to a file'):
         with open(args_file, 'w') as handle:

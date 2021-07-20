@@ -30,5 +30,12 @@
 
 1. Added an FAQ file.
 
+1. Added Tutorial
+
+1. Added `--deps` option to the list command to list dependencies of benchmarks 
+
+1. Added download check for `--verify` option.
+
+
 
 

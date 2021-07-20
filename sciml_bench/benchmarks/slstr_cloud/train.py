@@ -1,3 +1,4 @@
+from ast import Str
 from os.path import split
 
 import yaml
@@ -36,48 +37,22 @@ def weighted_cross_entropy(beta):
 
     return loss
 
-
-def train_model(daatset_dir: Path, args: dict, smlb_in: RuntimeIn, smlb_out: RuntimeOut) -> None:
+def train_model(train_dataset, test_dataset, model, args:dict,  \
+                            params_in: RuntimeIn, params_out:RuntimeOut) -> None:
+    
     """
     Train a U-Net style model
-    :param daatset_dir: path to the data files
-    :param args: dictionary of user/environment arguments
-    :param smlb_in: RuntimeIn instance for logging
-    :param smlb_out: RuntimeOut instance for logging
     """
-    console = smlb_out.log.console
-    device = smlb_out.log.device
+    console = params_out.log.console
+    device = params_out.log.device
 
     learning_rate = args['learning_rate']
     epochs = args['epochs']
     batch_size = args['batch_size']
     wbce = args['wbce']
     clip_offset = args['clip_offset']
-
-    # Pin the number of GPUs to the local rank for Horovod
-    gpus = tf.config.experimental.list_physical_devices('GPU')
-    for gpu in gpus:
-        tf.config.experimental.set_memory_growth(gpu, True)
-    if gpus:
-        tf.config.experimental.set_visible_devices(
-            gpus[hvd.local_rank()], 'GPU')
-
-    if hvd.rank() == 0:
-        console.message(f"Num GPUS: {len(gpus)}")
-        console.message(f"Num ranks: {hvd.size()}")
-
-    # Get the data loader
-    data_paths = list(Path(daatset_dir).glob('**/S3A*.hdf'))
-    train_paths, test_paths = train_test_split(data_paths, train_size=args['train_split'], random_state=42)
-
-    train_data_loader = SLSTRDataLoader(train_paths, batch_size=batch_size, no_cache=args['no_cache'])
-    train_dataset = train_data_loader.to_dataset()
-
-    test_data_loader = SLSTRDataLoader(test_paths, batch_size=batch_size, no_cache=args['no_cache'])
-    test_dataset = test_data_loader.to_dataset()
-
-    model = unet(train_data_loader.input_size)
-
+    
+ 
     # Setup the loss functions and optimizer
     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     bce = weighted_cross_entropy(wbce)
@@ -90,7 +65,7 @@ def train_model(daatset_dir: Path, args: dict, smlb_in: RuntimeIn, smlb_out: Run
     test_loss_metric = tf.keras.metrics.Mean()
     test_acc_metric = tf.keras.metrics.BinaryAccuracy()
 
-    log = smlb_out.log
+    log = params_out.log
 
     @tf.function
     def train_step(images, masks, first_batch=False):
@@ -147,7 +122,7 @@ def train_model(daatset_dir: Path, args: dict, smlb_in: RuntimeIn, smlb_out: Run
 
             # Train model
             device.begin("Training")
-            smlb_out.system.stamp_event(f'epoch {epoch}: train')
+            params_out.system.stamp_event(f'epoch {epoch}: train')
             for i, (images, masks) in enumerate(train_dataset):
                 predicted, msk = train_step(images, masks, i == 0)
                 train_acc_metric.update_state(msk, predicted)
@@ -160,7 +135,7 @@ def train_model(daatset_dir: Path, args: dict, smlb_in: RuntimeIn, smlb_out: Run
             device.begin("Testing")
 
             # Test model
-            smlb_out.system.stamp_event(f'epoch {epoch}: validate')
+            params_out.system.stamp_event(f'epoch {epoch}: validate')
             for i, (images, masks) in enumerate(test_dataset):
                 predicted, msk = test_step(images, masks, i == 0)
                 test_acc_metric.update_state(msk, predicted)
@@ -187,13 +162,11 @@ def train_model(daatset_dir: Path, args: dict, smlb_in: RuntimeIn, smlb_out: Run
             console.message(message)
 
             # Save model
-            model_file = smlb_in.output_dir / 'model.h5'
+            model_file = params_in.output_dir / 'model.h5'
             model.save(model_file)
 
             history.append(dict(train_accuracy=train_accuracy, epoch=epoch, train_loss=train_loss,
                                 test_accuracy=test_accuracy, test_loss=test_loss))
 
-    history_file = smlb_in.output_dir / 'training_history.yml'
-    with history_file.open('w') as handle:
-        yaml.dump(history, handle)
+    return history 
 

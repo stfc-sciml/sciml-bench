@@ -18,16 +18,16 @@ It is worth noting that:
 
 * **Supported Operating Systems**: Linux (and derivatives).
 
-* **Software**: Python 3.8-upwards, pip, and nvidia-smi (if using CUDA/GPUs).
+* **Software**: Python 3.9-upwards, pip, and nvidia-smi (if using CUDA/GPUs).
 
 * **Benchmark-specific dependencies**: Please consult the benchmarks.
 
 
-The framework and the benchmarks are primarily designed for large-scale systems (at least for training), and, as such,  windows or MacOS systems are not officially supported. However, these non-Linux systems can be used in some cases, for instance in inference mode.
+The framework and the benchmarks are primarily designed for large-scale systems (at least for training), and, as such,  windows or MacOS systems are not officially supported. However, we sound that the framework works on these non-Linux systems, and can be used primarily for inference purposes.
 
-Although the core framework  does not heavily rely on machine learning frameworks, such as TensorFlow, PyTorch, or MXNet, benchmarks may rely on one or more of these. As such,  supported Python versions are limited by these frameworks. In general, Python versions 3.8+ are generally supported. We also rely on GPU-specific libraries, such as nvidia-smi for core capabilities. 
+Although the core framework  does not heavily rely on machine learning frameworks, such as TensorFlow, PyTorch, or Apache MXNet, benchmarks may rely on one or more of these. As such,  supported Python versions are limited by these frameworks. In general, Python versions 3.8+ are generally supported, but we recommend version 3.9. We also rely on GPU-specific libraries, such as nvidia-smi for core capabilities. 
 
-Benchmarks may rely on distributed learning, and subsequently, dependencies on distributed learning frameworks, such as TensorFlow Distributed, PyTorch Distributed Data Parallel (DDP) or Horovod, are inevitable. Although some of these can be installed through our framework, these frameworks may have complex dependencies and in some cases, OS-level installations. As such, we recommend manual installation of these frameworks or we recommend using containers. 
+Benchmarks may rely on distributed learning, and subsequently, dependencies on distributed learning frameworks, such as TensorFlow Distributed, PyTorch Distributed Data Parallel (DDP) or Horovod, are inevitable. Although some of these can be installed through our framework, these frameworks may have complex dependencies and in some cases, OS-level installations. Hence, we recommend manual installation of these frameworks or we recommend using containers. 
 
 <br>
 

@@ -34,7 +34,7 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="navitem">
-                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b110721_2342)</a>
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_0954)</a>
                             </li>
                             <li class="navitem">
                                 <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
@@ -54,6 +54,10 @@
 <li>
     <a href="../benchmarks/slstr_cloud.html" class="dropdown-item">slstr_cloud Benchmark</a>
 </li>
+                                    
+<li>
+    <a href="../benchmarks/summary.html" class="dropdown-item">Summary of Benchmarks</a>
+</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -61,15 +65,23 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="../datasets/cloud_slstr_ds1.html" class="dropdown-item">Cloud slstr ds1</a>
+    <a href="../datasets/cloud_slstr_ds1.html" class="dropdown-item">cloud_slstr_ds1 Dataset</a>
 </li>
                                     
 <li>
-    <a href="../datasets/dms_sim.html" class="dropdown-item">Dms sim</a>
+    <a href="../datasets/cloud_slstr_ds2.html" class="dropdown-item">cloud_slstr_ds2 Dataset</a>
 </li>
                                     
 <li>
-    <a href="../datasets/em_graphene_sim.html" class="dropdown-item">em_graphene_sim</a>
+    <a href="../datasets/dms_sim.html" class="dropdown-item">dms_sim Dataset</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/em_graphene_sim.html" class="dropdown-item">em_graphene_sim Dataset</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/summary.html" class="dropdown-item">Summary of Datasets</a>
 </li>
                                 </ul>
                             </li>
@@ -102,6 +114,10 @@
 </li>
                                     
 <li>
+    <a href="tutorial.html" class="dropdown-item">Using & Contributing to SciML-Bench: A Tutorial</a>
+</li>
+                                    
+<li>
     <a href="usage.html" class="dropdown-item">Using the Suite and Benchmarks</a>
 </li>
                                 </ul>
@@ -115,7 +131,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="usage.html" class="nav-link">
+                                <a rel="next" href="tutorial.html" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -173,7 +189,7 @@
 
 <p><img src="../resources/logo.png" alt="logo" width="500"/></p>
 <h2 id="1-this-version">1. This Version</h2>
-<p>This is SciML-Bench Release Version: <strong>1.1.0.b110721_2342.</strong>
+<p>This is SciML-Bench Release Version: <strong>1.1.0.b200721_0954.</strong>
 Please consult the RELEASE NOTES for more information. 
 <br></p>
 <h2 id="2-synopsis">2. Synopsis</h2>
@@ -200,13 +216,12 @@ Please consult the RELEASE NOTES for more information.
 <pre><code class="language-bash">
 ├── etc/                        &lt;Contains essential extras&gt;
 │   ├── configs/                &lt;Framework configurations&gt;
-│   ├── messages/               &lt;Various messages used by the framework&gt;
 │   └── recipes/                &lt;Various container build recipes&gt;
 │   └── templates/              &lt;Benchmark template(s)&gt;
 ├── doc                         &lt;Documentation files&gt;
 │   └── benchmarks/             &lt;Documentation about benchmarks&gt;
 │   └── datasets/               &lt;Documentation about datasets&gt;
-│   └── main/                   &lt;Documentation about key aspects&gt;
+│   └── full/                   &lt;Documentation in HTML format&gt;
 │   └── resources/              &lt;Documentation resources&gt;
 ├── benchmarks                  &lt;Source tree for various benchmarks&gt; 
 
@@ -224,7 +239,7 @@ Please consult the RELEASE NOTES for more information.
 <li>Fully decoupled,  on-demand, and user-initiated data downloads. </li>
 </ul>
 <p><strong>3.3 Benchmarks and Datasets</strong></p>
-<p>The number of <a href="datasets/dsummary.md">datasets</a> and <a href="benchmarks/bsummary.md">benchmarks</a> may vary with every release. A number of authors have contributed towards the development of the benchmarks,  and these can be see in the <a href="credits.md">Credits and Acknowledgment</a> file. If you are thinking of contributing towards the benchmarks or datasets, please see the <a href="contributing.html">Contributing Datasets &amp; Benchmarks</a> section.</p>
+<p>The number of <a href="../datasets/summary.html">datasets</a> and <a href="../benchmarks/summary.html">benchmarks</a> may vary with every release. A number of authors have contributed towards the development of the benchmarks,  and these can be see in the <a href="../credits.html">Credits and Acknowledgment</a> file. If you are thinking of contributing towards the benchmarks or datasets, please see the <a href="contributing.html">Contributing Datasets &amp; Benchmarks</a> section.</p>
 <h2 id="4-installation-and-usage">4. Installation and Usage</h2>
 <p>Please consult the <a href="usage.html">Installation &amp; Usage</a> file for getting started. </p>
 <h2 id="5-citation">5. Citation</h2>

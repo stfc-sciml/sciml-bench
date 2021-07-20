@@ -34,7 +34,7 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="navitem">
-                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b110721_2342)</a>
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_0954)</a>
                             </li>
                             <li class="navitem">
                                 <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
@@ -54,6 +54,10 @@
 <li>
     <a href="slstr_cloud.html" class="dropdown-item">slstr_cloud Benchmark</a>
 </li>
+                                    
+<li>
+    <a href="summary.html" class="dropdown-item">Summary of Benchmarks</a>
+</li>
                                 </ul>
                             </li>
                             <li class="dropdown">
@@ -61,15 +65,23 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="../datasets/cloud_slstr_ds1.html" class="dropdown-item">Cloud slstr ds1</a>
+    <a href="../datasets/cloud_slstr_ds1.html" class="dropdown-item">cloud_slstr_ds1 Dataset</a>
 </li>
                                     
 <li>
-    <a href="../datasets/dms_sim.html" class="dropdown-item">Dms sim</a>
+    <a href="../datasets/cloud_slstr_ds2.html" class="dropdown-item">cloud_slstr_ds2 Dataset</a>
 </li>
                                     
 <li>
-    <a href="../datasets/em_graphene_sim.html" class="dropdown-item">em_graphene_sim</a>
+    <a href="../datasets/dms_sim.html" class="dropdown-item">dms_sim Dataset</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/em_graphene_sim.html" class="dropdown-item">em_graphene_sim Dataset</a>
+</li>
+                                    
+<li>
+    <a href="../datasets/summary.html" class="dropdown-item">Summary of Datasets</a>
 </li>
                                 </ul>
                             </li>
@@ -99,6 +111,10 @@
                                     
 <li>
     <a href="../main/intro.html" class="dropdown-item">Intro</a>
+</li>
+                                    
+<li>
+    <a href="../main/tutorial.html" class="dropdown-item">Using & Contributing to SciML-Bench: A Tutorial</a>
 </li>
                                     
 <li>
@@ -153,16 +169,32 @@
 <li>Sub Domain: Condensed Matter Physics</li>
 <li>Task: Image classification </li>
 <li>Relevant Datasets: dms_sim</li>
+<li>Implementation: PyTorch</li>
+<li>Support for Distributed Training: No</li>
+<li>Device Support: CPU / GPU</li>
 <li>Authors: Keith Butler, Patrick Austin, Jeyan Thiyagalingam, and Tony Hey </li>
 </ul>
+<p>The benchmark, when run, by default, utilises the GPU if one available.  The benchmark does not support distributed training, and such, will not make use of more than one GPU, even if available. The benchmark relies on the following default parameters: </p>
+<ul>
+<li>Batch Size: <code>batch_size</code> = 32</li>
+<li>Number of Epochs: <code>epochs</code> = 30</li>
+<li>Learning Rate: <code>lr</code> = 0.0001</li>
+<li>Early termination threshold: <code>patience</code> = 10</li>
+</ul>
+<p>These can be tuned further by supplying the values of when running the benchmark in training mode using the <code>--benchmark_specific</code> or <code>-b</code> option.  </p>
+<p>The model file for the <em>em_denoise</em> is stored as a single file in HDF format. </p>
 <!--
 Diffuse Multiple Scattering (DMS) is a phenomenon that has been observed in X-ray patterns for many years, but has only become accessible as a useful tool for analysis with the advent of modern X-ray sources and sensitive detectors in the past decade. The method is very promising, allowing for investigation of multi-phase materials from a single measurement – something not possible with standard X-ray experiments. However, analysis currently relies on extremely laborious searching of patterns to identify important motifs (triple intersections) that allow for inference of information. This task can only be performed by expert beam scientists and severely limits the application of this promising technique. This benchmark aims to measure the possibility of automating this. There are two benchmark cases here: (i) a simple binary classification to distinguish between two possible phases, and (ii) A multi phase classification problem where we classify between six different phases or (possibly) combinations of two of the phases.
 
 * Entity Type: Benchmark
 * Main Domain: Material Sciences
 * Sub Domain: Condensed Matter Physics
-* Learning Task: Image classification 
+* Task: Image classification 
 * Relevant Datasets: dms_sim
+* Implementation: PyTorch
+* Support for Distributed Training: No
+* Device Support: CPU / GPU
+* Authors: Keith Butler, Patrick Austin, Jeyan Thiyagalingam, and Tony Hey 
 * Authors: Keith Butler, Gareth Nisbet, Steve Collins
            Jeyan Thiyagalingam, and Tony Hey
 --></div>
