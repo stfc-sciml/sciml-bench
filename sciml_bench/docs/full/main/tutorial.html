@@ -34,7 +34,7 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="navitem">
-                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_1524)</a>
+                                <a href="../index.html" class="nav-link">SciML-Bench Documentation (Version 1.1.0.b200721_2327)</a>
                             </li>
                             <li class="navitem">
                                 <a href="../credits.html" class="nav-link">SciML Benchmark Suite - Credits</a>
@@ -202,13 +202,18 @@
             </li>
               </ul>
             </li>
+            
+            <li class="nav-item" data-level="1"><a href="#using-sciml-bench-through-containers" class="nav-link">Using SciML-Bench through Containers</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
         </ul>
     </div>
 </div></div>
                     <div class="col-md-9" role="main">
 
 <h1 id="using-contributing-to-sciml-bench-a-tutorial">Using &amp; Contributing to SciML-Bench: A Tutorial</h1>
-<p>Before proceeding with this tutorial, please ensure that the framework has been installed. Please consult the <a href="installation.html">Installation</a> documentation for more details. In addition to this, the general usage is outlined <a href="usage.html">here</a>. This tutorial is intended to demonstrate these with examples packaged with the framework.  We recommend following all of them in order, until you feel comfortable of using the framework or contributing to the benchmarks.</p>
+<p>This tutorial is not a replacement for the documentation. Please consult the <a href="installation.html">Installation</a> documentation for more details. In addition to this, the general usage is outlined <a href="usage.html">here</a>. This tutorial is intended to demonstrate these with examples packaged with the framework.  We recommend following all of the following examples in order, until you feel comfortable of using the framework or contributing to the benchmarks. </p>
 <h1 id="using-sciml-bench-through-command-line-interface-cli">Using SciML-Bench through Command Line Interface (CLI)</h1>
 <h2 id="environment">Environment</h2>
 <p>We strongly advice you to create a sandboxed environment before using the benchmark suite, ideally in a <em>conda</em> environment or <em>pyenv</em>.  We also recommend Python 3.9. Let's assume  that the name of the sandboxed environment is "bench", to mark benchmarking. To start with</p>
@@ -392,7 +397,7 @@ Again, as highlighted before, the version, and the exact location of the logs ar
 <pre><code>sciml-bench run --help
 </code></pre>
 <h3 id="running-benchmarks-on-inference-mode">Running Benchmarks on Inference Mode</h3>
-<p>You run a benchmark on inference mode, you need to:</p>
+<p>To run a benchmark on inference mode, you need to:</p>
 <ol>
 <li>have access to the model files (including the architecture and weights), and </li>
 <li>have some datasets on which you would like to run the inference on. </li>
@@ -409,7 +414,9 @@ Again, as highlighted before, the version, and the exact location of the logs ar
                 --dataset_dir /tmp/emd/inference \
                 em_denoise 
 </code></pre>
-<p><strong><em> More to do </em></strong></p></div>
+<p><br>
+<br></p>
+<h1 id="using-sciml-bench-through-containers">Using SciML-Bench through Containers</h1></div>
             </div>
         </div>
 

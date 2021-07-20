@@ -28,7 +28,6 @@ The overarching purpose of this initiative is to support the ‘*AI for Science*
 # 2. Benchmark Suite 
 
 
-
 ## 2.1 Organisation
 
 The suite has three components, namely, 
@@ -43,7 +42,7 @@ The source tree, which captures these aspects,  is organised as follows:
 
 ```bash
 ├── README.md                   <This file>
-└── sciml_bench/                <Root folder for the framework>
+└── sciml_bench/                <Root folder for the framework and benchmarks>
     ├── core/                   <Core scripts> 
     └── docs/                   <Main documentation folder>
         ├── full/               <Full HTML documentation> 
@@ -82,7 +81,7 @@ The number of datasets and benchmarks may vary with every release. Please consul
 
 # 3. Installation and Usage
 
-Please consult  [Installation & Usage](./sciml_bench/docs/full/main/usage.html) for getting started. The [Frequently Asked Questions (FAQ)](./sciml_bench/docs/full/main/faq.html) covers a number of installation issues. Please consult that if necessary. 
+Please consult  [Installation & Usage](./sciml_bench/docs/full/main/usage.html) for getting started. The [Frequently Asked Questions (FAQ)](./sciml_bench/docs/full/main/faq.html) covers a number of installation issues. We have also included a short [tutorial]((./sciml_bench/docs/full/main/tutorial.html)) on installing and using the framework. 
 
 
 

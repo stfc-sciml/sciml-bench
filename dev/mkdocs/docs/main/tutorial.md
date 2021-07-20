@@ -1,6 +1,6 @@
 # Using & Contributing to SciML-Bench: A Tutorial 
 
-Before proceeding with this tutorial, please ensure that the framework has been installed. Please consult the [Installation](./installation.md) documentation for more details. In addition to this, the general usage is outlined [here](./usage.md). This tutorial is intended to demonstrate these with examples packaged with the framework.  We recommend following all of them in order, until you feel comfortable of using the framework or contributing to the benchmarks.
+This tutorial is not a replacement for the documentation. Please consult the [Installation](./installation.md) documentation for more details. In addition to this, the general usage is outlined [here](./usage.md). This tutorial is intended to demonstrate these with examples packaged with the framework.  We recommend following all of the following examples in order, until you feel comfortable of using the framework or contributing to the benchmarks. 
 
 # Using SciML-Bench through Command Line Interface (CLI)
 
@@ -348,7 +348,7 @@ sciml-bench run --help
 
 ### Running Benchmarks on Inference Mode
 
-You run a benchmark on inference mode, you need to:
+To run a benchmark on inference mode, you need to:
 
 1. have access to the model files (including the architecture and weights), and 
 1. have some datasets on which you would like to run the inference on. 
@@ -371,5 +371,11 @@ sciml-bench run --mode inference \
                 em_denoise 
 ```
 
-*** More to do ***
+
+<br>
+<br>
+
+# Using SciML-Bench through Containers 
+
+
 

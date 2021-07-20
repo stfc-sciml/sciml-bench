@@ -2,35 +2,44 @@
 
 # Version 1.1.0.b
 
-1, Added full documentation of entities (such as benchmarks, datasets and models). Check the info command.
 
-1. Changes to the API of the SciMLBench: Added training and inference of benchmarks.
+## Documentation
 
-1. Reorganisation of the file system.
+1. Added full documentation of entities (such as benchmarks, datasets and models). The new release now includes a full-fledged HTML-based documentation, powered by MKDocs. 
 
-1. Additional commands: info, version.
+1. A detailed documentation has been now added around all benchmarks, datasets,  installation aspects.
 
-1. The exact method verification works.
+1. A detailed FAQ and Tutorial have also been added. 
 
-1. Introduction of a single, unified configuration  file.
+1. Updated CREDITS file. 
 
-1. Separation of example benchmarks/datasets from mainstream benchmarks/datasets.
 
-1. Separation of examples benchmarks into a separate folder.
+## Structure and Organisation 
 
-1. Support for background download mode.
+1. Reorganisation of the file structure.
 
-1. Horovod installation woes. Mostly the enough documentation has been added around this, and the user is encouraged to install all these manually. Improved error handling has also been added. 
+1. Simplified the benchmark, datasets and framework options using a single Configuration file. 
 
-1. Converted the em_denoise benchmark to PyTorch for better support
+1. Removed the use of files for retaining logo and messages. They are now incorporated as part of the files. This results in improved response to a number of commands, such as `about`. 
 
-1. Removed the use of files for logo and messages. They are now incorporated as part of the files. 
+1. The new version has an improved API to support / separate training and inference aspects of benchmarking. 
 
-1. Added a full documentation in html format using MKDocs.
 
-1. Added an FAQ file.
+## Commands and Options 
 
-1. Added Tutorial
+1. Additional commands: `info`, `version`.
+
+1. Additional options for commands:
+    * `--deps` option for the `list` command for obtaining dependency information on benchmarks,
+    * `--mode`, `--model`, `--dataset_dir` options for the `run` command, and
+    * `--mode` option for the `download` command.
+
+1. Removal of redundant / non-sensical features, commands and options from 1.0.0
+    * Removal of `--brief` option for the `list` command. 
+
+1. Very streamlined and cleaner interface for download, and install commands. All download and installation commands result in summary outputs and detailed outputs are available as log files. This means, less clutter to the terminal window. 
+
+1. Numerous bug fixes, enhancements and simplification of options and commands. 
 
 1. Added `--deps` option to the list command to list dependencies of benchmarks 
 
@@ -38,4 +47,21 @@
 
 
 
+## Benchmarks 
 
+1. Separation of example benchmarks/datasets from mainstream benchmarks/datasets.
+
+1. Converted the *em_denoise* benchmark to PyTorch for better support. 
+
+1. The *mnist* example is now available in PyTorch, TensorFlow+Keras, and Apache MXNet. 
+
+1. Simplified all benchmark implementations. New benchmark implementations are well structured with less clutter.
+
+1. All benchmarks now include inference options. 
+
+
+## Datasets 
+
+1. Datasets are now available in two locations: STFC (UK) and Open Storage Network (San Diego Supercomputing Centre). 
+
+◼︎
