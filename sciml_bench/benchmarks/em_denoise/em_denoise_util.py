@@ -11,14 +11,16 @@
 
 import h5py
 import torch
+import numpy as np
+import skimage.io
 from pathlib import Path
 from torch.utils.data import  DataLoader
 from torch import nn, optim
 
-from sciml_bench.core.utils import MultiLevelLogger
+from sciml_bench.core.utils import MultiLevelLogger, list_files
 
 
-class EMDenoiseDataset(torch.utils.data.Dataset):
+class EMDenoiseTrainingDataset(torch.utils.data.Dataset):
     """
     A generic zipped dataset loader for EMDenoiser
     """
@@ -47,6 +49,41 @@ class EMDenoiseDataset(torch.utils.data.Dataset):
         return self.noisy_dataset[index], self.clean_dataset[index]
 
 
+class EMDenoiseInferenceDataset(torch.utils.data.Dataset):
+    """
+    A inference dataset loader for EMDenoiser
+    """
+    def __init__(self, inference_file_path: Path, inference_gt_file_path: Path):
+        self.inference_file_path = inference_file_path
+        self.inference_gt_file_path = inference_gt_file_path
+        self.dataset_len = 0
+        self.inference_dataset = None
+        self.inference_gt_dataset = None
+        self.dataset_len = 0
+        self.inference_images =  None
+        self.inference_gt_images =  None
+        self.inference_file_names =  list_files(path = self.inference_file_path, recursive=False)
+        self.inference_gt_file_names =  list_files(path = self.inference_gt_file_path, recursive=False)
+        self.dataset_len = min(len(self.inference_file_names), len(self.inference_gt_file_names))
+
+
+    def __len__(self):
+        return self.dataset_len
+    
+    def __getitem__(self, index):
+        if self.inference_images == None:
+            images =  np.zeros([ len(self.inference_file_names), 256, 256, 1], dtype=np.float32)
+            for idx, url in enumerate(self.inference_file_names):
+                images[idx, :, :, 0] =  skimage.io.imread(url)
+            self.inference_images = torch.from_numpy( images.transpose((0, 3,1,2)) )
+        if self.inference_gt_images == None:
+            images =  np.zeros([ len(self.inference_gt_file_names), 256, 256, 1], dtype=np.float32)
+            for idx, url in enumerate(self.inference_file_names):
+                images[idx, :, :, 0] =  skimage.io.imread(url)
+            self.inference_gt_images = torch.from_numpy( images.transpose((0, 3,1,2)) )
+        
+        return self.inference_images[index], self.inference_gt_images[index]
+
 
 def train_model(log: MultiLevelLogger, model, train_loader: DataLoader, args, device):
     """
@@ -60,7 +97,6 @@ def train_model(log: MultiLevelLogger, model, train_loader: DataLoader, args, de
     optimizer = optim.Adam(model.parameters(), lr = learning_rate)
     criterion = nn.MSELoss()
     
-
     train_history = []
 
     for epoch in range(epochs):
@@ -81,3 +117,4 @@ def train_model(log: MultiLevelLogger, model, train_loader: DataLoader, args, de
         log.message(f'Epoch: {epoch}, loss: {loss}')
 
     return train_history
+

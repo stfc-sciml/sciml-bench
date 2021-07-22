@@ -14,7 +14,7 @@ import torch.nn as nn
 
 class EMDenoiseNet(nn.Module):
     """ Define a CNN """
-    def __init__(self, input_shape=(128,128,1)):
+    def __init__(self, input_shape=(256,256,1)):
 
         super(EMDenoiseNet, self).__init__()
         self.input_shape = input_shape

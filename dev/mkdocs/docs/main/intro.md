@@ -2,7 +2,7 @@
 
 ## 1. This Version
 
-This is SciML-Bench Release Version: **1.1.0.b200721_2327.**
+This is SciML-Bench Release Version: **1.1.0.b230721_0049.**
 Please consult the RELEASE NOTES for more information. 
 <br>
 

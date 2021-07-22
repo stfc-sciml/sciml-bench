@@ -10,30 +10,44 @@
 # All rights reserved.
 
 
+import time
+from torch import nn
 import yaml
 import torch
+import math
 from pathlib import Path
 
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
+from sciml_bench.core.utils import list_files
 
-from sciml_bench.benchmarks.em_denoise.em_denoise_util import EMDenoiseDataset,train_model
+from sciml_bench.benchmarks.em_denoise.em_denoise_util import EMDenoiseInferenceDataset, EMDenoiseTrainingDataset,train_model
 from sciml_bench.benchmarks.em_denoise.em_denoise_model import EMDenoiseNet
 
 
-def get_train_data_generator(base_dataset_dir: Path, batch_size: int):
+def get_data_generator(base_dataset_dir: Path, batch_size: int, is_inference=False):
+
+    shuffle_flag = True
+    if is_inference:
+       shuffle_flag = False
 
     params = {
         'batch_size': batch_size,
-        'shuffle': True,
+        'shuffle': shuffle_flag,
         'num_workers': 2
     }
 
-    noisy_path = str(base_dataset_dir / 'graphene_img_noise.h5')
-    clean_path = str(base_dataset_dir / 'graphene_img_clean.h5')
-    em_denoise_dataset = EMDenoiseDataset(noisy_path, clean_path)
-    em_denoise_generator = torch.utils.data.DataLoader(em_denoise_dataset, **params)
-
-    return em_denoise_generator
+    if is_inference: 
+        inference_path = base_dataset_dir / 'raw'
+        inference_gt_path = base_dataset_dir / 'truth'
+        em_inference_dataset = EMDenoiseInferenceDataset(inference_path, inference_gt_path)
+        em_inference_generator = torch.utils.data.DataLoader(em_inference_dataset, **params)
+        return em_inference_generator
+    else: 
+        noisy_path = str(base_dataset_dir / 'graphene_img_noise.h5')
+        clean_path = str(base_dataset_dir / 'graphene_img_clean.h5')
+        em_denoise_dataset = EMDenoiseTrainingDataset(noisy_path, clean_path)
+        em_denoise_generator = torch.utils.data.DataLoader(em_denoise_dataset, **params)
+        return em_denoise_generator
 
 
 
@@ -78,7 +92,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # create datasets
     with log.subproc('Loading datasets'):
-        train_dataset_loader = get_train_data_generator(params_in.dataset_dir / 'train', args["batch_size"])
+        train_dataset_loader = get_data_generator(params_in.dataset_dir / 'train', args["batch_size"], is_inference=False)
 
     # create model
     with log.subproc('Creating the model'):
@@ -110,15 +124,18 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 # Inference mode                                                    #
 #####################################################################
 
+
 def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     default_args = {
-        'use_gpu': True
+        'use_gpu': True,
+        "batch_size" : 64
     }
 
     params_out.activate(rank=0, local_rank=0)
 
     log = params_out.log
+    inference_criterion = nn.MSELoss()
 
     log.begin('Running benchmark em_denoise on inference mode')
 
@@ -138,18 +155,34 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     args_file = params_in.output_dir / 'inference_arguments_used.yml'
     with log.subproc('Saving inference arguments to a file'):
         with open(args_file, 'w') as handle:
-            yaml.dump(args, handle)
+            yaml.dump(args, handle)  
 
     # create datasets
-    # with log.subproc('Loading inference dataset'):
-        # inference_datasets = get_inference_data('')
+    with log.subproc(f'Setting up a data loader for inference'):
+        inference_dataset_loader = get_data_generator(params_in.dataset_dir, args["batch_size"], is_inference=True)
 
     # Load the model and perform bulk inference
-    with log.subproc('Loading the model for inference'):
+    with log.subproc(f'Loading the model for inference into {device}'):
         model = torch.load(params_in.model)
         model.to(device)
-        model.eval()
 
-    # More to come
+    with log.subproc(f'Doing inference across {len(inference_dataset_loader.dataset)} items on device: {device}'):
+        _start_time = time.time()
+        running_mse_loss = 0.0
+        for noisy_batch, clean_batch in inference_dataset_loader:
+            noisy_batch, clean_batch = torch.autograd.Variable(noisy_batch).to(device), clean_batch.to(device)
+            model.eval()
+            denoised_batch = model.forward(noisy_batch)
+            loss = inference_criterion(denoised_batch, clean_batch)
+            running_mse_loss += loss.item()
+        loss = running_mse_loss / len(inference_dataset_loader)
+        _end_time = time.time()
+    time_taken = _end_time - _start_time
+
+    throughput = math.floor(len (inference_dataset_loader.dataset) / time_taken)
+    with log.subproc('Inference Output'):
+        log.message(f'Throughput: {throughput} Images / sec')
+        log.message(f'Overall Time: {time_taken:.4f} s')
+        log.message(f'Overall Loss: {loss:.4f}')
 
     log.ended('Running benchmark em_denoise on inference mode')

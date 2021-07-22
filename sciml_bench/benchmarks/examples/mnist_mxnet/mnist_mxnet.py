@@ -17,7 +17,7 @@ This is a single device training/inference example.
 
 # libs from sciml_bench
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
-from sciml_bench.core.utils import list_all_files_in_dir
+from sciml_bench.core.utils import list_files
 
 import time
 import h5py
@@ -76,7 +76,7 @@ def create_model_mnist():
 
 
 def load_images(image_dir_path):
-    file_names =  list_all_files_in_dir(image_dir_path)
+    file_names =  list_files(image_dir_path)
     images = np.zeros((len(file_names), 28, 28, 1))
     for idx, url in enumerate(file_names):
         images[idx, :, :, 0] = skimage.io.imread(url)

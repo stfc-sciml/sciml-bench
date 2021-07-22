@@ -50,7 +50,7 @@ benchmarks:
     # Production level benchmarks 
     em_denoise:
         datasets: em_graphene_sim
-        dependencies: 'torch'
+        dependencies: 'torch,scikit-image'
         types: 'training, inference'
 
     dms_structure:
