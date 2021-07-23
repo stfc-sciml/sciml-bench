@@ -11,18 +11,16 @@
 
 
 import time
-from torch import nn
 import yaml
 import torch
 import math
+from torch import nn
 from pathlib import Path
 
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
-from sciml_bench.core.utils import list_files
 
 from sciml_bench.benchmarks.em_denoise.em_denoise_util import EMDenoiseInferenceDataset, EMDenoiseTrainingDataset,train_model
 from sciml_bench.benchmarks.em_denoise.em_denoise_model import EMDenoiseNet
-
 
 def get_data_generator(base_dataset_dir: Path, batch_size: int, is_inference=False):
 
@@ -123,7 +121,6 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 #####################################################################
 # Inference mode                                                    #
 #####################################################################
-
 
 def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
