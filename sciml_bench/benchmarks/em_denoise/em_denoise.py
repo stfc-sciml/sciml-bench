@@ -14,12 +14,13 @@ import time
 import yaml
 import torch
 import math
-from torch import nn
 from pathlib import Path
 
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 
-from sciml_bench.benchmarks.em_denoise.em_denoise_util import EMDenoiseInferenceDataset, EMDenoiseTrainingDataset,train_model
+from sciml_bench.benchmarks.em_denoise.em_denoise_util import EMDenoiseInferenceDataset
+from sciml_bench.benchmarks.em_denoise.em_denoise_util import EMDenoiseTrainingDataset
+from sciml_bench.benchmarks.em_denoise.em_denoise_util import train_model
 from sciml_bench.benchmarks.em_denoise.em_denoise_model import EMDenoiseNet
 
 def get_data_generator(base_dataset_dir: Path, batch_size: int, is_inference=False):
@@ -132,7 +133,10 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     params_out.activate(rank=0, local_rank=0)
 
     log = params_out.log
-    inference_criterion = nn.MSELoss()
+
+    # Lambdas for loss computation
+    mse_criteria = torch.nn.MSELoss()
+    psnr_loss = lambda mse, L: 20 * math.log10(float(L) / math.sqrt(mse))
 
     log.begin('Running benchmark em_denoise on inference mode')
 
@@ -165,21 +169,27 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     with log.subproc(f'Doing inference across {len(inference_dataset_loader.dataset)} items on device: {device}'):
         _start_time = time.time()
-        running_mse_loss = 0.0
+        running_mse = 0.0
+        running_psnr = 0.0
         for noisy_batch, clean_batch in inference_dataset_loader:
             noisy_batch, clean_batch = torch.autograd.Variable(noisy_batch).to(device), clean_batch.to(device)
             model.eval()
             denoised_batch = model.forward(noisy_batch)
-            loss = inference_criterion(denoised_batch, clean_batch)
-            running_mse_loss += loss.item()
-        loss = running_mse_loss / len(inference_dataset_loader)
+            batch_mse = mse_criteria(denoised_batch, clean_batch)
+            batch_psnr = psnr_loss(batch_mse.item(), 255)
+            running_mse  += batch_mse.item()
+            running_psnr += batch_psnr
+        mse = running_mse / len(inference_dataset_loader)
+        psnr = running_psnr /  len(inference_dataset_loader)
         _end_time = time.time()
     time_taken = _end_time - _start_time
 
     throughput = math.floor(len (inference_dataset_loader.dataset) / time_taken)
     with log.subproc('Inference Output'):
-        log.message(f'Throughput: {throughput} Images / sec')
+        log.message(f'Throughput  : {throughput} Images / sec')
         log.message(f'Overall Time: {time_taken:.4f} s')
-        log.message(f'Overall Loss: {loss:.4f}')
+        log.message(f'Average MSE : {mse:.4f}')
+        log.message(f'Average PSNR: {psnr:.4f} dB')
+
 
     log.ended('Running benchmark em_denoise on inference mode')
