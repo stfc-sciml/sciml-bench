@@ -24,7 +24,10 @@ from sciml_bench.benchmarks.em_denoise.em_denoise_util import train_model
 from sciml_bench.benchmarks.em_denoise.em_denoise_model import EMDenoiseNet
 
 def get_data_generator(base_dataset_dir: Path, batch_size: int, is_inference=False):
-
+    """
+    Returns a data loader for training or inference datasets 
+    based on the is_inference flag.
+    """
     shuffle_flag = True
     if is_inference:
        shuffle_flag = False
@@ -55,7 +58,9 @@ def get_data_generator(base_dataset_dir: Path, batch_size: int, is_inference=Fal
 #####################################################################
 
 def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
-
+    """
+    Entry point for the training routine to be called by SciML-Bench
+    """
     default_args = {
         'batch_size': 128,
         'epochs': 2,
@@ -67,15 +72,15 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     # No distributed training in this one
     params_out.activate(rank=0, local_rank=0)
 
-    # log top level process
+    # Log top level process
     log = params_out.log.console
     log.begin(f'Running benchmark em_denoise on training mode')
 
-    # parse input arguments against default ones 
+    # Parse input arguments against default ones 
     with log.subproc('Parsing input arguments'):
         args = params_in.bench_args.try_get_dict(default_args=default_args)
 
-    # decide which device to use
+    # Decide which device to use
     if args['use_gpu'] and torch.cuda.is_available():
         device = "cuda:0"
         log.message('Using GPU')
@@ -83,37 +88,37 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         device = "cpu"
         log.message('Using CPU')
 
-    # save parameters
+    # Save parameters
     args_file = params_in.output_dir / 'training_arguments_used.yml'
     with log.subproc('Saving arguments to a file'):
         with open(args_file, 'w') as handle:
             yaml.dump(args, handle)
 
-    # create datasets
+    # Create datasets
     with log.subproc('Loading datasets'):
         train_dataset_loader = get_data_generator(params_in.dataset_dir / 'train', args["batch_size"], is_inference=False)
 
-    # create model
+    # Create model
     with log.subproc('Creating the model'):
         model = EMDenoiseNet(input_shape=(256, 256, 1)).to(device)
 
-    # train the model
+    # Train the model
     with log.subproc('Training the model'):
         params_out.system.stamp_event('start training')
         history = train_model(log, model, train_dataset_loader, args, device)
 
-    # save model
+    # Save model
     with log.subproc('Saving (entire) model to a file'):
         model_file = params_in.output_dir / f'em_denoise_model.h5'
         torch.save(model, model_file)
 
-    # save history
+    # Save history
     with log.subproc('Saving training history'):
         history_file = params_in.output_dir / 'training_history.yml'
         with open(history_file, 'w') as handle:
             yaml.dump(history, handle)
 
-    # end top level
+    # End top level
     log.ended(f'Running benchmark em_denoise on training mode')
     
 
@@ -124,7 +129,9 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 #####################################################################
 
 def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
-
+    """
+    Entry point for the inference routine to be called by SciML-Bench
+    """
     default_args = {
         'use_gpu': True,
         "batch_size" : 64
@@ -140,11 +147,11 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     log.begin('Running benchmark em_denoise on inference mode')
 
-    # parse input arguments
+    # Parse input arguments
     with log.subproc('Parsing input arguments'):
         args = params_in.bench_args.try_get_dict(default_args=default_args)
 
-    # decide which device to use
+    # Decide which device to use
     if args['use_gpu'] and torch.cuda.is_available():
         device = "cuda:0"
         log.message('Using GPU')
@@ -152,23 +159,24 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         device = "cpu"
         log.message('Using CPU')
 
-    # save inference parameters
+    # Save inference parameters
     args_file = params_in.output_dir / 'inference_arguments_used.yml'
     with log.subproc('Saving inference arguments to a file'):
         with open(args_file, 'w') as handle:
             yaml.dump(args, handle)  
 
-    # create datasets
+    # Create datasets
     with log.subproc(f'Setting up a data loader for inference'):
         inference_dataset_loader = get_data_generator(params_in.dataset_dir, args["batch_size"], is_inference=True)
 
-    # Load the model and perform bulk inference
+    # Load the model and move it to the right device
     with log.subproc(f'Loading the model for inference into {device}'):
         model = torch.load(params_in.model)
         model.to(device)
 
+    # Perform bulk inference on the target device + collect metrics
     with log.subproc(f'Doing inference across {len(inference_dataset_loader.dataset)} items on device: {device}'):
-        _start_time = time.time()
+        start_time = time.time()
         running_mse = 0.0
         running_psnr = 0.0
         for noisy_batch, clean_batch in inference_dataset_loader:
@@ -181,15 +189,17 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
             running_psnr += batch_psnr
         mse = running_mse / len(inference_dataset_loader)
         psnr = running_psnr /  len(inference_dataset_loader)
-        _end_time = time.time()
-    time_taken = _end_time - _start_time
+        end_time = time.time()
+    time_taken = end_time - start_time
 
     throughput = math.floor(len (inference_dataset_loader.dataset) / time_taken)
+
+    # Log the outputs
     with log.subproc('Inference Output'):
         log.message(f'Throughput  : {throughput} Images / sec')
         log.message(f'Overall Time: {time_taken:.4f} s')
         log.message(f'Average MSE : {mse:.4f}')
         log.message(f'Average PSNR: {psnr:.4f} dB')
 
-
+    # End top level
     log.ended('Running benchmark em_denoise on inference mode')
