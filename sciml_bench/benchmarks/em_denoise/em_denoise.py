@@ -154,10 +154,10 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     # Decide which device to use
     if args['use_gpu'] and torch.cuda.is_available():
         device = "cuda:0"
-        log.message('Using GPU')
+        log.message('Using GPU for inference')
     else:
         device = "cpu"
-        log.message('Using CPU')
+        log.message('Using CPU for inference')
 
     # Save inference parameters
     args_file = params_in.output_dir / 'inference_arguments_used.yml'
@@ -195,7 +195,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     throughput = math.floor(len (inference_dataset_loader.dataset) / time_taken)
 
     # Log the outputs
-    with log.subproc('Inference Output'):
+    with log.subproc('Inference Performance'):
         log.message(f'Throughput  : {throughput} Images / sec')
         log.message(f'Overall Time: {time_taken:.4f} s')
         log.message(f'Average MSE : {mse:.4f}')

@@ -71,14 +71,3 @@ benchmarks:
         dependencies: 'tensorflow, scikit-image'
         types: 'training, inference'
 
-    mnist_mxnet:
-        datasets: mnist
-        is_example: True
-        dependencies: 'mxnet, scikit-image'
-        types: 'training, inference'
-
-    mnist_torch:
-        datasets: mnist
-        is_example: True
-        dependencies: 'torch'
-

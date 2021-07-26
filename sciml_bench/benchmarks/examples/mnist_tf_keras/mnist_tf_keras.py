@@ -16,6 +16,7 @@ This is a single device training/inference example.
 """
 
 # libs from sciml_bench
+import math
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 from sciml_bench.core.utils import list_files
 
@@ -32,7 +33,9 @@ import skimage.io
 # Some utility codes
 
 def load_dataset_mnist(file_path, batch_size):
-    """ Create dataset """
+    """
+    Provides a data loader for training dataset
+    """
 
     # generator
     def hdf5_generator(path, batch):
@@ -51,9 +54,29 @@ def load_dataset_mnist(file_path, batch_size):
         output_shapes=((None, 28, 28, 1), (None, 10)))
     return dataset
 
+def get_inference_dataset(inference_path: Path, batch_size: int):
+    """
+    Load inference dataset in batches and return it along 
+    with the number of files
+    """
+    inference_ds = tf.keras.preprocessing.image_dataset_from_directory(
+    directory=inference_path, labels='inferred', label_mode='int',
+    class_names=None, color_mode='grayscale', batch_size=batch_size, image_size=(28,28),
+    shuffle=False, seed=None, validation_split=None, subset=None,
+    interpolation='bilinear', follow_links=False, smart_resize=False
+    )
+
+    n_elements = len(np.concatenate([i for x, i in inference_ds], axis=0))
+
+    return inference_ds, n_elements
+
+
 
 def create_model_mnist():
-    """ Create model """
+    """
+    Creates a simple, yet effective CNN model
+    """
+
     # create model
     model = tf.keras.Sequential()
     model.add(tf.keras.layers.Conv2D(32, (3, 3), activation='relu',
@@ -70,7 +93,9 @@ def create_model_mnist():
 
 
 class LogEpochCallback(tf.keras.callbacks.Callback):
-    """ Callback to log epoch """
+    """
+    Callback to log epoch 
+    """
 
     def __init__(self, params_out):
         super().__init__()
@@ -97,15 +122,10 @@ def load_images(image_dir_path):
         images[idx, :, :, 0] = skimage.io.imread(url)
     return images, file_names
 
-
-
 # Training Code
-
 def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
-    Main entry of `sciml_bench run` for a benchmark instance
-    in the training mode.
-    Please consult the API documentation. 
+    Entry point for the training routine to be called by SciML-Bench
     """
     
     params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
@@ -129,35 +149,37 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message(f'batch_size = {batch_size}')
         log.message(f'epochs     = {epochs}')
 
+    # Save training parameters
     with log.subproc('Writing the argument file'):
         args_file = params_in.output_dir / 'arguments_used.yml'
         with open(args_file, 'w') as handle:
             yaml.dump(args, handle)
 
-    # create datasets
+    # Create datasets
     with log.subproc('Creating datasets'):
         dataset_dir = params_in.dataset_dir
         train_set = load_dataset_mnist(dataset_dir / 'train.hdf5', batch_size)
         test_set = load_dataset_mnist(dataset_dir / 'test.hdf5', batch_size)
         log.message(f'Dataset directory: {dataset_dir}')
 
-    # create model
+    # Create model
     with log.subproc('Creating CNN model'):
         model = create_model_mnist()
 
-    # train model
+    # Train model
     log.begin('Training CNN model')
     with log.subproc('Running model.fit()'):
         params_out.system.stamp_event('model.fit')
         history = model.fit(train_set, epochs=epochs, batch_size=batch_size,
                             validation_data=test_set, verbose=0,
                             callbacks=[LogEpochCallback(params_out)])
-    # save model
+    # Save model
     with log.subproc('Saving the model'):
         model_file = params_in.output_dir / 'mnist_tf_keras_model.h5'
         model.save(model_file)
         log.message(f'Saved to: {model_file}')
-    # save history
+
+    # Save history
     with log.subproc('Saving training history'):
         history_file = params_in.output_dir / 'training_history.yml'
         with open(history_file, 'w') as handle:
@@ -165,7 +187,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message(f'Saved to: {history_file}')
     log.ended('Training CNN model')
 
-    # predict
+    # Predict
     with log.subproc('Making predictions on test set'):
         with h5py.File(dataset_dir / 'test.hdf5', 'r') as h5_file:
             # stamp model.predict in system monitor
@@ -181,29 +203,75 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
 
 
-# Inference Code
+#####################################################################
+# Inference mode                                                    #
+#####################################################################
 
 def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
+    """
+    Entry point for the inference routine to be called by SciML-Bench
+    """
 
-    params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
-                      activate_log_on_device=True, console_on_screen=True)
+    default_args = {
+        'use_gpu': True,
+        "batch_size" : 64
+    }
+
+    params_out.activate(rank=0, local_rank=0)
 
     log = params_out.log
 
     log.begin('Running benchmark mnist_tf_keras on inference mode')
 
-    # Load the model and perform bulk inference 
-    with log.subproc('Model loading and inference'):
+    # Parse input arguments
+    with log.subproc('Parsing input arguments'):
+        args = params_in.bench_args.try_get_dict(default_args=default_args)
+
+    # Decide which device to use
+    if args['use_gpu'] == 1:
+        try:
+            tf.config.set_visible_devices([], 'GPU')
+            log.message('Using GPU for inference')
+        except:
+            cpus = tf.config.list_physical_devices('CPU')
+            tf.config.set_visible_devices(cpus[0], 'CPU')
+            log.message('Using CPU for inference')
+    else:
+        cpus = tf.config.list_physical_devices('CPU')
+        tf.config.set_visible_devices(cpus[0], 'CPU')
+        log.message('Using CPU for inference')
+
+    # Save inference parameters
+    args_file = params_in.output_dir / 'inference_arguments_used.yml'
+    with log.subproc('Saving inference arguments to a file'):
+        with open(args_file, 'w') as handle:
+            yaml.dump(args, handle)  
+
+    # Load the model and move it to the right device
+    with log.subproc(f'Loading the model for inference'):
         model = load_model(params_in.model)
-        raw_images, file_names = load_images(params_in.dataset_dir)
-        images = tf.constant(raw_images, dtype=np.float32)
-        outputs = model.predict(images)
-        mappings = np.argmax(outputs, axis=1)
 
-    # Write out the resultsa
-    with log.subproc('Writing to outputs'):
-        for i in range(len(file_names)):
-            log.message(f'{file_names[i]}\t{mappings[i]}')
-    
+    # Create datasets
+    with log.subproc(f'Setting up a data loader for inference'):
+        inference_dataset, n_total_elements = get_inference_dataset(params_in.dataset_dir, args["batch_size"])
 
+    # Perform bulk inference
+    with log.subproc(f'Doing inference'):
+        start_time = time.time()
+        batch_correctness = 0
+        for inference_data, inference_label in inference_dataset: 
+            outputs = model.predict(inference_data)
+            batch_correctness += np.sum(outputs.argmax(axis=1) == inference_label) 
+        rate = float(batch_correctness / n_total_elements) * 100
+        end_time = time.time()
+    time_taken = end_time - start_time
+
+    throughput = math.floor(n_total_elements / time_taken)
+    # Log outputs
+    with log.subproc('Inference Performance'):
+        log.message(f'Throughput  : {throughput} Images / sec')
+        log.message(f'Overall Time: {time_taken:.4f} s')
+        log.message(f'Correctness : {rate:.4f}%')
+
+    # End the top-level
     log.ended('Running benchmark mnist_tf_keras on inference mode')
