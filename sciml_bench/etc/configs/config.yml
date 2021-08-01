@@ -55,7 +55,7 @@ benchmarks:
 
     dms_structure:
         datasets: dms_sim
-        dependencies: 'torch, sklearn'
+        dependencies: 'torch, sklearn, scikit-image'
         types: 'training, inference'
 
     slstr_cloud:

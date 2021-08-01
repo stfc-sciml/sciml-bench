@@ -155,10 +155,89 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     Main entry for `sciml_bench run` in inference mode.
     """
 
-    pass
+    # initialize horovod
+    hvd.init()
+
+    # initialize monitor with hvd.rank() and hvd.local_rank()
+    params_out.activate(rank=hvd.rank(), local_rank=hvd.local_rank(),
+                          activate_log_on_host=False,
+                          activate_log_on_device=True, console_on_screen=True)
+
+    console = params_out.log.console
+
+    # top-level process
+    console.begin('Running benchmark slstr_cloud in inference mode.')
+    console.message(f'hvd.rank()={hvd.rank()}, hvd.size()={hvd.size()}')
 
 
-    # Inference
-    # console.begin('Inference')
-    # inference(args['load_weights_file'], test_data_dir, args, params_in, params_out)
-    # console.ended('Inference')
+    default_args = {
+        'use_gpu': True,
+        'crop_size': 80
+    }
+
+
+    with console.subproc('Parsing input arguments'):
+        args = params_in.bench_args.try_get_dict(default_args)
+
+          
+    # save arguments
+    if hvd.rank() == 0:
+        args_file = params_in.output_dir / 'inference_arguments_used.yml'
+        with console.subproc('Saving inference arguments to a file'):
+            with open(args_file, 'w') as handle:
+                yaml.dump(args, handle)
+
+    # load the datasets
+    with console.subproc("Loading inference datasets"):
+        train_dataset, test_dataset  = load_inferece_datasets(dataset_dir=inference_data_dir, args=args)
+    
+    # build the UNet model
+    with console.subproc('Loading the model'):
+        model = hvd.load_model()
+        
+
+    with console.subproc('Preparing data loader'):
+        data_loader = SLSTRDataLoader(file_paths, single_image=True, crop_size=args["crop_size"])
+        dataset = data_loader.to_dataset()
+
+
+    console.message('Loading model {}'.format(params_in.model_file))
+    assert Path(params_in.model_file).exists(), "Model file does not exist!"
+    model = hvd.load_model(str(params_in.model_file))
+
+    console.message('Getting file paths')
+    file_paths = list(Path(params_in.dataset_dir).glob('**/S3A*.hdf'))
+    assert len(file_paths) > 0, "Could not find any HDF files!"
+
+    console.message('Preparing data loader')
+    # Create data loader in single image mode. This turns off shuffling and
+    # only yields batches of images for a single image at a time so they can be
+    # reconstructed.
+    data_loader = SLSTRDataLoader(file_paths, single_image=True, crop_size=crop_size)
+    dataset = data_loader.to_dataset()
+
+    console.begin('Inference Loop')
+    for patches, file_name in dataset:
+        file_name = Path(file_name.numpy().decode('utf-8'))
+        device.message(f"Processing file {file_name}")
+        console.message(f"Processing file {file_name}")
+
+        # convert patches to a batch of patches
+        n, ny, nx, _ = patches.shape
+        patches = tf.reshape(patches, (n * nx * ny, PATCH_SIZE, PATCH_SIZE, N_CHANNELS))
+
+        # perform inference on patches
+        mask_patches = model.predict_on_batch(patches)
+
+        # crop edge artifacts
+        mask_patches = tf.image.crop_to_bounding_box(mask_patches, crop_size // 2, crop_size // 2, PATCH_SIZE - crop_size, PATCH_SIZE - crop_size)
+
+        # reconstruct patches back to full size image
+        mask_patches = tf.reshape(mask_patches, (n, ny, nx, PATCH_SIZE - crop_size, PATCH_SIZE - crop_size, 1))
+        mask = reconstruct_from_patches(mask_patches, nx, ny, patch_size=PATCH_SIZE - crop_size)
+        mask_name = (output_dir / file_name.name).with_suffix('.h5')
+
+        with h5py.File(mask_name, 'w') as handle:
+            handle.create_dataset('mask', data=mask)
+
+    console.ended('Inference Loop')
