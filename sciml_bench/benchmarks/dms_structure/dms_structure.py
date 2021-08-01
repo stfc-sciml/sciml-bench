@@ -9,6 +9,9 @@
 # Science and Technology Facilities Council, UK.
 # All rights reserved.
 
+import math
+from sciml_bench.benchmarks.dms_structure.dms_inference_dataset import DMSInferenceDataset
+import time
 import h5py
 import yaml
 import torch
@@ -24,26 +27,43 @@ from sciml_bench.benchmarks.dms_structure.dms_model import DMSNet
 
 # Helper Routine
 
-def load_dms_datasets(dataset, device):
-    hf = h5py.File(dataset, 'r')
+def load_dms_datasets(base_dataset_dir:Path, device, batch_size:int,  is_inference = False):
 
-    img = hf['train/images'][:]
-    img = np.swapaxes(img, 1, 3)
-    X_train = torch.from_numpy(np.atleast_3d(img)).to(device)
-    lab = np.array(hf['train/labels']).reshape(-1, 1)
-    onehot_encoder = OneHotEncoder(sparse=False)
-    lab = onehot_encoder.fit_transform(lab).astype(int)
-    Y_train = torch.from_numpy(lab).float().to(device)
+    if not is_inference:
+        dataset_path = base_dataset_dir / 'training/data-binary.h5'
+        hf = h5py.File(dataset_path, 'r')
 
-    img = hf['test/images'][:]
-    img = np.swapaxes(img, 1, 3)
-    X_test = torch.from_numpy(np.atleast_3d(img)).to(device)
-    lab = np.array(hf['test/labels']).reshape(-1, 1)
-    lab = onehot_encoder.fit_transform(lab).astype(int)
-    Y_test = torch.from_numpy(lab).float().to(device)
+        img = hf['train/images'][:]
+        img = np.swapaxes(img, 1, 3)
+        X_train = torch.from_numpy(np.atleast_3d(img)).to(device)
+        lab = np.array(hf['train/labels']).reshape(-1, 1)
+        onehot_encoder = OneHotEncoder(sparse=False)
+        lab = onehot_encoder.fit_transform(lab).astype(int)
+        Y_train = torch.from_numpy(lab).float().to(device)
 
-    datasets = (X_train, Y_train, X_test, Y_test)
-    return datasets
+        img = hf['test/images'][:]
+        img = np.swapaxes(img, 1, 3)
+        X_test = torch.from_numpy(np.atleast_3d(img)).to(device)
+        lab = np.array(hf['test/labels']).reshape(-1, 1)
+        lab = onehot_encoder.fit_transform(lab).astype(int)
+        Y_test = torch.from_numpy(lab).float().to(device)
+
+        datasets = (X_train, Y_train, X_test, Y_test)
+        return datasets
+
+
+    params = {
+        'batch_size': batch_size,
+        'shuffle': False,
+        'num_workers': 2
+    }
+
+    if is_inference: 
+        inference_path = base_dataset_dir 
+        dms_inference_dataset = DMSInferenceDataset(inference_path)
+        dms_inference_generator = torch.utils.data.DataLoader(dms_inference_dataset, **params)
+        return dms_inference_generator
+
 
 
 #####################################################################
@@ -90,9 +110,8 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # load datasets
     with log.subproc('Loading datasets'):
-        dataset_file = str(
-            list(Path(params_in.dataset_dir).glob('**/data-binary.h5'))[0])
-        datasets = load_dms_datasets(dataset_file, device)
+        dataset_file = Path(params_in.dataset_dir) / 'data-binary.h5'
+        datasets = load_dms_datasets(Path(params_in.dataset_dir), device, batch_size=args["batch_size"], is_inference=False)
 
     # create model
     with log.subproc('Creating the model'):
@@ -123,8 +142,12 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
 def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
+    """
+    Entry point for the inference routine to be called by SciML-Bench
+    """
     default_args = {
-        'use_gpu': True
+        'use_gpu': True,
+        "batch_size" : 16
     }
 
     params_out.activate(rank=0, local_rank=0)
@@ -133,35 +156,61 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     log.begin('Running benchmark dms_structure on inference mode')
 
-    # parse input arguments
+    # Parse input arguments
     with log.subproc('Parsing input arguments'):
         args = params_in.bench_args.try_get_dict(default_args=default_args)
 
-    # decide which device to use
+    # Decide which device to use
     if args['use_gpu'] and torch.cuda.is_available():
         device = "cuda:0"
-        log.message('Using GPU')
+        log.message('Using GPU for inference')
     else:
         device = "cpu"
-        log.message('Using CPU')
+        log.message('Using CPU for inference')
 
-    # save inference parameters
+    # Save inference parameters
     args_file = params_in.output_dir / 'inference_arguments_used.yml'
     with log.subproc('Saving inference arguments to a file'):
         with open(args_file, 'w') as handle:
-            yaml.dump(args, handle)
+            yaml.dump(args, handle)  
 
-    # create datasets
-    # with log.subproc('Loading inference dataset'):
-        # inference_datasets = get_inference_data('')
-    
-    
-    # Load the model and perform bulk inference
-    with log.subproc('Loading the model for inference'):
+
+    # Load the model and move it to the right device
+    with log.subproc(f'Loading the model for inference'):
+        model = torch.load(params_in.model)
+
+    # Create datasets
+    with log.subproc(f'Setting up a data loader for inference'):
+        inference_dataset_loader = load_dms_datasets(params_in.dataset_dir, device, 
+                                                    batch_size=args["batch_size"], is_inference=True)
+
+    # Load the model and move it to the right device
+    with log.subproc(f'Loading the model for inference into {device}'):
         model = torch.load(params_in.model)
         model.to(device)
-        model.eval()
 
-    # More to come
+    # Perform bulk inference on the target device + collect metrics
+    with log.subproc(f'Doing inference across items on device: {device}'):
+        start_time = time.time()
+        batch_correctness = 0
+        for image_batch, label_batch in inference_dataset_loader:
+            image_batch, label_batch = torch.autograd.Variable(image_batch).float().to(device), label_batch.int().to(device)
+            model.eval()
+            outputs = model.forward(image_batch)
+            batch_correctness = torch.sum(outputs)
+        rate = float(batch_correctness / len(inference_dataset_loader.dataset)) * 100
+        end_time = time.time()
+    time_taken = end_time - start_time
 
+    throughput = math.floor(len (inference_dataset_loader.dataset) / time_taken)
+
+    # Log outputs
+    with log.subproc('Inference Performance'):
+        log.message(f'Throughput  : {throughput} Images / sec')
+        log.message(f'Overall Time: {time_taken:.4f} s')
+        log.message(f'Correctness : {rate:.4f}%')
+
+    # End top level
     log.ended('Running benchmark dms_structure on inference mode')
+
+   

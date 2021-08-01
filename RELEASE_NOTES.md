@@ -34,7 +34,7 @@
     * `--mode`, `--model`, `--dataset_dir` options for the `run` command, and
     * `--mode` option for the `download` command.
 
-1. Removal of redundant / non-sensical features, commands and options from 1.0.0
+1. Removal of redundant / nonsensical features, commands and options from 1.0.0
     * Removal of `--brief` option for the `list` command. 
 
 1. Very streamlined and cleaner interface for download, and install commands. All download and installation commands result in summary outputs and detailed outputs are available as log files. This means, less clutter to the terminal window. 
