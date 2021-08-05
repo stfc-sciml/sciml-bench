@@ -43,12 +43,12 @@ RUN echo NCCL_DEBUG=INFO >> /etc/nccl.conf && \
 
 
 # Copy over sciml-bench files
-COPY sciml_bench /sciml-benchmarks/sciml_bench
-COPY requirements.txt /sciml-benchmarks/requirements.txt
-COPY MANIFEST.in /sciml-benchmarks/MANIFEST.in
-COPY setup.py /sciml-benchmarks/setup.py
-COPY doc /sciml-benchmarks/doc
+COPY sciml_bench /sciml-bench/sciml_bench
+COPY requirements.txt /sciml-bench/requirements.txt
+COPY MANIFEST.in /sciml-bench/MANIFEST.in
+COPY setup.py /sciml-bench/setup.py
+COPY doc /sciml-bench/sciml_bench/docs
 
-RUN cd /sciml-benchmarks && pip install .
+RUN cd /sciml-bench && pip install .
 
 ENTRYPOINT [ "sciml-bench" ]
