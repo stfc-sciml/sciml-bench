@@ -30,7 +30,6 @@ directories:
 # List of datasets
 datasets: 
     mnist:
-        is_example: True
         end_point: 'sciml-datasets/ts'
         download_command: download_command1
     em_graphene_sim:
@@ -52,22 +51,24 @@ benchmarks:
         datasets: em_graphene_sim
         dependencies: 'torch,scikit-image'
         types: 'training, inference'
+        group: 'science'
 
     dms_structure:
         datasets: dms_sim
         dependencies: 'torch, sklearn, scikit-image'
         types: 'training, inference'
+        group: 'science'
 
     slstr_cloud:
         datasets: cloud_slstr_ds1
         dependencies: 'tensorflow,scikit-learn,horovod.tensorflow'
         types: 'training'
+        group: 'science'
 
     # Example Benchmarks 
 
     mnist_tf_keras:
         datasets: mnist
-        is_example: True
         dependencies: 'tensorflow, scikit-image'
         types: 'training, inference'
-
+        group: 'examples'

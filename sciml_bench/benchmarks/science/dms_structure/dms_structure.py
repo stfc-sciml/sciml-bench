@@ -10,7 +10,6 @@
 # All rights reserved.
 
 import math
-from sciml_bench.benchmarks.dms_structure.dms_inference_dataset import DMSInferenceDataset
 import time
 import h5py
 import yaml
@@ -21,8 +20,9 @@ from sklearn.preprocessing import OneHotEncoder
 
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 
-from sciml_bench.benchmarks.dms_structure.dms_train import train_model
-from sciml_bench.benchmarks.dms_structure.dms_model import DMSNet
+from sciml_bench.benchmarks.science.dms_structure.dms_train import train_model
+from sciml_bench.benchmarks.science.dms_structure.dms_model import DMSNet
+from sciml_bench.benchmarks.science.dms_structure.dms_inference_dataset import DMSInferenceDataset
 
 
 # Helper Routine
@@ -190,14 +190,18 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         model.to(device)
 
     # Perform bulk inference on the target device + collect metrics
-    with log.subproc(f'Doing inference across items on device: {device}'):
+    with log.subproc(f'Doing inference across {len(inference_dataset_loader.dataset):,} items on device: {device}'):
         start_time = time.time()
+        total  = 0
+        # batch_correctness = torch.no_grad.Variable(batch_correctness).int()
         batch_correctness = 0
         for image_batch, label_batch in inference_dataset_loader:
-            image_batch, label_batch = torch.autograd.Variable(image_batch).float().to(device), label_batch.int().to(device)
             model.eval()
-            outputs = model.forward(image_batch)
-            batch_correctness = torch.sum(outputs)
+            with torch.no_grad():
+                image_batch = image_batch.float().to(device)
+                label_batch = label_batch.int().to(device)
+                outputs = model.forward(image_batch)
+                batch_correctness += torch.sum(outputs)
         rate = float(batch_correctness / len(inference_dataset_loader.dataset)) * 100
         end_time = time.time()
     time_taken = end_time - start_time
@@ -206,7 +210,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # Log outputs
     with log.subproc('Inference Performance'):
-        log.message(f'Throughput  : {throughput} Images / sec')
+        log.message(f'Throughput  : {throughput:,} Images / sec')
         log.message(f'Overall Time: {time_taken:.4f} s')
         log.message(f'Correctness : {rate:.4f}%')
 

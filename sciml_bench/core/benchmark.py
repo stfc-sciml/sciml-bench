@@ -20,14 +20,11 @@ from sciml_bench.core.utils import csv_to_stripped_set, display_logo, print_bull
 from subprocess import PIPE, STDOUT, run
 import sciml_bench.core.dataset as Dataset
 
-def create_training_instance(benchmark_name, is_example, return_none_on_except=True):
+def create_training_instance(benchmark_name, bench_group, return_none_on_except=True):
     """ Create a benchmark instance for training"""
     try:
         # validate module
-        bench_dir = Path(__file__).parents[1] / 'benchmarks' 
-        if is_example:
-            bench_dir = Path(bench_dir / 'examples')
-
+        bench_dir = Path(__file__).parents[1] / 'benchmarks' / bench_group
         file = str(bench_dir / benchmark_name / benchmark_name) + '.py'
         spec = importlib.util.spec_from_file_location(benchmark_name, file)
         mod = importlib.util.module_from_spec(spec)
@@ -40,14 +37,11 @@ def create_training_instance(benchmark_name, is_example, return_none_on_except=T
 
 
 
-def create_inference_instance(benchmark_name, is_example, return_none_on_except=True):
+def create_inference_instance(benchmark_name, bench_group, return_none_on_except=True):
     """ Create a benchmark instance for inference"""
     try:
         # validate module - but models cannot be verified at this stage
-        bench_dir = Path(__file__).parents[1] / 'benchmarks'
-        if is_example:
-            bench_dir = Path(bench_dir / 'examples')
-
+        bench_dir = Path(__file__).parents[1] / 'benchmarks' / bench_group
         file = str(bench_dir / benchmark_name / benchmark_name) + '.py'
         spec = importlib.util.spec_from_file_location(benchmark_name, file)
         mod = importlib.util.module_from_spec(spec)
@@ -270,9 +264,9 @@ def get_status(benchmark_names, ENV:ProgramEnv):
         flag =True
 
     for benchmark_name in benchmark_names:
-        is_example = ENV.get_bench_example_flag(benchmark_name)
-        is_good_train = create_training_instance(benchmark_name, is_example, True)
-        is_good_inference = create_inference_instance(benchmark_name, is_example, True)
+        bench_group = ENV.get_bench_group(benchmark_name)
+        is_good_train = create_training_instance(benchmark_name, bench_group, True)
+        is_good_inference = create_inference_instance(benchmark_name, bench_group, True)
         dep_datasets = ENV.get_bench_datasets(benchmark_name)
         all_datasets_available = True
         for ds in dep_datasets:
