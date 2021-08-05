@@ -24,6 +24,8 @@
 
 1. The new version has an improved API to support / separate training and inference aspects of benchmarking. 
 
+1. Notion of benchmark groups has been introduced.  This supports better grouping of benchmarks into sub-folders. 
+
 
 ## Commands and Options 
 

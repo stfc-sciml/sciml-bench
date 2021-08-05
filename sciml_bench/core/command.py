@@ -306,7 +306,7 @@ def sysinfo():
 # About Command 
 ###################
 
-@cli.command(help='About SciML-Benchmarks.')
+@cli.command(help='About SciML-Bench.')
 def about():
     """ sciml_bench about """
     about_info = ABOUT_MSG

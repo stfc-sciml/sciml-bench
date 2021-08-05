@@ -3,11 +3,11 @@ From: ompi4.sif
 
 %files
 # -----------------------------------------------------------------------------------
-    requirements.txt /sciml-benchmarks/requirements.txt
-    MANIFEST.in /sciml-benchmarks/MANIFEST.in
-    setup.py /sciml-benchmarks/setup.py
-    doc /sciml-benchmarks/doc
-    sciml_bench /sciml-benchmarks/sciml_bench
+    requirements.txt /sciml-bench/requirements.txt
+    MANIFEST.in /sciml-bench/MANIFEST.in
+    setup.py /sciml-bench/setup.py
+    docs /sciml-bench/sciml_bench/docs
+    sciml_bench /sciml-bench/sciml_bench
 
 
 %environment
@@ -77,7 +77,7 @@ From: ompi4.sif
     rm -rf /examples/.svn
 
 # Install sciml-bench
-    cd /sciml-benchmarks && pip install .
+    cd /sciml-bench && pip install .
 
 %runscript
     sciml-bench $@
