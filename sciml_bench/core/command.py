@@ -62,9 +62,9 @@ def cli(version):
 # List Command 
 ###################
 
-@cli.command('list', help='List datasets, benchmarks and examples.')
+@cli.command('list', help='List datasets, and benchmarks.')
 @click.argument('scope', default='all',
-                type=click.Choice(['all', 'summary', 'datasets', 'benchmarks', 'examples'])) 
+                type=click.Choice(['all', 'datasets', 'benchmarks'])) 
 @click.option('--verify', is_flag=True, default=False,
               help='\b\nVerify existence of datasets, and modules of benchmarks.\n'\
                   'Default: False.')
@@ -78,49 +78,38 @@ def cmd_list(scope, verify, deps):
 
     ####### The deps flag is only applicable to Benchmarks ######
     if deps == True:
-        benchmark_names = ENV.list_main_benchmarks()
+        benchmark_names = ENV.list_benchmarks()
         for bench in benchmark_names:
-            dataset_deps  = ENV.get_bench_datasets(bench)
-            soft_deps = ENV.get_bench_dependencies(bench)
+            dataset_deps    = ENV.get_bench_datasets(bench)
+            soft_deps       = ENV.get_bench_dependencies(bench)
             runnable_status = Benchmark.get_status(bench, ENV)
-            dataset_deps = ','.join(dataset_deps)
-            soft_deps = ','.join(soft_deps)
-
+            dataset_deps    = ','.join(dataset_deps)
+            soft_deps       = ','.join(soft_deps)
+            bench_group     = ENV.get_bench_group(bench)
             print(f'  Benchmark: {bench}')
             print(f'\tSoftware Dependencies: {soft_deps}')
-            print(f'\tDatasets: {dataset_deps}')
-            print(f'\tRunnable Status: {runnable_status}')
+            print(f'\tDataset Dependencies : {dataset_deps}')
+            print(f'\tRunnable Status      : {runnable_status}')
+            print(f'\tBenchmark Group      : {bench_group}')
             print()
         return 
 
     # list datasets 
-    if scope == 'summary' or scope == 'datasets' or scope=='all':
-        dataset_names = ENV.list_main_datasets()
+    if scope == 'all' or scope == 'datasets':
+        dataset_names = ENV.list_datasets()
         dataset_statuses = None
         if verify:
             dataset_statuses = Dataset.get_status(dataset_names, ENV)
         print_items('Datasets', dataset_names, dataset_statuses)
     
     # list benchmarks
-    if scope == 'summary' or scope == 'benchmarks' or scope=='all':
-        benchmark_names = ENV.list_main_benchmarks()
+    if scope == 'all' or scope == 'benchmarks':
+        benchmark_names = ENV.list_benchmarks()
         benchmark_status = None
         if verify:
             benchmark_status = Benchmark.get_status(benchmark_names, ENV)
         print_items('Benchmarks', benchmark_names, benchmark_status)
                 
-    # list example datasets and benchmarks
-    if scope == 'examples' or scope=='all':
-        benchmark_names_examples = ENV.list_example_benchmarks()
-        dataset_names_examples = ENV.list_example_datasets()
-        benchmark_status_examples, dataset_status_examples = None, None
-        if verify:
-            benchmark_status_examples = Benchmark.get_status(benchmark_names_examples, ENV)
-            dataset_status_examples = Dataset.get_status(dataset_names_examples, ENV)
-        
-        print_items('Example Datasets', dataset_names_examples, dataset_status_examples)
-        print_items('Example Benchmarks', benchmark_names_examples, benchmark_status_examples)
-
     print('\n')
 
 
@@ -277,13 +266,13 @@ def run(mode, model, dataset_dir, output_dir, monitor_on,
 
     # create instance and run
     bench_types = ENV.get_bench_types(benchmark_name)
-    is_bench_example = ENV.get_bench_example_flag(benchmark_name)
+    bench_group = ENV.get_bench_group(benchmark_name)
     bench_run = None
     if mode in bench_types:
         if mode ==  'inference':
-            bench_run = Benchmark.create_inference_instance(benchmark_name, is_bench_example)
+            bench_run = Benchmark.create_inference_instance(benchmark_name, bench_group)
         else:
-            bench_run = Benchmark.create_training_instance(benchmark_name, is_bench_example)
+            bench_run = Benchmark.create_training_instance(benchmark_name, bench_group)
    
     if (bench_run is None) or (mode not in bench_types):
         print(f'The benchmark {benchmark_name} does not support {mode}.')

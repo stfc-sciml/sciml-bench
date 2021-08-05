@@ -19,6 +19,7 @@ from sciml_bench.core.utils import csv_to_stripped_set
 from sciml_bench.core.utils import csv_string_to_stripped_set
 import yaml
 from pathlib import Path
+from collections import defaultdict
 
 
 class ProgramEnv:
@@ -53,6 +54,10 @@ class ProgramEnv:
 
         # benchmarks  
         self.benchmarks = cfg['benchmarks']
+        self.benchmark_groups = defaultdict(list)
+        for k, v in self.benchmarks.items():
+            group_name = v['group']
+            self.benchmark_groups[group_name].append(k)
 
         # Now validate the file 
         self.is_valid = False
@@ -114,6 +119,9 @@ class ProgramEnv:
         return self.is_valid, self.config_error
 
     def get_download_command(self, dataset_name):
+        """
+        Extract the download command for a given dataset
+        """
         cmd = None
         if self.is_valid == True:
             cmd = self.datasets[dataset_name]['download_command']
@@ -123,17 +131,21 @@ class ProgramEnv:
     # Given a benchmark, returns the sections of the benchmark
     # assigning default values wherever possible.
     def get_bench_sections(self, benchmark_name):
-
+        """
+        Extract various sections of a given benchmark
+        """
         bench_datasets = self.get_bench_datasets(benchmark_name)
         bench_dependencies = self.get_bench_dependencies(benchmark_name)
-        is_bench_example = self.get_bench_example_flag(benchmark_name)
-        bench_types = self.get_bench_types(benchmark_name)
+        bench_types    = self.get_bench_types(benchmark_name)
+        bench_group   = self.get_bench_group(benchmark_name)
         
-        return bench_datasets, bench_dependencies, is_bench_example, bench_types
+        return bench_datasets, bench_dependencies, bench_types, bench_group
 
 
     def get_bench_types(self, benchmark_name):
-        
+        """
+        Returns the benchmark type (inference or training or both) for a given benchmark name
+        """
         if (benchmark_name not in self.benchmarks) or self.is_config_valid==False:
             return None
 
@@ -143,19 +155,21 @@ class ProgramEnv:
         else:
             return  ['training', 'inference']
 
-    def get_bench_example_flag(self, benchmark_name):
-        
+    def get_bench_group(self, benchmark_name):
+        """Get the group to which a benchmark belongs to"""
         if (benchmark_name not in self.benchmarks) or self.is_config_valid==False:
             return None
 
         benchmark = self.benchmarks[benchmark_name]
-        if 'is_example' in benchmark.keys():
-            return benchmark['is_example']
+        if 'group' in benchmark.keys():
+            return benchmark['group']
         else:
-            return  False
+            return  ''
 
     def get_bench_dependencies(self, benchmark_name):
-        
+        """
+        Return the package dependencies for a given benchmark
+        """
         if (benchmark_name not in self.benchmarks) or self.is_config_valid==False:
             return None
 
@@ -166,7 +180,9 @@ class ProgramEnv:
             return  None
 
     def get_bench_datasets(self, benchmark_name):
-        
+        """
+        Return the dataset dependencies for a given benchmark
+        """
         if (benchmark_name not in self.benchmarks) or self.is_config_valid==False:
             return None
 
@@ -176,30 +192,22 @@ class ProgramEnv:
         else:
             return  None
 
-    def list_main_benchmarks(self):
-        output = []
-        for name, props in self.benchmarks.items():
-            if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
-                output.append(name)
+    def list_benchmarks(self, group=None):
+        """
+        Returns a list of benchmarks for a given group.
+        If the group is none or non-existent, return all as a list.
+        """
+        if (group is None) or (group not in self.benchmark_groups.keys()):
+            output = [item for sublist in self.benchmark_groups.values() for item in sublist]
+        else:
+            output = self.benchmark_groups[group] 
         return output
 
-    def list_main_datasets(self):
+    def list_datasets(self):
+        """
+        Returns a list of datasets as a list
+        """
         output = []
         for name, props in self.datasets.items():
-            if (props is None) or ('is_example' not in props) or ('is_example' in props and props['is_example'] == False):
-                output.append(name)
-        return output
-
-    def list_example_benchmarks(self):
-        output = []
-        for name, props in self.benchmarks.items():
-            if (props is not None) and  ('is_example' in props):
-                output.append(name)
-        return output
-
-    def list_example_datasets(self):
-        output = []
-        for name, props in self.datasets.items():
-            if (props is not None) and  ('is_example' in props):
-                output.append(name)
-        return output
+            output.append(name)
+        return output  

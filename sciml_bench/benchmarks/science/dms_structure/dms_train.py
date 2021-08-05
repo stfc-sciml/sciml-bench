@@ -19,7 +19,7 @@ from sklearn.metrics import accuracy_score
 from sciml_bench.core.utils import MultiLevelLogger
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 
-from sciml_bench.benchmarks.dms_structure.dms_model import DMSNet
+from sciml_bench.benchmarks.science.dms_structure.dms_model import DMSNet
 
 
 # training the neural network
