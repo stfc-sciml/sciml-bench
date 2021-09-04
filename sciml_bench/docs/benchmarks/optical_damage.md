@@ -1,46 +1,25 @@
 # optical_damage Benchmark
 
-(udate this section)
-Estimation of sea surface temperature (SST) from space-borne sensors, such as satellites, is crucial for a number of applications in environmental sciences. One of the aspects that underpins the derivation of SST is cloud screening, which is a step that marks each and every pixel of thousands of satellite imageries as containing cloud or clear sky, historically performed using either thresholding or Bayesian methods. This benchmark focuses on using a machine learning-based model for masking clouds, in the Sentinel-3 satellite, which carries the Sea and Land Surface Temperature Radiometer (SLSTR) instrument. More specifically, the benchmark operates on multi-spectral image data. The baseline implementation is a variation of the U-Net deep neural network. 
+The purpose of this benchmark is to detect damaged and degrading laser optics from diagnostic images for the optics beam path. Damaged laser optics are a significant problem in Central Laser Facility (CLF) beamlines. Damaged optics are not always spotted automatically by users, causing a loss of productive time and a potentially a corruption of scientific results. Depending on the type and extent of the damage, optics could also be potentially salvaged if damage can be detected early enough. The benchmark uses an autoencoder which is trained on a large number of images of undamaged optics and the faulty equipment is detected as an anomaly. The solution is based on unsupervised learning for several reasons. Firstly, images of damaged optics are uncommon and exhibit a lot of variation. Secondly, it can be difficult to design a network that can spot all types of damage when trained in a supervised fashion. Therefore the problem is framed as outlier detection, the network learns what an undamaged image looks like then it can spot the outliers (damaged images). Autoencoder networks have a typical butterfly shape, the original image is encoded to produce a compressed data representation then this representation is decoded to reconstruct the original image or at least a close resemblance. An anomaly can be detected by determining how well the model can reconstruct the input data. Since the model was trained on undamaged imaged we would expect that a high reconstruction error for images of damaged optics. The autoencoder consists of 160 million trainable parameters and it occupies 1.8GByte.
+ 
+* Entity Type: Benchmark
+* Main Domain: Instrumentation
+* Sub Domain: Laser equipment
+* Task: Detection of damaged optical equipment 
+* Relevant Datasets: optical_damage_ds1
+* Implementation: TensorFlow Keras
+* Authors: Samuel Jackson (please add others) 
 
+The benchmark, when run, by default, utilises the GPU if one available.  The benchmark does not support distributed training, and such, will not make use of more than one GPU, even if available. 
 
-* Main Domain: Environmental Sciences
-* Sub Domain: Atmospheric Physics / Remote Sensing
-* Task:	Image classification (at pixel level)
-* Relevant Datasets: cloud_slstr_ds1, cloud_slstr_ds2
-* Implementation: TensorFlow + Keras + Horovod
-* Support for Distributed Training: Yes
-* Device Support: CPU / GPUs / Clusters
-* Authors: Samuel Jackson, Caroline Cox, Jeyan Thiyagalingam, and Tony Hey 
+For training use this command:
+sciml-bench run --mode training optical_damage
 
+For inference use this command:
+sciml-bench run --mode inference --model ~/sciml_bench/models/optical_damage/opticsModel.h5 --dataset_dir ~/sciml_bench/datasets/optical_damage_ds1 optical_damage
 
-The benchmark, when run, by default, utilises the GPU if one available.  The benchmark does not support distributed training, and such, will not make use of more than one GPU, even if available. The benchmark relies on the following default parameters: 
+The benchmark uses on the following default parameters (update this section): 
 
 * Batch size: `batch_size` = 32
-* Number of epochs: `epochs` = 30
-* Learning rate: `lr` = 0.001
-* Clipping offset: `clip_offset` = 15
-* Train/Test split ratio `train_split` = 0.8
-* Cropping size (to remove potential NaN values) `crop_size` = 80
-* Use TensorFlow dataset caching during training `no_cache` = False
-* Value for the weighted binary cross entropy `wbce`  = 0.5
-
-These can be tuned further by supplying the values of when running the benchmark in training mode using the `--benchmark_specific` or `-b` option.  
-
-
-<!--
-Estimation of sea surface temperature (SST) from space-borne sensors, such as satellites, is crucial for a number of applications in environmental sciences. One of the aspects that underpins the derivation of SST is cloud screening, which is a step that marks each and every pixel of thousands of satellite imageries as containing cloud or clear sky, historically performed using either thresholding or Bayesian methods. This benchmark focuses on using a machine learning-based model for masking clouds, in the Sentinel-3 satellite, which carries the Sea and Land Surface Temperature Radiometer (SLSTR) instrument. More specifically, the benchmark operates on multi-spectral image data. The baseline implementation is a variation of the U-Net deep neural network. 
-
-* Entity Type: Benchmark
-* Main Domain: Environmental Sciences
-* Sub Domain: Atmospheric Physics / Remote Sensing
-* Learning Task: Image classification (at pixel level)
-* Relevant Datasets: cloud_slstr_ds1, cloud_slstr_ds2
-* Implementation: TensorFlow + Keras + Horovod
-* Support for Distributed Training: Yes
-* Device Support: CPU / GPUs / Clusters
-* Authors: Samuel Jackson, Caroline Cox, 
-           Jeyan Thiyagalingam, and Tony Hey 
- 
-  Check the full documentation for more details. 
--->
+* Number of epochs: `epochs` = 10
+* Learning rate: `lr` = 0.01  
