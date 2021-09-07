@@ -36,7 +36,6 @@ from sciml_bench.benchmarks.science.optical_damage.opticalDamageUtils import ssi
 import time
 import yaml
 import torch
-import math
 from pathlib import Path
 
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
@@ -52,7 +51,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     Entry point for the training routine to be called by SciML-Bench
     """
     default_args = {
-        'batch_size': 128,
+        'batch_size': 64,
         'epochs': 1,
         'lr': .01,
         'use_gpu': True
@@ -77,10 +76,20 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # Decide which device to use
     if args['use_gpu'] and torch.cuda.is_available():
-        device = "cuda:0"
-        log.message('Using GPU')
+        try:
+            # List GPUs that are visible to TF
+            gpus = tf.config.list_physical_devices('GPU')
+            tf.config.set_visible_devices(gpus[0], 'GPU')
+            tf.config.experimental.set_visible_devices(devices=gpus[0], device_type="GPU")
+            tf.config.experimental.set_memory_growth(gpus[0], True)
+            log.message('Using GPU')
+        except:
+            cpus = tf.config.list_physical_devices('CPU')
+            tf.config.set_visible_devices(cpus[0], 'CPU')
+            log.message('Using CPU')
     else:
-        device = "cpu"
+        cpus = tf.config.list_physical_devices('CPU')
+        tf.config.set_visible_devices(cpus[0], 'CPU')
         log.message('Using CPU')
 
     basePath = params_in.dataset_dir
@@ -101,13 +110,13 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     source = basePath / 'validation/undamaged'
     destination = basePath / 'validation/undamagedProcessed'
 
-    # check if directory exists, if not ctreate one
+    # Check if directory exists, if not ctreate one
     Path(destination).mkdir(parents=True, exist_ok=True)
 
     numberOfValidImages = processImages(source, destination, 'undamaged')
     log.message(f'Validation images: {len(numberOfValidImages)}')
 
-    #load processed images for model input
+    # Load processed images for model input
     inputImages = []
     for item in numberOfProcessedImages:
         loadedImage = np.load(item)
@@ -129,7 +138,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     # Metrics Mean Absolute Error (mae)
     model1.compile(optimizer=opt, loss='mse', metrics=['mae', 'mse'])
     with log.subproc('Calculating model parameters'):
-        history1 = model1.fit(inputImages, inputImages, batch_size=32, epochs=1, verbose=2)
+        history1 = model1.fit(inputImages, inputImages, batch_size=args['batch_size'], epochs=args['epochs'], verbose=2)
 
     # Free up memory 
     del inputImages
@@ -165,11 +174,12 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     """
     Entry point for the inference routine to be called by SciML-Bench
     """
+
     default_args = {
         'use_gpu': True,
         "batch_size" : 64
     }
-
+   
     params_out.activate(rank=0, local_rank=0)
     log = params_out.log
 
@@ -181,11 +191,21 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # Decide which device to use
     if args['use_gpu'] and torch.cuda.is_available():
-        device = "cuda:0"
-        log.message('Using GPU for inference')
+        try:
+            # List GPUs that are visible to TF
+            gpus = tf.config.list_physical_devices('GPU')
+            tf.config.set_visible_devices(gpus[0], 'GPU')
+            tf.config.experimental.set_visible_devices(devices=gpus[0], device_type="GPU")
+            tf.config.experimental.set_memory_growth(gpus[0], True)
+            log.message('Using GPU')
+        except:
+            cpus = tf.config.list_physical_devices('CPU')
+            tf.config.set_visible_devices(cpus[0], 'CPU')
+            log.message('Using CPU')
     else:
-        device = "cpu"
-        log.message('Using CPU for inference')
+        cpus = tf.config.list_physical_devices('CPU')
+        tf.config.set_visible_devices(cpus[0], 'CPU')
+        log.message('Using CPU')
 
     # Save inference parameters
     args_file = params_in.output_dir / 'inference_arguments_used.yml'
@@ -250,10 +270,6 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     endInference = time.time()
     log.message(f'Inference time: {(endInference - startInference): 9.4f}, \
             Images/s: {len(testImages)/(endInference - startInference):9.1f}')
-
-    # MSE distribution plot
-    # sns.histplot(data=mse, kde=True, stat="probability")
-    # plt.show()
 
     # Calculating stats
     recons = np.concatenate(recons, axis=0)
