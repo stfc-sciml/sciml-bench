@@ -1,0 +1,45 @@
+| **Benchmark Name** | Dataset Ready? | **Baseline Ready?** | **Integrated** | **Origin** |
+| --- | --- | --- | --- | --- |
+| cloud\_slstr | ✓ | ✓ | ✓ | SciML |
+| em\_denoise | ✓ | ✓ | ✓ | SciML |
+| dms\_x | ✓ | ✓ | ✓ | SciML |
+| ediff/stemdl | ✓ | ✓ | ✓ | ORNL |
+| optics\_damage | ✓ | ✓ | ✓ | SciML |
+| cryo\_denoise | ✓ | ✓ | ✓ | SciML |
+| cryo\_class | ✓ | ✗ | ✗ | SciML |
+| cryo\_pick | ✓ | ✗ | ✗ | SciML |
+| photoz | ✓ | ✓ | ✗ | SciML |
+| psd\_class | ✓ | ✓ | ✗ | SciML |
+| saxs\_shapes | ✓ | ✓ | ✗ | SciML |
+| saxs\_esti | ✓ | ✓ | ✗ | SciML |
+| tritium\_breed | ✓ | ✓ | ✗ | CCFE |
+| vae\_stars | ✗ | ✗ | ✗ | ESA |
+| uno-multitask | ✓ | ✓ | ✗ | ANL |
+| lottery\_hypo | ✓ | ✗ | ✗ | SciML |
+| tevolop | ✓ | ✓ | ✗ | Uni. of Virginia |
+| quake\_noise | ✗ | ✗ | ✗ | Oxford |
+| modis\_fmf | ✓ | ✓ | ✗ | Turing |
+| trop\_cyclone | ✗ | ✗ | ✗ | Turing |
+| spin\_hamiltonian | ✓ | ✗ | ✗ | SCD/DL |
+| jarvis\_ff | ✓ | ✗ | ✗ | NIST |
+| jarvis\_dft | ✓ | ✗ | ✗ | NIST |
+| jarvis\_ffields | ✓ | ✓ | ✗ | NIST |
+| sans\_models | ✓ | ✓ | ✗ | NIST |
+| pah\_geom | ✓ | ✗ | ✗ | NIST |
+| nmr2d\_spectra | ✓ | ✗ | ✗ | NIST |
+| cccdb\_quantym | ✓ | ✗ | ✗ | NIST |
+| nist\_absorb | ✓ | ✗ | ✗ | NIST |
+| nist\_saturate | ✓ | ✗ | ✗ | NIST |
+| vbno\_diffract | ✗ | ✗ | ✗ | NIST |
+| tide\_predict | ✗ | ✗ | ✗ | IBM |
+| mixed-precision-gio | ✗ | ✗ | ✗ | SCD/DL |
+| halo-mass | ✓ | ✗ | ✗ | UCL/STFC |
+| mlflimp-seg | ✓ | ✗ | ✗ | SciML |
+| giab | ✓ | ✗ | ✗ | NIST |
+| ligo\_waves | ✓ | ✓ | ✗ | Uni. of Bristol |
+| storm\_align | ✓ | ✗ | ✗ | SciML |
+| aber\_fun | ✓ | ✗ | ✗ | RFI |
+| beam\_par\_opti | ✓ | ✗ | ✗ | EPAC |
+| latent\_factor | ✓ | ✓ | ✗ | SciML |
+| clean\_air | ✓ | ✗ | ✗ | Turing |
+| stm\_nlp | ✓ | ✗ | ✗ | CEDA |
