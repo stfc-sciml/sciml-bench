@@ -100,8 +100,6 @@ def train_model(train_dataset, test_dataset, model, args:dict,  \
 
     history = []
     for epoch in range(epochs):
-        model_file = params_in.output_dir / 'model.h5'
-        model.save(model_file)
         # Clear epoch metrics
         train_loss_metric.reset_states()
         train_acc_metric.reset_states()
