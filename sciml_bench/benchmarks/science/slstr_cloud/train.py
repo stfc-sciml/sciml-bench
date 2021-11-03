@@ -1,15 +1,6 @@
-from ast import Str
-from os.path import split
-
-import yaml
 import tensorflow as tf
 import horovod.tensorflow as hvd
-from pathlib import Path
 
-from sklearn.model_selection import train_test_split
-
-from .data_loader import SLSTRDataLoader
-from .model import unet
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 
 
@@ -48,7 +39,6 @@ def train_model(train_dataset, test_dataset, model, args:dict,  \
 
     learning_rate = args['learning_rate']
     epochs = args['epochs']
-    batch_size = args['batch_size']
     wbce = args['wbce']
     clip_offset = args['clip_offset']
     
@@ -110,6 +100,8 @@ def train_model(train_dataset, test_dataset, model, args:dict,  \
 
     history = []
     for epoch in range(epochs):
+        model_file = params_in.output_dir / 'model.h5'
+        model.save(model_file)
         # Clear epoch metrics
         train_loss_metric.reset_states()
         train_acc_metric.reset_states()
@@ -131,6 +123,7 @@ def train_model(train_dataset, test_dataset, model, args:dict,  \
                 if hvd.rank() == 0:
                     device.message(message)
 
+                
             device.ended("Training")
             device.begin("Testing")
 
