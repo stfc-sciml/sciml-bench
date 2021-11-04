@@ -70,7 +70,7 @@ benchmarks:
     
     optical_damage:
         datasets: optical_damage_ds1
-        dependencies: 'tensorflow, torch, sklearn, tqdm'
+        dependencies: 'tensorflow, sklearn, tqdm'
         types: 'training, inference'
         group: 'science'
         
