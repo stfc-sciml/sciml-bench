@@ -12,33 +12,31 @@
 import h5py
 import numpy as np
 import tensorflow as tf
-from pathlib import Path
+from sklearn.metrics import accuracy_score, f1_score
+from sciml_bench.core.tensorflow import LogEpochCallback
+from sciml_bench.core.utils import MultiLevelLogger
 
-import PIL
-from PIL import Image
 from tqdm import tqdm
 from pathlib import Path
-import sys
-from sys import getsizeof
-import glob
-from matplotlib import pyplot
 
 import gc
 import resource
 
-# Import model and methods
-from sciml_bench.benchmarks.science.optical_damage.opticalDamageModel import autoencoder
-from sciml_bench.benchmarks.science.optical_damage.opticalDamageUtils import normalize
-from sciml_bench.benchmarks.science.optical_damage.opticalDamageUtils import _crop_bb
-from sciml_bench.benchmarks.science.optical_damage.opticalDamageUtils import processImages
-from sciml_bench.benchmarks.science.optical_damage.opticalDamageUtils import ssim_loss
+from sciml_bench.benchmarks.science.optical_damage.model import autoencoder
+from sciml_bench.benchmarks.science.optical_damage.utils import IMAGE_SHAPE, load_images
 
 import time
 import yaml
-import torch
 from pathlib import Path
 
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
+
+def set_target_devices(use_gpu: bool, log: MultiLevelLogger) -> bool:
+    if not use_gpu:
+        tf.config.set_visible_devices([], 'GPU')
+        log.message('Using CPU')
+    else:
+        log.message('Using GPU')
 
 #####################################################################
 # Training mode                                                     #
@@ -52,8 +50,9 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
     default_args = {
         'batch_size': 64,
-        'epochs': 1,
-        'lr': .01,
+        'epochs': 5,
+        'latent_size': 512,
+        'lr': .001,
         'use_gpu': True
     }    
 
@@ -75,79 +74,57 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
             yaml.dump(args, handle)
 
     # Decide which device to use
-    if args['use_gpu'] and torch.cuda.is_available():
-        try:
-            # List GPUs that are visible to TF
-            gpus = tf.config.list_physical_devices('GPU')
-            tf.config.set_visible_devices(gpus[0], 'GPU')
-            tf.config.experimental.set_visible_devices(devices=gpus[0], device_type="GPU")
-            tf.config.experimental.set_memory_growth(gpus[0], True)
-            log.message('Using GPU')
-        except:
-            cpus = tf.config.list_physical_devices('CPU')
-            tf.config.set_visible_devices(cpus[0], 'CPU')
-            log.message('Using CPU')
-    else:
-        cpus = tf.config.list_physical_devices('CPU')
-        tf.config.set_visible_devices(cpus[0], 'CPU')
-        log.message('Using CPU')
+    set_target_devices(args['use_gpu'], log)
 
     basePath = params_in.dataset_dir
-    # Save all models in one dir
     modelPath = params_in.output_dir / f'opticsModel.h5'
    
-    # Copy processed files into new dir
-    source = basePath / 'training/undamaged'
-    destination = basePath / 'training/undamagedProcessed'
+    # Load training images
+    with log.subproc('Loading training data'):
+        training_path = basePath / 'training/undamaged'
+        training_images = load_images(training_path)
 
-     # check if directory exists, if not ctreate one
-    Path(destination).mkdir(parents=True, exist_ok=True)
-
-    numberOfProcessedImages = processImages(source, destination, 'undamaged')
-    log.message(f'Training images: {len(numberOfProcessedImages)}')
-
-    # Process validation images
-    source = basePath / 'validation/undamaged'
-    destination = basePath / 'validation/undamagedProcessed'
-
-    # Check if directory exists, if not ctreate one
-    Path(destination).mkdir(parents=True, exist_ok=True)
-
-    numberOfValidImages = processImages(source, destination, 'undamaged')
-    log.message(f'Validation images: {len(numberOfValidImages)}')
-
-    # Load processed images for model input
-    inputImages = []
-    for item in numberOfProcessedImages:
-        loadedImage = np.load(item)
-        inputImages.append(loadedImage)
-    inputImages = np.array(inputImages)
+        log.message(f'Training images: {len(training_images)}')
 
     # Load validation images
-    validImages = []
-    for item in numberOfValidImages:
-        loadedImage = np.load(item)
-        validImages.append(loadedImage)
-    validImages = np.array(validImages)
+    with log.subproc('Loading validation data'):
+        validation_path = basePath / 'validation/undamaged'
+        validation_images = load_images(validation_path)
 
-    opt = tf.keras.optimizers.Adam(0.001)
-    input_shape=(200, 200, 1)
-    latent_dim=2000
-    model1 = autoencoder(input_shape, latent_dim)
+        log.message(f'Validation images: {len(validation_images)}')
 
-    # Metrics Mean Absolute Error (mae)
-    model1.compile(optimizer=opt, loss='mse', metrics=['mae', 'mse'])
-    with log.subproc('Calculating model parameters'):
-        history1 = model1.fit(inputImages, inputImages, batch_size=args['batch_size'], epochs=args['epochs'], verbose=2)
+
+    latent_dim = args['latent_size']
+    learning_rate = args['lr']
+    batch_size = args['batch_size']
+
+    mirrored_strategy = tf.distribute.MirroredStrategy()
+
+    train_data = tf.data.Dataset.from_tensor_slices((training_images, training_images))
+    train_data = train_data.shuffle(2000)
+    train_data = train_data.batch(batch_size * mirrored_strategy.num_replicas_in_sync)
+
+    validation_data = tf.data.Dataset.from_tensor_slices((validation_images, validation_images))
+    validation_data = validation_data.batch(batch_size * mirrored_strategy.num_replicas_in_sync)
+
+    # Scale the model to multiple GPUs if possible
+    with mirrored_strategy.scope():
+        opt = tf.keras.optimizers.Adam(learning_rate)
+        model = autoencoder(IMAGE_SHAPE, latent_dim)
+        model.compile(optimizer=opt, loss='mse', metrics=['mae', 'mse'])
+
+    with log.subproc('Fitting model parameters'):
+        history = model.fit(train_data, validation_data=validation_data, epochs=args['epochs'], 
+                            verbose=0, callbacks=[LogEpochCallback(params_out)])
 
     # Free up memory 
-    del inputImages
-    del validImages
+    del training_images
+    del validation_images
     gc.collect()
 
     # Save model
     with log.subproc('Saving model file'):
-        tf.keras.models.save_model(model1, modelPath)
+        tf.keras.models.save_model(model, modelPath)
         log.message(f'model saved in:{str(modelPath)}')
 
     # Peak memory usage
@@ -158,7 +135,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     with log.subproc('Saving training history'):
         history_file = params_in.output_dir / 'training_history.yml'
         with open(history_file, 'w') as handle:
-            yaml.dump(history1.history, handle)
+            yaml.dump(history.history, handle)
 
     # End top level
     log.ended(f'Running benchmark optical_damage on training mode')
@@ -190,22 +167,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         args = params_in.bench_args.try_get_dict(default_args=default_args)
 
     # Decide which device to use
-    if args['use_gpu'] and torch.cuda.is_available():
-        try:
-            # List GPUs that are visible to TF
-            gpus = tf.config.list_physical_devices('GPU')
-            tf.config.set_visible_devices(gpus[0], 'GPU')
-            tf.config.experimental.set_visible_devices(devices=gpus[0], device_type="GPU")
-            tf.config.experimental.set_memory_growth(gpus[0], True)
-            log.message('Using GPU')
-        except:
-            cpus = tf.config.list_physical_devices('CPU')
-            tf.config.set_visible_devices(cpus[0], 'CPU')
-            log.message('Using CPU')
-    else:
-        cpus = tf.config.list_physical_devices('CPU')
-        tf.config.set_visible_devices(cpus[0], 'CPU')
-        log.message('Using CPU')
+    set_target_devices(args['use_gpu'], log)
 
     # Save inference parameters
     args_file = params_in.output_dir / 'inference_arguments_used.yml'
@@ -217,69 +179,73 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     modelPath = params_in.model
 
      # Loading the model
-    model = tf.keras.models.load_model(modelPath, custom_objects={'ssim_loss': ssim_loss})
+    model = tf.keras.models.load_model(modelPath)
     basePath = params_in.dataset_dir
 
     # The inference folder contains: 4499 undamaged and 2047 damaged images
-    # Copy damaged images into new dir
-    source = basePath / 'inference/damaged'
-    destination = basePath / 'inference/processedImages'
-    
-    # Check if directory exists, if not create one
-    Path(destination).mkdir(parents=True, exist_ok=True)
-    with log.subproc('Process damaged images'):
-        damagedList = processImages(source, destination, 'damaged')
-        log.message(f'Number of damaged images: {len(damagedList)}')
+    with log.subproc('Load damaged images'):
+        damaged_path = basePath / 'inference/damaged'
+        damaged_images = load_images(damaged_path)
+        log.message(f'Number of damaged images: {len(damaged_images)}')
   
-    # Copy undamaged images into new dir
-    source = basePath / 'inference/undamaged'
-    with log.subproc('Process undamaged images'):
-        undamagedList = processImages(source, destination, 'undamaged')
-        log.message(f'Number of damaged images: {len(undamagedList)}')
+    with log.subproc('Load undamaged images'):
+        undamaged_path = basePath / 'inference/undamaged'
+        undamaged_images = load_images(undamaged_path)
+        log.message(f'Number of damaged images: {len(undamaged_images)}')
 
     # Concatenate two arrays
-    allProcessedTestImages = np.concatenate((damagedList, undamagedList))
-    # log.message(f'Total number of images use for inferencing: {len(allProcessedTestImages)}') 
+    test_images = np.concatenate((damaged_images, undamaged_images))
 
-    # Load test images for inference 
-    with log.subproc('Loading inference images'):
-        #log.message(f'Loading inference images')
-        testImages = []
-        for item in allProcessedTestImages:
-            loadedImage = np.load(item)
-            testImages.append(loadedImage)
-        testImages = np.array(testImages)
-        # print(f'testImages_size: {len(testImages)}') 
-        log.message(f'Inference images loaded: {len(testImages)}')
+    # Make labels for each image
+    test_labels = np.zeros((len(test_images)))
+    test_labels[:len(damaged_images)] = 1
+
+    log.message(f'Total number of images use for inferencing: {len(test_images)}') 
 
     # Inference
     recons = []
     imgs = []
     mse = []
+
     startInference = time.time()
     with log.subproc('Start inference'):
-        for images in tqdm(testImages):
+        for images in tqdm(test_images):
             images = images.reshape(-1, 200, 200, 1)
             recon = model(images, training=False)
-            loss = np.square(np.subtract(images, recon)).mean()
+            loss = tf.keras.losses.mean_squared_error(images, recon)
             recons.append(recon.numpy())
             imgs.append(images)
             mse.append(loss)
-        log.message(f'mse_lenght: {len(mse)}')
 
     endInference = time.time()
-    log.message(f'Inference time: {(endInference - startInference): 9.4f}, \
-            Images/s: {len(testImages)/(endInference - startInference):9.1f}')
+    log.message(f'Inference time: {(endInference - startInference): 9.4f}, ' \
+                f'Images/s: {len(test_images)/(endInference - startInference):9.1f}')
 
     # Calculating stats
     recons = np.concatenate(recons, axis=0)
     recons = np.squeeze(recons)
+
     imgs = np.concatenate(imgs, axis=0)
     imgs = np.squeeze(imgs)
 
-    # mse is a zero dimensional array, cannot be concatenated
-    # mse = np.concatenate(mse, axis=0)
-    # mse = np.squeeze(mse)
+    mse = np.concatenate(mse, axis=0)
+    mse = np.squeeze(mse)
+
+    with log.subproc('Calculating inference statistics'):
+        score_999 = np.any(mse > np.percentile(mse, 99.9), axis=(1, 2))
+        score_995 = np.any(mse > np.percentile(mse, 99.5), axis=(1, 2))
+        score_990 = np.any(mse > np.percentile(mse, 99.0), axis=(1, 2))
+
+        acc_999 = accuracy_score(score_999, test_labels)
+        acc_995 = accuracy_score(score_995, test_labels)
+        acc_990 = accuracy_score(score_990, test_labels)
+
+        f1_999 = f1_score(score_999, test_labels)
+        f1_995 = f1_score(score_995, test_labels)
+        f1_990 = f1_score(score_990, test_labels)
+
+        log.message(f'Accuracy at 99.0%: {acc_990: .2f}, 99.5%: {acc_995:.2f}, 99.9%: {acc_999:.2f}')
+        log.message(f'F1 Score at 99.0%: {f1_990: .2f}, 99.5%: {f1_995:.2f}, 99.9%: {f1_999:.2f}')
 
     # Max memory usage
     memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
