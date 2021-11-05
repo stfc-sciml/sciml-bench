@@ -102,7 +102,7 @@ class MultiLevelLogger:
         self._logger.addHandler(
             logging.FileHandler(Path(file_path).expanduser(), 'w'))
         if screen:
-            self._logger.addHandler(logging.StreamHandler())
+            self._logger.addHandler(logging.StreamHandler(sys.stdout))
 
     @property
     def activated(self):
