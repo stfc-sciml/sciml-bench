@@ -193,8 +193,9 @@ class MultiLevelLogger:
         self.begin(proc_name)
         try:
             yield self
-        finally:
             self.ended(proc_name)
+        finally:
+            pass
 
 
 def query_yes_no(question, default=None):
