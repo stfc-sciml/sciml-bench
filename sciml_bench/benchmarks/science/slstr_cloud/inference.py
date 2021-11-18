@@ -5,7 +5,7 @@ import tensorflow as tf
 
 import horovod.tensorflow.keras as hvd
 from .data_loader import SLSTRDataLoader
-from .constants import PATCH_SIZE, N_CHANNELS, IMAGE_H, IMAGE_W
+from .constants import CROP_SIZE, PATCH_SIZE, N_CHANNELS, IMAGE_H, IMAGE_W
 from sciml_bench.core.runtime import RuntimeOut, RuntimeIn
 
 
@@ -36,7 +36,7 @@ def reconstruct_from_patches(patches: tf.Tensor, nx: int, ny: int, patch_size: i
     return reconstructed
 
 
-def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
+def inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
     """
     Main entry of `sciml_bench run` for a benchmark instance 
     in the inference mode.
@@ -57,14 +57,12 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
     console = params_out.log.console
     device = params_out.log.device
 
-    crop_size = params_in.bench_args['crop_size']
-
     output_dir = Path(params_in.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    console.message('Loading model {}'.format(params_in.model_file))
-    assert Path(params_in.model_file).exists(), "Model file does not exist!"
-    model = hvd.load_model(str(params_in.model_file))
+    console.message('Loading model {}'.format(params_in.model))
+    assert Path(params_in.model).exists(), "Model file does not exist!"
+    model = hvd.load_model(str(params_in.model))
 
     console.message('Getting file paths')
     file_paths = list(Path(params_in.dataset_dir).glob('**/S3A*.hdf'))
@@ -74,7 +72,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
     # Create data loader in single image mode. This turns off shuffling and
     # only yields batches of images for a single image at a time so they can be
     # reconstructed.
-    data_loader = SLSTRDataLoader(file_paths, single_image=True, crop_size=crop_size)
+    data_loader = SLSTRDataLoader(file_paths, single_image=True, crop_size=CROP_SIZE)
     dataset = data_loader.to_dataset()
 
     console.begin('Inference Loop')
@@ -91,11 +89,11 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
         mask_patches = model.predict_on_batch(patches)
 
         # crop edge artifacts
-        mask_patches = tf.image.crop_to_bounding_box(mask_patches, crop_size // 2, crop_size // 2, PATCH_SIZE - crop_size, PATCH_SIZE - crop_size)
+        mask_patches = tf.image.crop_to_bounding_box(mask_patches, CROP_SIZE // 2, CROP_SIZE // 2, PATCH_SIZE - CROP_SIZE, PATCH_SIZE - CROP_SIZE)
 
         # reconstruct patches back to full size image
-        mask_patches = tf.reshape(mask_patches, (n, ny, nx, PATCH_SIZE - crop_size, PATCH_SIZE - crop_size, 1))
-        mask = reconstruct_from_patches(mask_patches, nx, ny, patch_size=PATCH_SIZE - crop_size)
+        mask_patches = tf.reshape(mask_patches, (n, ny, nx, PATCH_SIZE - CROP_SIZE, PATCH_SIZE - CROP_SIZE, 1))
+        mask = reconstruct_from_patches(mask_patches, nx, ny, patch_size=PATCH_SIZE - CROP_SIZE)
         mask_name = (output_dir / file_name.name).with_suffix('.h5')
 
         with h5py.File(mask_name, 'w') as handle:

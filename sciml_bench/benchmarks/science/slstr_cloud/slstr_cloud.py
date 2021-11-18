@@ -9,19 +9,18 @@
 # Science and Technology Facilities Council, UK.
 # All rights reserved.
 
-from sciml_bench.core.utils import MultiLevelLogger
 import yaml
 import tensorflow as tf
 import horovod.tensorflow as hvd
 
+from sciml_bench.core.utils import MultiLevelLogger
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 
-from sciml_bench.benchmarks.slstr_cloud.train import train_model
-from sciml_bench.benchmarks.slstr_cloud.data_loader import load_datasets
-from sciml_bench.benchmarks.slstr_cloud.model import unet
-
-
-# from sciml_bench.benchmarks.slstr_cloud.inference import inference
+from sciml_bench.benchmarks.science.slstr_cloud.train import train_model
+from sciml_bench.benchmarks.science.slstr_cloud.data_loader import load_datasets
+from sciml_bench.benchmarks.science.slstr_cloud.model import unet
+from sciml_bench.benchmarks.science.slstr_cloud.inference import inference
+from sciml_bench.benchmarks.science.slstr_cloud.constants import IMAGE_H, IMAGE_W, N_CHANNELS
 
 
 # Sets the target device
@@ -103,11 +102,13 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     tf.random.set_seed(args['seed'])
     console.message(f'Random seed: {args["seed"]}')
 
-    train_data_dir = params_in.dataset_dir / 'one-day'
-    test_data_dir =  params_in.dataset_dir / 'ssts'
+    data_dir = params_in.dataset_dir
+    if 'cloud_slstr_ds1' in str(data_dir):
+        data_dir = data_dir / 'hdf/one-day'
+    elif 'cloud_slstr_d2' in str(data_dir):
+        data_dir = data_dir / 'hdf'
 
-
-    if set_target_devices(args['use_gpu']) == False:
+    if set_target_devices(args['use_gpu'], log=console) == False:
         console.ended('Running benchmark slstr_cloud in training mode.')
         return 
 
@@ -121,11 +122,11 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # load the datasets
     with console.subproc("Loading datasets"):
-        train_dataset, test_dataset  = load_datasets(dataset_dir=train_data_dir, args=args)
+        train_dataset, test_dataset  = load_datasets(dataset_dir=data_dir, args=args)
     
     # build the UNet model
     with console.subproc('Creating the model'):
-        model = unet(input_shape=(256, 256, 9))
+        model = unet(input_shape=(IMAGE_H, IMAGE_W, N_CHANNELS))
         
         
     # train model
@@ -141,10 +142,6 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
 
     console.begin('Running benchmark slstr_cloud in training mode.')
-
-
-
-
 
 
 #####################################################################
@@ -187,57 +184,4 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
             with open(args_file, 'w') as handle:
                 yaml.dump(args, handle)
 
-    # load the datasets
-    with console.subproc("Loading inference datasets"):
-        train_dataset, test_dataset  = load_inferece_datasets(dataset_dir=inference_data_dir, args=args)
-    
-    # build the UNet model
-    with console.subproc('Loading the model'):
-        model = hvd.load_model()
-        
-
-    with console.subproc('Preparing data loader'):
-        data_loader = SLSTRDataLoader(file_paths, single_image=True, crop_size=args["crop_size"])
-        dataset = data_loader.to_dataset()
-
-
-    console.message('Loading model {}'.format(params_in.model_file))
-    assert Path(params_in.model_file).exists(), "Model file does not exist!"
-    model = hvd.load_model(str(params_in.model_file))
-
-    console.message('Getting file paths')
-    file_paths = list(Path(params_in.dataset_dir).glob('**/S3A*.hdf'))
-    assert len(file_paths) > 0, "Could not find any HDF files!"
-
-    console.message('Preparing data loader')
-    # Create data loader in single image mode. This turns off shuffling and
-    # only yields batches of images for a single image at a time so they can be
-    # reconstructed.
-    data_loader = SLSTRDataLoader(file_paths, single_image=True, crop_size=crop_size)
-    dataset = data_loader.to_dataset()
-
-    console.begin('Inference Loop')
-    for patches, file_name in dataset:
-        file_name = Path(file_name.numpy().decode('utf-8'))
-        device.message(f"Processing file {file_name}")
-        console.message(f"Processing file {file_name}")
-
-        # convert patches to a batch of patches
-        n, ny, nx, _ = patches.shape
-        patches = tf.reshape(patches, (n * nx * ny, PATCH_SIZE, PATCH_SIZE, N_CHANNELS))
-
-        # perform inference on patches
-        mask_patches = model.predict_on_batch(patches)
-
-        # crop edge artifacts
-        mask_patches = tf.image.crop_to_bounding_box(mask_patches, crop_size // 2, crop_size // 2, PATCH_SIZE - crop_size, PATCH_SIZE - crop_size)
-
-        # reconstruct patches back to full size image
-        mask_patches = tf.reshape(mask_patches, (n, ny, nx, PATCH_SIZE - crop_size, PATCH_SIZE - crop_size, 1))
-        mask = reconstruct_from_patches(mask_patches, nx, ny, patch_size=PATCH_SIZE - crop_size)
-        mask_name = (output_dir / file_name.name).with_suffix('.h5')
-
-        with h5py.File(mask_name, 'w') as handle:
-            handle.create_dataset('mask', data=mask)
-
-    console.ended('Inference Loop')
+    inference(params_in, params_out)
