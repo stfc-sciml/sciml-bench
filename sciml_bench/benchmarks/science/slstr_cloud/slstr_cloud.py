@@ -101,7 +101,11 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     tf.random.set_seed(args['seed'])
     console.message(f'Random seed: {args["seed"]}')
 
-    train_data_dir = params_in.dataset_dir / 'one-day'
+    data_dir = params_in.dataset_dir
+    if 'cloud_slstr_ds1' in str(data_dir):
+        data_dir = data_dir / 'hdf/one-day'
+    elif 'cloud_slstr_d2' in str(data_dir):
+        data_dir = data_dir / 'hdf'
 
     if set_target_devices(args['use_gpu'], log=console) == False:
         console.ended('Running benchmark slstr_cloud in training mode.')
@@ -117,7 +121,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # load the datasets
     with console.subproc("Loading datasets"):
-        train_dataset, test_dataset  = load_datasets(dataset_dir=train_data_dir, args=args)
+        train_dataset, test_dataset  = load_datasets(dataset_dir=data_dir, args=args)
     
     # build the UNet model
     with console.subproc('Creating the model'):

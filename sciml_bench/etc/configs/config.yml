@@ -41,6 +41,9 @@ datasets:
     cloud_slstr_ds1:
         end_point: 'sciml-datasets/es'
         download_command: download_command1
+    cloud_slstr_ds2:
+        end_point: 'sciml-datasets/es'
+        download_command: download_command1
     optical_damage_ds1:
         end_point: 'sciml-datasets/ins'
         download_command: download_command1
