@@ -20,6 +20,7 @@ from sciml_bench.benchmarks.science.slstr_cloud.train import train_model
 from sciml_bench.benchmarks.science.slstr_cloud.data_loader import load_datasets
 from sciml_bench.benchmarks.science.slstr_cloud.model import unet
 from sciml_bench.benchmarks.science.slstr_cloud.inference import inference
+from sciml_bench.benchmarks.science.slstr_cloud.constants import IMAGE_H, IMAGE_W, N_CHANNELS
 
 
 # Sets the target device
@@ -125,7 +126,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     
     # build the UNet model
     with console.subproc('Creating the model'):
-        model = unet(input_shape=(256, 256, 9))
+        model = unet(input_shape=(IMAGE_H, IMAGE_W, N_CHANNELS))
         
         
     # train model
