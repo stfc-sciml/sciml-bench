@@ -47,6 +47,9 @@ datasets:
     optical_damage_ds1:
         end_point: 'sciml-datasets/ins'
         download_command: download_command1
+    stemdl_ds1:
+        end_point: 'sciml-datasets/ms'
+        download_command: download_command1
 
 
 # List of benchmarks
@@ -75,6 +78,12 @@ benchmarks:
         datasets: optical_damage_ds1
         dependencies: 'tensorflow, sklearn, tqdm'
         types: 'training, inference'
+        group: 'science'
+
+    stemdl_classification:
+        datasets: stemdl_ds1
+        dependencies: 'torch, torchvision, tqdm, psutil, mpi4py, horovod.pytorch'
+        types: 'training'
         group: 'science'
         
     # Example Benchmarks 
