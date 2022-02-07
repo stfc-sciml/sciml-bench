@@ -1,1 +1,6 @@
-Dowloading datasets.
+For downloading a dataset used by the benchmark use the script called dataDownload.sh. 
+Make the script executable by running: chmod u+x dataDownload.sh. 
+The data is downloaded by default into the local directory. 
+For running the script supply the path to the remote server. 
+For example for downloading the Graphene dataset run the following command:
+dataDownload.sh s3://sciml-datasets/ms/em_graphene_sim ./graphene
