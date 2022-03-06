@@ -82,7 +82,7 @@ benchmarks:
 
     stemdl_classification:
         datasets: stemdl_ds1
-        dependencies: 'torch, torchvision, tqdm, psutil, mpi4py, horovod.pytorch'
+        dependencies: 'pytorch-lightning, torchvision, scikit-learn'
         types: 'training'
         group: 'science'
         
