@@ -15,7 +15,6 @@ from torch import nn
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
-#from torchvision.datasets import MNIST
 from torchvision import transforms
 import pytorch_lightning as pl
 from pytorch_lightning.plugins import DDPPlugin
@@ -191,18 +190,13 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 # Inference mode                                                    #
 #####################################################################
 # For inference use this command (not working yet)
-# sciml-bench run stemdl_clasification --mode inference 
-
 '''
 sciml-bench run stemdl_classification --mode inference \
     --model ~/sciml_bench/outputs/stemdl_classification/stemdlModel.h5 \
     --dataset_dir ~/sciml_bench/datasets/stemdl_ds1 \
     -b epochs 1 -b batchsize 32 -b nodes 1 -b gpus 1 
 '''
-
 def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
-    
-    print("START INFERENCE")
     # Entry point for the inference routine to be called by SciML-Bench
     log = params_out.log
 
@@ -238,38 +232,8 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     # Start inference
     with log.subproc('Inference operaions running on the model'):
         trainer = pl.Trainer(gpus=gpus, num_nodes=nodes, precision=16, strategy="ddp", max_epochs=epochs)
-        trainer.predict(model, predict_loader)
+        trainer.predict(model, dataloaders=predict_loader)
 
     # End top level
     log.ended('Running benchmark stemdl_classification on inference mode')
-
-##################################################################
-''' Main
-def main():
-
-    # data
-    args, train_dataset, val_dataset, test_dataset, predict_dataset = get_dataset()
-    train_loader = DataLoader(train_dataset, batch_size = int(args.batchsize), num_workers=4)
-    val_loader = DataLoader(val_dataset, batch_size = int(args.batchsize), num_workers=4)
-    test_loader = DataLoader(test_dataset, batch_size = int(args.batchsize), num_workers=4)
-    predict_loader = DataLoader(predict_dataset, batch_size = int(args.batchsize), num_workers=4)
-
-    # model
-    model = LitAutoEncoder()
-
-    # training
-    trainer = pl.Trainer(gpus=int(args.gpu), num_nodes=int(args.nodes), precision=16, \
-        strategy="ddp", max_epochs=int(args.epochs))
-    start = time.time()
-    trainer.fit(model, train_loader, val_loader)
-    end = time.time()
-    print(f'Stemdl time, 1 epoch, gpu=1: ', {end - start})
-    #testing
-    trainer.test(model, test_loader)
-
-    #inference
-    predictions = trainer.predict(model, dataloaders=predict_loader)
-
-if __name__ == "__main__":
-    main()
-'''
+###
