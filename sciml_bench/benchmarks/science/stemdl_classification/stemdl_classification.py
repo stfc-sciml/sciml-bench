@@ -10,6 +10,10 @@
 # Science and Technology Facilities Council, UK. 
 # All rights reserved.
 
+# Copyright © 2021 Oak Ridge National Laboratory
+# P.O. Box 2008, Oak Ridge, TN 37831 USA. 
+# All rights reserved.
+
 import torch
 from torch import nn
 from torch.nn import functional as F
