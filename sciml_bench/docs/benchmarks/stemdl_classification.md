@@ -23,24 +23,3 @@ For inference use this command (update):
 [3] N Laanait, J Yin, A Borisevich, “Towards a Universal Classifier for Crystallographic Space Groups”, SMC data challenges, 2020.
 [4] Jin Pan, “Probability Flow for Classifying Crystallographic Space Groups”, SMC 2020.
 [5] N Laanait, J Romero, J Yin, M Young, S Treichler, V Starchenko, A Borisevich, A Sergeev, M Matheson, “Exascale deep learning for scientific inverse problems”, arxiv:1909.11150, 2019.
-
-
-
-
-
-
-
-
-The benchmark, when run, by default, utilises the GPU if one available.  The benchmark does not support distributed training, and such, will not make use of more than one GPU, even if available. 
-
-For training use this command:
-sciml-bench run --mode training optical_damage
-
-For inference use this command:
-sciml-bench run --mode inference --model ~/sciml_bench/models/optical_damage/opticsModel.h5 --dataset_dir ~/sciml_bench/datasets/optical_damage_ds1 optical_damage
-
-The benchmark uses on the following default parameters (update this section): 
-
-* Batch size: `batch_size` = 32
-* Number of epochs: `epochs` = 1
-* Learning rate: `lr` = 0.01  
