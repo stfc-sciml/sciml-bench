@@ -47,7 +47,7 @@ The source tree, which captures these aspects,  is organised as follows:
     └── docs/                   <Main documentation folder>
         ├── full/               <Full HTML documentation> 
         ├── benchmarks/         <Documentation on benchmarks>
-        ├── benchmarks/         <Documentation on datasets>
+        ├── datasets/           <Documentation on datasets>
         ├── resources/          <image and other resources for documentation> 
     ├── benchmarks/             <Benchmark sources> 
     |   └──.../                 <Various benchmarks>
