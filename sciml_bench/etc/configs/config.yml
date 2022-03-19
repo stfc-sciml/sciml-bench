@@ -83,7 +83,7 @@ benchmarks:
     stemdl_classification:
         datasets: stemdl_ds1
         dependencies: 'pytorch-lightning, torchvision, scikit-learn'
-        types: 'training'
+        types: 'training, inference'
         group: 'science'
         
     # Example Benchmarks 
