@@ -50,6 +50,9 @@ from torchvision.transforms import ToTensor
 # Integration into sciml-bench framework
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 from sciml_bench.core.utils import MultiLevelLogger
+from sciml_bench.core.config import ProgramEnv
+from sciml_bench.core.utils import SafeDict
+
 
 # Custom dataset class
 class NPZDataset(Dataset):
@@ -132,7 +135,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     # Set data paths
     with log.subproc('Set data paths'):
         basePath = params_in.dataset_dir
-        modelPath = params_in.output_dir / f'stemdlModel.h5'
+        # modelPath = params_in.output_dir / f'stemdlModel.h5'
         trainingPath =  os.path.expanduser(basePath / 'training')
         validationPath = os.path.expanduser(basePath / 'validation')
         testingPath = os.path.expanduser(basePath / 'testing')
@@ -164,7 +167,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         train_loader = DataLoader(train_dataset, batch_size=bs, num_workers=4)
         val_loader = DataLoader(val_dataset, batch_size=bs, num_workers=4)
         test_loader = DataLoader(test_dataset, batch_size=bs, num_workers=4)
-        predict_loader = DataLoader(predict_dataset, batch_size=bs, num_workers=4)
+        #predict_loader = DataLoader(predict_dataset, batch_size=bs, num_workers=4)
 
     # Model
     with log.subproc('Create data model'):
@@ -182,6 +185,8 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message('End testing')
 
     # Save model
+    modelPathStr = '~/sciml_bench/outputs/stemdl_classification/stemdlModel.h5'
+    modelPath = os.path.expanduser(modelPathStr)
     with log.subproc('Save model'):
         torch.save(model.state_dict(), modelPath)
         log.message('Model saved')
@@ -193,8 +198,9 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 #####################################################################
 # Inference mode                                                    #
 #####################################################################
-# For inference use this command (not working yet)
+# The "--model" key in inference commandline is not read.
 '''
+For inference run this command: 
 sciml-bench run stemdl_classification --mode inference \
     --model ~/sciml_bench/outputs/stemdl_classification/stemdlModel.h5 \
     --dataset_dir ~/sciml_bench/datasets/stemdl_ds1 \
@@ -208,9 +214,8 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     # Set data paths
     with log.subproc('Set data paths'):
         basePath = params_in.dataset_dir
-        modelPath = params_in.output_dir / f'stemdlModel.h5'
-        print(modelPath)
-        sys.exit()
+        modelPathStr = '~/sciml_bench/outputs/stemdl_classification/stemdlModel.h5'
+        modelPath = os.path.expanduser(modelPathStr)
         inferencePath = os.path.expanduser(basePath / 'inference')
 
     # Get command line arguments
@@ -234,8 +239,8 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         model.load_state_dict(torch.load(modelPath))
 
     # Start inference
-    with log.subproc('Inference operaions running on the model'):
-        trainer = pl.Trainer(gpus=gpus, num_nodes=nodes, precision=16, strategy="ddp", max_epochs=epochs)
+    with log.subproc('Inference on the model'):
+        trainer = pl.Trainer(gpus=gpus, num_nodes=nodes, precision=16, strategy="ddp")
         trainer.predict(model, dataloaders=predict_loader)
 
     # End top level
