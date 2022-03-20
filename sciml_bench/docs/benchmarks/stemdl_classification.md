@@ -14,8 +14,11 @@ The benchmark supports data parallel training and runs on multiple GPUs.
 For training use this command: 
 sciml-bench run stemdl_classification --mode training -b epochs 1 -b batchsize 32 -b nodes 1 -b gpus 1
 
-For inference use this command (update):
-
+For inference use this command:
+sciml-bench run stemdl_classification --mode inference \
+    --model ~/sciml_bench/outputs/stemdl_classification/stemdlModel.h5 \
+    --dataset_dir ~/sciml_bench/datasets/stemdl_ds1 \
+    -b epochs 1 -b batchsize 32 -b nodes 1 -b gpus 1 
 
 ## References:
 [1] N Laanait, J Yin, “NAMSA”, 10.11578/dc.20201001.90, 2019.
