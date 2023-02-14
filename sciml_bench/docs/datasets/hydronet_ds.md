@@ -11,7 +11,7 @@ QM9 data from: http://quantum-machine.org/datasets/
 
 Water data from: https://sites.uw.edu/wdbase/database-of-water-clusters/
 
-#Parameters of input dataset
+# Parameters of input dataset
 
 <HDF5 dataset "pos": shape (133885, 30, 3), type "<f4">  (n_samples, max_n_atoms, xyz coordinates)
 

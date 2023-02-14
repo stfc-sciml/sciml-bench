@@ -50,6 +50,9 @@ datasets:
     stemdl_ds1:
         end_point: 'sciml-datasets/ms'
         download_command: download_command1
+    hydronet_ds1:
+        end_point: 'sciml-datasets/ms'
+        download_command: download_command1
 
 
 # List of benchmarks
@@ -83,6 +86,12 @@ benchmarks:
     stemdl_classification:
         datasets: stemdl_ds1
         dependencies: 'pytorch-lightning, torchvision, scikit-learn'
+        types: 'training, inference'
+        group: 'science'
+    
+    hydronet:
+        datasets: hydronet_ds1
+        dependencies: 'pytorch, torchvision, scikit-learn, pyg, tensorboard, ase, fair-research-login, h5py, tqdm, gdown, torch-scatter, torch-sparse, torch-cluster, torch-spline-conv, torch-geometric'
         types: 'training, inference'
         group: 'science'
         
