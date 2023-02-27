@@ -1,0 +1,23 @@
+{
+    "parallel": true,
+    "create_splits": false,
+    "n_train": 107108,
+    "n_val": 13388,
+    "splitdir": "~/sciml_bench/datasets/hydronet_ds1/QM9/",
+    "datadir": "~/sciml_bench/datasets/hydronet_ds1/",
+    "train_forces": false,
+    "energy_coeff": 1,
+    "n_epochs": 10,
+    "batch_size": 128,
+    "datasets": ["qm9"],
+    "start_model": "./models/IPU-minima-best_model.pt",
+    "load_model": false,
+    "load_state": false,
+    "num_features": 100,
+    "num_interactions": 4,
+    "num_gaussians": 25,
+    "cutoff": 6.0,
+    "clip_value": 200.0,
+    "start_lr": 0.01,
+    "loss_fn": "mse"
+}
