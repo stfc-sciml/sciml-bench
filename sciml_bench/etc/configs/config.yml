@@ -91,7 +91,7 @@ benchmarks:
     
     hydronet:
         datasets: hydronet_ds1
-        dependencies: 'pytorch, torchvision, scikit-learn, pyg, tensorboard, ase, fair-research-login, h5py, tqdm, gdown, torch-scatter, torch-sparse, torch-cluster, torch-spline-conv, torch-geometric'
+        dependencies: '"torch-1.12.0", torchvision, scikit-learn, pyg, tensorboard, ase, fair-research-login, h5py, tqdm, gdown, torch-scatter, torch-sparse, torch-cluster, torch-spline-conv, torch-geometric'
         types: 'training, inference'
         group: 'science'
         
