@@ -16,7 +16,7 @@ Main entry of the program
 
 from sciml_bench.core.statics import ABOUT_MSG
 import click
-import os
+import os, sys
 from pathlib import Path
 import textwrap
 
@@ -128,9 +128,8 @@ def info(entity):
     width_data = len(max(list(ENV.datasets.keys()), key=len))
     width_ben = len(max(list(ENV.benchmarks.keys()), key=len))
     width = max(width_data, width_ben)
-
+   
     # Decide whether the given entity is a benchmark or dataset:
-
     if entity in ENV.datasets.keys() or entity in ENV.benchmarks.keys():
       if entity in ENV.datasets.keys():
         info_path = Path(__file__).parents[1] / 'docs/datasets/' 

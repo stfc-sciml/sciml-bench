@@ -53,6 +53,9 @@ datasets:
     hydronet_ds1:
         end_point: 'sciml-datasets/ms'
         download_command: download_command1
+    inelastic_ds1:
+        end_point: 'sciml-datasets/ms'
+        download_command: download_command1
 
 
 # List of benchmarks
@@ -91,12 +94,18 @@ benchmarks:
     
     hydronet:
         datasets: hydronet_ds1
-        dependencies: '"torch-1.12.0", torchvision, scikit-learn, pyg, tensorboard, ase, fair-research-login, h5py, tqdm, gdown, torch-scatter, torch-sparse, torch-cluster, torch-spline-conv, torch-geometric'
+        dependencies: 'torch, torchvision, scikit-learn, pyg, tensorboard, ase, fair-research-login, h5py, tqdm, gdown, torch-scatter, torch-sparse, torch-cluster, torch-spline-conv, torch-geometric'
         types: 'training, inference'
         group: 'science'
+    
+    inelastic:
+        datasets: inelastic_ds1
+        dependencies: 'tensorflow, tqdm'
+        types: 'training, inference'
+        group: 'science'
+
         
     # Example Benchmarks 
-
     mnist_tf_keras:
         datasets: mnist
         dependencies: 'tensorflow, scikit-image'

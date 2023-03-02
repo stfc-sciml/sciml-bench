@@ -16,15 +16,72 @@ from tqdm import tqdm
 #from utils import data, models, train, eval, split, hooks
 import datetime
 
-# integration libs
-from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
-
 import sciml_bench.benchmarks.science.hydronet.utils.data
 import sciml_bench.benchmarks.science.hydronet.utils.models
 import sciml_bench.benchmarks.science.hydronet.utils.train
 import sciml_bench.benchmarks.science.hydronet.utils.eval
 import sciml_bench.benchmarks.science.hydronet.utils.split
 import sciml_bench.benchmarks.science.hydronet.utils.hooks
+
+# Integration into sciml-bench framework
+from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
+from sciml_bench.core.utils import MultiLevelLogger
+from sciml_bench.core.config import ProgramEnv
+from sciml_bench.core.utils import SafeDict
+
+
+#####################################################################
+# Training mode                                                     #
+#####################################################################
+# For training use this command:
+# sciml-bench run --mode training hydronet
+
+def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
+    """
+    Entry point for the training routine to be called by SciML-Bench
+    """
+    default_args = {
+        'batch_size': 64,
+        'epochs': 5,
+        'latent_size': 512,
+        'lr': .001,
+        'use_gpu': True
+    }    
+
+    # Log top level process
+    log = params_out.log.console
+    log.begin(f'Running benchmark hydronet in training mode')
+    print("Running benchmark hydronet in training mode")
+
+
+    # End top level
+    log.ended(f'Running benchmark optical_damage on training mode')
+
+
+#####################################################################
+# Inference mode                                                    #
+#####################################################################
+# 
+
+def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
+    """
+    Entry point for the inference routine to be called by SciML-Bench
+    """
+
+    default_args = {
+        'use_gpu': True,
+        "batch_size" : 64
+    }
+   
+    params_out.activate(rank=0, local_rank=0)
+    log = params_out.log
+
+    log.begin('Running benchmark hydronet in inference mode')
+
+
+    # End top level
+    log.ended('Running benchmark hydronet in inference mode')
+
 
 
 # Timestamp 

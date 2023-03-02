@@ -249,11 +249,14 @@ def extract_html_comments(file_name):
         with open(file_name, 'r') as source:
             html = source.read()
             soup = BeautifulSoup(html, 'lxml')
+          
             comments = soup.findAll(text=lambda text:isinstance(text, Comment))
+
             if len(comments) > 0:
                 return comments[0]
             else:
-                return None
+                #return None
+                return soup
     except EnvironmentError:
         return None
 
