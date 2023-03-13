@@ -247,10 +247,12 @@ def run(mode, model, dataset_dir, output_dir, monitor_on,
         monitor_interval, monitor_report_style,
         bench_args_list, benchmark_name):
     """ sciml_bench run """
+    
 
     # runtime input
     params_in = RuntimeIn(ENV, mode, model, benchmark_name, 
                           dataset_dir, output_dir, bench_args_list)
+
 
     if params_in.valid == False:
       print(params_in.error_msg)
@@ -267,17 +269,18 @@ def run(mode, model, dataset_dir, output_dir, monitor_on,
     bench_types = ENV.get_bench_types(benchmark_name)
     bench_group = ENV.get_bench_group(benchmark_name)
     bench_run = None
+
     if mode in bench_types:
         if mode ==  'inference':
             bench_run = Benchmark.create_inference_instance(benchmark_name, bench_group)
         else:
             bench_run = Benchmark.create_training_instance(benchmark_name, bench_group)
-   
+    
     if (bench_run is None) or (mode not in bench_types):
         print(f'The benchmark {benchmark_name} does not support {mode}.')
         print(f'Terminating the execution')
         return 
-    
+
     # Now try and launch
     try:    
         bench_run(params_in, params_out)
@@ -286,7 +289,6 @@ def run(mode, model, dataset_dir, output_dir, monitor_on,
         params_out.system.abort()
         raise e
     
-
     # report monitor
     params_out.report()
 

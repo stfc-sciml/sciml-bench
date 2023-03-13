@@ -19,6 +19,7 @@ from sciml_bench.core.config import ProgramEnv
 from sciml_bench.core.utils import csv_to_stripped_set, display_logo, print_bullet_list, check_command
 from subprocess import PIPE, STDOUT, run
 import sciml_bench.core.dataset as Dataset
+import sys
 
 def create_training_instance(benchmark_name, bench_group, return_none_on_except=True):
     """ Create a benchmark instance for training"""
@@ -29,7 +30,7 @@ def create_training_instance(benchmark_name, bench_group, return_none_on_except=
         spec = importlib.util.spec_from_file_location(benchmark_name, file)
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
- 
+      
          # create an instance by returning the sciml_bench_training function
         return getattr(mod, 'sciml_bench_training')
     except Exception as e:
