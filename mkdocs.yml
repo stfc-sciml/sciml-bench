@@ -2,3 +2,9 @@ site_name: "Sciml Bench"
 site_url: ""
 repo_url: https://github.com/stfc-sciml/sciml-bench/
 docs_dir: docs
+theme:
+    name: readthedocs
+    highlightjs: true
+    hljs_languages:
+        - python
+        - bash
