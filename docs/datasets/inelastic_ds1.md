@@ -1,0 +1,13 @@
+# Inelastic Neutron Scattering Dataset
+
+For training 3344 SpinW generated data frames with shape of 96x160 were used. To generate them such Hamiltonian parameters were used: Jf1, JA, Jf2, Jf3, Jp, D and their values were randomly assigned.
+Training was done for 3000 epochs, with batches of 128 and took no longer than a couple of hours. After this weights were saved and the model was tested on simulated data (2539 data frames) and only after was used on the experimental data.
+
+Training required 3000 epochs, with batches of 128 and took a few hours. After this weights were saved and the model was tested on simulated data (2539 data frames) and only after was used on Rb2MnF4 and Pr(Ca,Sr)2Mn2O7 (PCSMO) experimental data. In case of Rb2MnF4 only one parameter was predicted which took only a few seconds on a GPU. The inference of 3 or 4 parameters is a more interesting and challenging case. The trained model can be used for inferencing and parameter prediction. For inferencing only one experimental data frame was required along with 6 Hamiltonian exchange parameters. For parameter prediction the grid search was used. For this one can create a csv file with 6 parameters, where 3 or 4 parameters are varying from 0.1 to 1(90 values in each). For 3 parameters there are 903 and for 4 904 combinations (about 65 million). 
+
+<!--
+For training 3344 SpinW generated data frames with shape of 96x160 were used. To generate them such Hamiltonian parameters were used: Jf1, JA, Jf2, Jf3, Jp, D and their values were randomly assigned.
+Training was done for 3000 epochs, with batches of 128 and took no longer than a couple of hours. After this weights were saved and the model was tested on simulated data (2539 data frames) and only after was used on the experimental data.
+
+Training required 3000 epochs, with batches of 128 and took a few hours. After this weights were saved and the model was tested on simulated data (2539 data frames) and only after was used on Rb2MnF4 and Pr(Ca,Sr)2Mn2O7 (PCSMO) experimental data. In case of Rb2MnF4 only one parameter was predicted which took only a few seconds on a GPU. The inference of 3 or 4 parameters is a more interesting and challenging case. The trained model can be used for inferencing and parameter prediction. For inferencing only one experimental data frame was required along with 6 Hamiltonian exchange parameters. For parameter prediction the grid search was used. For this one can create a csv file with 6 parameters, where 3 or 4 parameters are varying from 0.1 to 1(90 values in each). For 3 parameters there are 903 and for 4 904 combinations (about 65 million). 
+-->
