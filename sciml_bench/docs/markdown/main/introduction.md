@@ -38,13 +38,13 @@ The source tree, which captures these aspects,  is organised as follows:
 │   ├── configs/                <Framework configurations>
 │   └── recipes/                <Various container build recipes>
 │   └── templates/              <Benchmark template(s)>
-├── doc                         <Documentation files>
-│   └── benchmarks/             <Documentation about benchmarks>
-│   └── datasets/               <Documentation about datasets>
-│   └── full/                   <Documentation in HTML format>
-│   └── resources/              <Documentation resources>
+├── docs                        <Documentation files>
+|   ├── markdown                   <Markdown documenation>
+│      └── benchmarks/             <Documentation about benchmarks>
+│      └── datasets/               <Documentation about datasets>
+│      └── main/                   <General documentation about the framework>
 ├── benchmarks                  <Source tree for various benchmarks> 
-
+├── core                       <Source tree for the core framework> 
 ```
 
 We have annotated the purpose of each folder/directory within `<>`.  
@@ -65,7 +65,7 @@ A typical user-base for the benchmarking framework may include a number of user 
 
 **3.3 Benchmarks and Datasets**
 
-The number of [datasets](../datasets/summary.md) and [benchmarks](../benchmarks/summary.md) may vary with every release. A number of authors have contributed towards the development of the benchmarks,  and these can be see in the [Credits and Acknowledgment](../credits.md) file. If you are thinking of contributing towards the benchmarks or datasets, please see the [Contributing Datasets & Benchmarks](contributing.md) section.
+The number of [datasets](../datasets_summary.md) and [benchmarks](../benchmarks_summary.md) may vary with every release. A number of authors have contributed towards the development of the benchmarks,  and these can be see in the [Credits and Acknowledgment](../credits.md) file. If you are thinking of contributing towards the benchmarks or datasets, please see the [Contributing Datasets & Benchmarks](contributing.md) section.
 
 
 ## 4. Installation and Usage
