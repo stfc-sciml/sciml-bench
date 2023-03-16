@@ -15,11 +15,13 @@ theme:
         - bash
 nav:
     - Home: index.md
+    - Credits: credits.md
     - Main:
         - Introduction: main/introduction.md
         - Installation: main/installation.md
         - Usage: main/usage.md
         - Tutorial: main/tutorial.md
+        - Configuration: main/configuration.md
         - API: main/api.md
         - Contributing: main/contributing.md
         - FAQ: main/faq.md
