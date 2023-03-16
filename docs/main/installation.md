@@ -42,7 +42,7 @@ Although the installation can be performed on the system-wide setting, it is rec
 3. Install `sciml-bench` with the following command, accepting all default suggestions:
 
 ```sh
-   pip install  --use-feature=in-tree-build .
+   pip install .
 ```
 
 4. Once installed, verify the basic functionality of the framework with one or more of the following basic commands:

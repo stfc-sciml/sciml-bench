@@ -1,4 +1,4 @@
-<img src="../resources/logo.png" alt="logo" width="500"/>
+![logo](../resources/logo.png)
 
 ## 1. This Version
 
