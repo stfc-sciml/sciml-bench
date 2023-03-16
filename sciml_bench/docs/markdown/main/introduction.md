@@ -39,7 +39,7 @@ The source tree, which captures these aspects,  is organised as follows:
 │   └── recipes/                <Various container build recipes>
 │   └── templates/              <Benchmark template(s)>
 ├── docs                        <Documentation files>
-|   ├── markdown                   <Markdown documenation>
+│   └── markdown/               <Markdown documentation>
 │      └── benchmarks/             <Documentation about benchmarks>
 │      └── datasets/               <Documentation about datasets>
 │      └── main/                   <General documentation about the framework>
