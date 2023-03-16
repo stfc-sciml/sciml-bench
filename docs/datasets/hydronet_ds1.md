@@ -1,4 +1,4 @@
-# Hydronet dataset
+# hydronet dataset
 
 The hdf5 files include the atomic positions (data.pos), atomic numbers (data.z), one-hot encoding of atomic numbers (data.x), number of atoms in sample (data.size), index in database (data.idx), name(s) of attribute(s) to be predicted (data.name), and attribute(s) to be predicted (data.y). Various databases were created for a different studies, these are: 
 1. min_data.hdf5 (6.2GBytes) - water cluster minima, where clusters contain between 3 and 30 water molecules. 
