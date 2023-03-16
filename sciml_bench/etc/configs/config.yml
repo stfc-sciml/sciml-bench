@@ -64,13 +64,13 @@ benchmarks:
     # Production level benchmarks 
     em_denoise:
         datasets: em_graphene_sim
-        dependencies: 'torch,scikit-image'
+        dependencies: 'torch, scikit-image'
         types: 'training, inference'
         group: 'science'
 
     dms_structure:
         datasets: dms_sim
-        dependencies: 'torch, sklearn, scikit-image'
+        dependencies: 'torch, scikit-learn, scikit-image'
         types: 'training, inference'
         group: 'science'
 
@@ -82,7 +82,7 @@ benchmarks:
     
     optical_damage:
         datasets: optical_damage_ds1
-        dependencies: 'tensorflow, sklearn, tqdm'
+        dependencies: 'tensorflow, scikit-learn, tqdm'
         types: 'training, inference'
         group: 'science'
 
