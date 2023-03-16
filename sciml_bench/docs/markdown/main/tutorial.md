@@ -2,8 +2,6 @@
 
 This tutorial is not a replacement for the documentation. Please consult the [Installation](./installation.md) documentation for more details. In addition to this, the general usage is outlined [here](./usage.md). This tutorial is intended to demonstrate these with examples packaged with the framework.  We recommend following all of the following examples in order, until you feel comfortable of using the framework or contributing to the benchmarks. 
 
-# Using SciML-Bench through Command Line Interface (CLI)
-
 
 ## Environment
 
