@@ -52,7 +52,7 @@ sciml-bench about
 
 This should produce an output similar to the one below. 
 
-<img src="../resources/tutorial/about_output.png" alt="Output of the about command" width="500"/>
+<img src="../../resources/tutorial/about_output.png" alt="Output of the about command" width="500"/>
 
 Another option is to use the `--version` option as follows: 
 
@@ -61,11 +61,11 @@ sciml-bench --version
 ```
 producing the following looking output: 
 
-<img src="../resources/tutorial/version_output.png" alt="Output of the --version option" width="500"/>
+<img src="../../resources/tutorial/version_output.png" alt="Output of the --version option" width="500"/>
 
 Another method to verify the installation is to use the `--help` option using the command `sciml-bench --help`, which produces the following looking output: 
 
-<img src="../resources/tutorial/help_output.png" alt="Output of the --help option" width="500"/>
+<img src="../../resources/tutorial/help_output.png" alt="Output of the --help option" width="500"/>
 
 Here, across all these commands, the exact reported version of the framework may vary, and can safely be ignored.
 
@@ -73,7 +73,7 @@ Here, across all these commands, the exact reported version of the framework may
 
 Successful installation of the framework does not guarantee successful installation of the entities, such as benchmarks and datasets. As the exact benchmarks that each user wanting to evaluate or run may vary greatly, the framework does not install these. Available entities can be listed using the `list` command. In other words, running the `sciml-bench list` should produce a following  (or similar) output.
 
-<img src="../resources/tutorial/list_output_1.png" alt="Output of the list command" width="500"/>
+<img src="../../resources/tutorial/list_output_1.png" alt="Output of the list command" width="500"/>
 
 It is worth noting that benchmarks and datasets are split into production level benchmarks/datasets and example benchmarks/datasets. The latter is used to provide very simple examples to demonstrate the applicability of the framework. Further options for any command can be found by supplying the `--help` option to any command. For example, `sciml-bench list --help` or `sciml-bench download --help` and alike.  
 
@@ -85,7 +85,7 @@ sciml-bench list datasets
 
 which produces the following output: 
 
-<img src="../resources/tutorial/list_output_2.png" alt="Output of the --help option" width="500"/>
+<img src="../../resources/tutorial/list_output_2.png" alt="Output of the --help option" width="500"/>
 
 Similarly, benchmarks and examples can be listed using the commands `sciml-bench list benchmarks` and `sciml-bench list examples`, respectively.
 
@@ -97,7 +97,7 @@ sciml-bench list --verify
 
 This should produce an output similar to the one below. 
 
-<img src="../resources/tutorial/list_output_3_verify.png" alt="Output of the --verify option" width="500"/>
+<img src="../../resources/tutorial/list_output_3_verify.png" alt="Output of the --verify option" width="500"/>
 
 It is worth noting several states of the datasets and benchmarks, such as 'Downloaded', 'Not downloaded', 'Runnable' and 'Not runnable'. The status of a dataset can either be 'Downloaded', 'Not downloaded', indicating the local availability of the dataset. Similarly, status of a benchmark can either be 'Runnable' or 'Not runnable'. Benchmarks are not runnable until they have been explicitly installed (see below). We will use the *em_denoise* benchmark and the associated dataset *em_graphene_sim* to demonstrate downloading and installation operations, but can be extended to other or all datasets. We recommend using the `--verify` option every time a benchmark is installed. 
 
@@ -118,7 +118,7 @@ sciml-bench list --deps
 should produce an output similar to the following: 
 
 
-<img src="../resources/tutorial/list_output_4_deps.png" alt="Output of the --verify option" width="500"/>
+<img src="../../resources/tutorial/list_output_4_deps.png" alt="Output of the --verify option" width="500"/>
 
 
 
@@ -153,7 +153,7 @@ sciml-bench download em_graphene_sim
 This will immediately begin the download process, resulting in an output like the following:
 
 
-<img src="../resources/tutorial/download_output_1.png" alt="Output of the download command" width="500"/>
+<img src="../../resources/tutorial/download_output_1.png" alt="Output of the download command" width="500"/>
 
 <br> 
 <br> 
@@ -181,7 +181,7 @@ sciml-bench download --mode background em_graphene_sim
 
 produces the following output:
 
-<img src="../resources/tutorial/download_output_2.png" alt="Output of the download command with background mode set" width="500"/>
+<img src="../../resources/tutorial/download_output_2.png" alt="Output of the download command with background mode set" width="500"/>
 
 <br><br>
 
@@ -214,7 +214,7 @@ sciml-bench info em_graphene_sim
 
 This displays a limited information around the *em_graphene_sim* benchmark. The example output for the above command will look like the following: 
 
-<img src="../resources/tutorial/info_output_em_graphene_sim.png"  width="400"/>
+<img src="../../resources/tutorial/info_output_em_graphene_sim.png"  width="400"/>
 
 <br>
 
@@ -230,7 +230,7 @@ This command will automatically read and install relevant dependencies (as per t
 
 
 
-<img src="../resources/tutorial/benchmark_install_output_1.png" alt="Output of the benchmark install command" width="500"/>
+<img src="../../resources/tutorial/benchmark_install_output_1.png" alt="Output of the benchmark install command" width="500"/>
 
 <br>
 <br>
@@ -262,7 +262,7 @@ sciml-bench info em_denoise
 
 This displays a limited information around the *em_denoise* benchmark. The example output for the above command will look like the following: 
 
-<img src="../resources/tutorial/info_output_em_denoise.png"  width="400"/>
+<img src="../../resources/tutorial/info_output_em_denoise.png"  width="400"/>
 
 
 ## Running Benchmarks
@@ -275,7 +275,7 @@ Once the benchmarks are installed, please issue the `list` command with `--verif
 
 Let's assume  that the command `sciml-bench list --verify` lists the *em_denoise* benchmark as runnable. In other words, the dataset *em_graphene_sim* must also have been downloaded. This can be seen in the list,  as in the figure below.
 
-<img src="../resources/tutorial/list_output_em_denoise.png" alt="Output of the list command for em_denoise"/>
+<img src="../../resources/tutorial/list_output_em_denoise.png" alt="Output of the list command for em_denoise"/>
 
 <br>
 <br>
@@ -298,7 +298,7 @@ sciml-bench run em_denoise
 
 An example output of a run will  look like the following:
 
-<img src="../resources/tutorial/run_screen_1.png" />
+<img src="../../resources/tutorial/run_screen_1.png" />
 
 Once you are comfortable with the default runs, you can begin to alter the defaults.  Since the default running mode is training, the following two commands are equivalent: 
 

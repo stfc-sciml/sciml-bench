@@ -1,6 +1,6 @@
 # SciML-Bench Documentation
 
-1. [Introduction](main/intro.md)
+1. [Introduction](main/introduction.md)
 1. [Credits and Acknowledgments](credits.md)
 1. [Installing the Suite](main/installation.md)
 1. [Using the Suite](main/usage.md)
