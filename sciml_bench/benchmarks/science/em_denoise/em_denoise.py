@@ -64,7 +64,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
     default_args = {
         'batch_size': 128,
-        'epochs': 2,
+        'epochs': 10,
         'lr': .01,
         'use_gpu': True
     }    
@@ -106,7 +106,10 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     # Train the model
     with log.subproc('Training the model'):
         params_out.system.stamp_event('start training')
+        start_time = time.time()
         history = train_model(log, model, train_dataset_loader, args, device)
+        end_time = time.time()
+        time_taken = end_time - start_time
 
     # Save model
     with log.subproc('Saving (entire) model to a file'):
@@ -118,6 +121,13 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         history_file = params_in.output_dir / 'training_history.yml'
         with open(history_file, 'w') as handle:
             yaml.dump(history, handle)
+
+    # Save metrics
+    metrics = dict(time=time_taken, loss=history[-1])
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with log.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
 
     # End top level
     log.ended(f'Running benchmark em_denoise on training mode')
@@ -203,6 +213,13 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message(f'Overall Time: {time_taken:.4f} s')
         log.message(f'Average MSE : {mse:.4f}')
         log.message(f'Average PSNR: {psnr:.4f} dB')
+
+    # Save metrics
+    metrics = dict(throughput=throughput, time=time_taken, mse=mse, psnr=psnr)
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with log.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
 
     # End top level
     log.ended('Running benchmark em_denoise on inference mode')

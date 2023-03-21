@@ -101,7 +101,7 @@ def train_model(log: MultiLevelLogger, model, train_loader: DataLoader, args, de
 
     for epoch in range(epochs):
         running_loss = 0.0
-        for noisy_batch, clean_batch in train_loader:
+        for batch_index, (noisy_batch, clean_batch) in enumerate(train_loader):
             # Transfer to GPU
             noisy_batch = torch.swapaxes(noisy_batch, 3, 1)
             clean_batch = torch.swapaxes(clean_batch, 3, 1)
