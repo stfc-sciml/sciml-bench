@@ -127,10 +127,20 @@ class LitAutoEncoder(pl.LightningModule):
 def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # Entry point for the training routine to be called by SciML-Bench
+    default_args = {
+        'batchsize': 32,
+        'epochs': 5,
+        'nodes': 1,
+        'gpus': 1
+    }    
 
     # Log top level process
     log = params_out.log.console
     log.begin(f'Running benchmark stemdl_classification on training mode')
+
+    # Parse input arguments against default ones 
+    with log.subproc('Parsing input arguments'):
+        args = params_in.bench_args.try_get_dict(default_args=default_args)
     
     # Set data paths
     with log.subproc('Set data paths'):
@@ -151,10 +161,10 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # Get command line arguments
     with log.subproc('Get command line arguments'):
-        bs = int(params_in.bench_args["batchsize"])
-        epochs = int(params_in.bench_args["epochs"])
-        nodes = int(params_in.bench_args["nodes"])
-        gpus = int(params_in.bench_args["gpus"])
+        bs = int(args["batchsize"])
+        epochs = int(args["epochs"])
+        nodes = int(args["nodes"])
+        gpus = int(args["gpus"])
     
     with log.subproc('Create datasets'):
         train_dataset = NPZDataset(trainingPath)
