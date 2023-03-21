@@ -179,26 +179,32 @@ def install(benchmark_list):
                 help='\b\nSets the downloading to foreground or background mode.\n'
                    'Default: foreground\n'
                 )
-@click.argument('dataset_name')
-def download(dataset_name, dataset_dir, mode):
+@click.argument('dataset_names', nargs=-1)
+def download(dataset_names, dataset_dir, mode):
     """ sciml_bench download """
 
     display_logo()
 
-    print(f'Downloading the dataset {dataset_name}\n'\
-            f'in {mode} mode.\n') 
+    # Pre-check if all datasets are registered
+    for dataset_name in dataset_names:
+        if not Dataset.is_dataset(dataset_name, ENV):
+            return
 
-    dataset_dir = Dataset.download(dataset_name, Path(dataset_dir), ENV, mode)
-    if dataset_dir is None:
-        print('Download Failed.')
-        return  
-    if mode == 'background':
-        print(f'A log is available at\n'\
-              f'    {ENV.output_dir}/download_logs/.\n')  
-    else: 
-        print(f'\nDownload complete.  Downloaded/synced the dataset to\n'\
-              f'    {dataset_dir}. \n')
-    
+    for dataset_name in dataset_names:
+        print(f'Downloading the dataset {dataset_name}\n'\
+                f'in {mode} mode.\n') 
+
+        dataset_dir = Dataset.download(dataset_name, Path(dataset_dir), ENV, mode)
+        if dataset_dir is None:
+            print('Download Failed.')
+            return  
+        if mode == 'background':
+            print(f'A log is available at\n'\
+                f'    {ENV.output_dir}/download_logs/.\n')  
+        else: 
+            print(f'\nDownload complete.  Downloaded/synced the dataset to\n'\
+                f'    {dataset_dir}. \n')
+        
 
 
 
