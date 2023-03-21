@@ -31,6 +31,7 @@ from sciml_bench import __version__ as VERSION
 from sciml_bench.core.utils import display_logo
 from sciml_bench.core.utils import print_items
 from sciml_bench.core.utils import extract_html_comments
+from sciml_bench.core.utils import set_seeds
 
 # init a global ProgramEnv instance
 ENV = ProgramEnv(Path(__file__).parents[1] / 'etc/configs/config.yml')
@@ -282,6 +283,7 @@ def run(mode, model, dataset_dir, output_dir, monitor_on,
 
     # Now try and launch
     try:    
+        set_seeds()
         bench_run(params_in, params_out)
     except Exception as e:
         # kill system monitor thread

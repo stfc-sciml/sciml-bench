@@ -32,7 +32,7 @@ import skimage.io
 
 
 # Some utility codes
-
+    
 def load_dataset_mnist(file_path, batch_size):
     """
     Provides a data loader for training dataset
@@ -106,7 +106,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
     Entry point for the training routine to be called by SciML-Bench
     """
-    
+
     params_out.activate(rank=0, local_rank=0, activate_log_on_host=True,
                       activate_log_on_device=True, console_on_screen=True)
 
@@ -122,6 +122,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
             'batch_size': 128,
             'epochs': 2
         } 
+
         args = params_in.bench_args.try_get_dict(default_args=suggested_args)
         batch_size = args['batch_size']
         epochs = args['epochs']
@@ -148,10 +149,14 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     # Train model
     log.begin('Training CNN model')
     with log.subproc('Running model.fit()'):
+        start_time = time.time()
         params_out.system.stamp_event('model.fit')
         history = model.fit(train_set, epochs=epochs, batch_size=batch_size,
                             validation_data=test_set, verbose=0,
                             callbacks=[LogEpochCallback(params_out)])
+        end_time = time.time()
+        time_taken = end_time - start_time
+
     # Save model
     with log.subproc('Saving the model'):
         model_file = params_in.output_dir / 'mnist_tf_keras_model.h5'
@@ -173,8 +178,17 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
             params_out.system.stamp_event('model.predict')
             pred = model.predict(np.expand_dims(h5_file['image'][:], -1) / 255)
             correct = np.sum(pred.argmax(axis=1) == h5_file['label'][:])
+            
+        accuracy = float(correct / len(pred) * 100)
         log.message(f'{correct} correct predictions for {len(pred)} images '
-                    f'(accuracy: {correct / len(pred) * 100:.2f}%)')
+                    f'(accuracy: {accuracy:.2f}%)')
+
+    # Save metrics
+    metrics = dict(time=time_taken, accuracy=accuracy)
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with log.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
 
     # end top level
     log.ended('Running benchmark mnist_tf_keras on training mode')
@@ -246,11 +260,20 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     time_taken = end_time - start_time
 
     throughput = math.floor(n_total_elements / time_taken)
+
     # Log outputs
     with log.subproc('Inference Performance'):
         log.message(f'Throughput  : {throughput} Images / sec')
         log.message(f'Overall Time: {time_taken:.4f} s')
         log.message(f'Correctness : {rate:.4f}%')
+
+    
+    # Save metrics
+    metrics = dict(throughput=throughput, time=time_taken, accuracy=rate)
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with log.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
 
     # End the top-level
     log.ended('Running benchmark mnist_tf_keras on inference mode')
