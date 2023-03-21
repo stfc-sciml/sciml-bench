@@ -6,7 +6,7 @@ set -x
 ENV_NAME=sciml-bench-mnist_tf_keras
 conda remove -n $ENV_NAME --all -y --quiet
 conda create -n $ENV_NAME python=3.9 -y --quiet
-ENV_PATH=$(dirname $(dirname /home/lhs18285/miniconda3/bin/conda))/envs/$ENV_NAME
+ENV_PATH=$(dirname $(dirname $(which conda)))/envs/$ENV_NAME
 
 # Install conda requirements
 conda install -n $ENV_NAME -c conda-forge cudatoolkit=11.2.2 cudnn=8.1.0 -y --quiet
@@ -22,6 +22,6 @@ mkdir -p $ENV_PATH/lib/nvvm/libdevice
 cp $ENV_PATH/lib/libdevice.10.bc $ENV_PATH/lib/nvvm/libdevice/
 
 # Install pip requirements
-conda run -n $ENV_NAME python -m pip install --upgrade pip -q
-conda run -n $ENV_NAME python -m pip install -q "tensorflow==2.11.*" scikit-image -q
-conda run -n $ENV_NAME python -m pip install -q . 
+conda run -n $ENV_NAME python -m pip install -q --upgrade pip
+conda run -n $ENV_NAME python -m pip install -q "tensorflow==2.11.*" scikit-image
+conda run -n $ENV_NAME python -m pip install -q -e . 
