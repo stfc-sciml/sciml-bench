@@ -27,11 +27,8 @@ def download(dataset_name: str, dataset_root_dir: Path, prog_env: ProgramEnv, mo
     selected_mirror = next(iter(prog_env.mirrors))
     data_mirror = prog_env.mirrors[selected_mirror]
 
-    if dataset_name not in datasets.keys():
-        print(f'Dataset {dataset_name} is not part of the SciML-Bench.')
-        print(f'Available datasets are: {list(datasets.keys())}')
+    if not is_dataset(dataset_name, prog_env):
         return
-
 
     # Retransfers are fine  - as we are syncing than copying files 
     
@@ -55,6 +52,15 @@ def download(dataset_name: str, dataset_root_dir: Path, prog_env: ProgramEnv, mo
     os.system(cmd)
     return dataset_dir
 
+def is_dataset(dataset_name, prog_env):
+    datasets = prog_env.datasets
+
+    if dataset_name not in datasets.keys():
+        print(f'Dataset {dataset_name} is not part of the SciML-Bench.')
+        print(f'Available datasets are: {list(datasets.keys())}')
+        return False
+
+    return True
 
 def is_available(dataset_name, dataset_root_dir: Path):
     dataset_dir = (dataset_root_dir / dataset_name).expanduser()
