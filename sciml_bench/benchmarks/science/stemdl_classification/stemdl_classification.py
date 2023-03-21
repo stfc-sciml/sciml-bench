@@ -213,12 +213,22 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 For inference run this command: 
 sciml-bench run stemdl_classification --mode inference \
     --model ~/sciml_bench/outputs/stemdl_classification/stemdlModel.h5 \
-    --dataset_dir ~/sciml_bench/datasets/stemdl_ds1 \
+    --dataset_dir ~/sciml_bench/datasets/stemdl_ds1/inference \
     -b epochs 1 -b batchsize 32 -b nodes 1 -b gpus 1 
 '''
 def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
+    default_args = {
+        'batchsize': 32,
+        'nodes': 1,
+        'gpus': 1
+    }    
+
     # Entry point for the inference routine to be called by SciML-Bench
     log = params_out.log
+
+    # Parse input arguments against default ones 
+    with log.subproc('Parsing input arguments'):
+        args = params_in.bench_args.try_get_dict(default_args=default_args)
 
     log.begin('Running benchmark stemdl_classification on inference mode')
     # Set data paths
@@ -226,14 +236,13 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         basePath = params_in.dataset_dir
         modelPathStr = '~/sciml_bench/outputs/stemdl_classification/stemdlModel.h5'
         modelPath = os.path.expanduser(modelPathStr)
-        inferencePath = os.path.expanduser(basePath / 'inference')
+        inferencePath = os.path.expanduser(basePath)
 
     # Get command line arguments
     with log.subproc('Get command line arguments'):
-        bs = int(params_in.bench_args["batchsize"])
-        epochs = int(params_in.bench_args["epochs"])
-        nodes = int(params_in.bench_args["nodes"])
-        gpus = int(params_in.bench_args["gpus"])
+        bs = int(args["batchsize"])
+        nodes = int(args["nodes"])
+        gpus = int(args["gpus"])
     
     # Create datasets
     with log.subproc('Create datasets'):
