@@ -16,7 +16,7 @@ Main entry of the program
 
 from sciml_bench.core.statics import ABOUT_MSG
 import click
-import os, sys
+import os
 from pathlib import Path
 import textwrap
 
@@ -123,18 +123,12 @@ def cmd_list(scope, verify, deps):
 def info(entity):
     """ sciml_bench info
     """
-    
-    # key width first
-    width_data = len(max(list(ENV.datasets.keys()), key=len))
-    width_ben = len(max(list(ENV.benchmarks.keys()), key=len))
-    width = max(width_data, width_ben)
-   
     # Decide whether the given entity is a benchmark or dataset:
     if entity in ENV.datasets.keys() or entity in ENV.benchmarks.keys():
       if entity in ENV.datasets.keys():
-        info_path = Path(__file__).parents[1] / 'docs/datasets/' 
+        info_path = Path(__file__).parents[1] / 'docs/markdown/datasets/' 
       else:
-        info_path = Path(__file__).parents[1] / 'docs/benchmarks/' 
+        info_path = Path(__file__).parents[1] / 'docs/markdown/benchmarks/' 
       content = extract_html_comments(str(info_path) + os.sep +  entity + '.md')
       if content:
         display_logo()
@@ -142,7 +136,6 @@ def info(entity):
         wrapper = textwrap.TextWrapper(width=60, break_long_words=False, replace_whitespace=False)
         for line in lines:
             if len(line) > 60:
-                words_list = wrapper.wrap(text=content)
                 line = '\n '.join(wrapper.wrap(line))
             print(f' {line}')
             
@@ -150,8 +143,8 @@ def info(entity):
 
     print(f' No information can be found on the entity {entity}.')
     print(f' Possible options are:\n')
-    print_items('Benchmarks', ENV.list_main_benchmarks())
-    print_items('Datasets', ENV.list_main_datasets())
+    print_items('Benchmarks', ENV.list_benchmarks())
+    print_items('Datasets', ENV.list_datasets())
     print()
 
 ###################
@@ -179,26 +172,32 @@ def install(benchmark_list):
                 help='\b\nSets the downloading to foreground or background mode.\n'
                    'Default: foreground\n'
                 )
-@click.argument('dataset_name')
-def download(dataset_name, dataset_dir, mode):
+@click.argument('dataset_names', nargs=-1)
+def download(dataset_names, dataset_dir, mode):
     """ sciml_bench download """
 
     display_logo()
 
-    print(f'Downloading the dataset {dataset_name}\n'\
-            f'in {mode} mode.\n') 
+    # Pre-check if all datasets are registered
+    for dataset_name in dataset_names:
+        if not Dataset.is_dataset(dataset_name, ENV):
+            return
 
-    dataset_dir = Dataset.download(dataset_name, Path(dataset_dir), ENV, mode)
-    if dataset_dir is None:
-        print('Download Failed.')
-        return  
-    if mode == 'background':
-        print(f'A log is available at\n'\
-              f'    {ENV.output_dir}/download_logs/.\n')  
-    else: 
-        print(f'\nDownload complete.  Downloaded/synced the dataset to\n'\
-              f'    {dataset_dir}. \n')
-    
+    for dataset_name in dataset_names:
+        print(f'Downloading the dataset {dataset_name}\n'\
+                f'in {mode} mode.\n') 
+
+        dataset_dir = Dataset.download(dataset_name, Path(dataset_dir), ENV, mode)
+        if dataset_dir is None:
+            print('Download Failed.')
+            return  
+        if mode == 'background':
+            print(f'A log is available at\n'\
+                f'    {ENV.output_dir}/download_logs/.\n')  
+        else: 
+            print(f'\nDownload complete.  Downloaded/synced the dataset to\n'\
+                f'    {dataset_dir}. \n')
+        
 
 
 

@@ -2,8 +2,6 @@
 
 This tutorial is not a replacement for the documentation. Please consult the [Installation](./installation.md) documentation for more details. In addition to this, the general usage is outlined [here](./usage.md). This tutorial is intended to demonstrate these with examples packaged with the framework.  We recommend following all of the following examples in order, until you feel comfortable of using the framework or contributing to the benchmarks. 
 
-# Using SciML-Bench through Command Line Interface (CLI)
-
 
 ## Environment
 
@@ -136,8 +134,8 @@ Datasets have to be locally available before running any benchmark, and thus mus
 Let's assume that we would like run the *em_denoise* benchmark. However, this requires the relevant datasets to be in place, namely, the *em_graphene_sim* dataset. Any dataset can be downloaded using the `download` command, in the format of `sciml-bench download [OPTIONS] DATASET_NAME`, where you are expected to specify the dataset names. This can be any of the following:
 
 1. A single dataset (available via `sciml-bench list datasets` command). An example is: `sciml-bench download em_graphene_sim`. 
-1. More than one dataset, as a comma-separated list. An example is: 
-`sciml-bench download em_graphene_sim,dms_sim
+1. More than one dataset, as a space separated list. An example is: 
+`sciml-bench download em_graphene_sim dms_sim`
 1. Using the `all` keyword, which will download all datasets. An example is: 
 `sciml-bench download all`. 
 
@@ -374,8 +372,3 @@ sciml-bench run --mode inference \
 
 <br>
 <br>
-
-# Using SciML-Bench through Containers 
-
-
-
