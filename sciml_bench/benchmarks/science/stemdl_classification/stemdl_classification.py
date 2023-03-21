@@ -149,7 +149,6 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         trainingPath =  os.path.expanduser(basePath / 'training')
         validationPath = os.path.expanduser(basePath / 'validation')
         testingPath = os.path.expanduser(basePath / 'testing')
-        inferencePath = os.path.expanduser(basePath / 'inference')
 
     # Datasets: training (138717 files), validation (20000 files), 
     # testing (20000 files), prediction (8438 files), 197kbytes each
@@ -157,7 +156,6 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         train_dataset = NPZDataset(trainingPath)
         val_dataset = NPZDataset(validationPath)
         test_dataset = NPZDataset(testingPath)
-        predict_dataset = NPZDataset(inferencePath)
 
     # Get command line arguments
     with log.subproc('Get command line arguments'):
@@ -170,14 +168,12 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         train_dataset = NPZDataset(trainingPath)
         val_dataset = NPZDataset(validationPath)
         test_dataset = NPZDataset(testingPath)
-        predict_dataset = NPZDataset(inferencePath)
 
     # Create data loaders
     with log.subproc('Create data loaders'):
         train_loader = DataLoader(train_dataset, batch_size=bs, num_workers=4)
         val_loader = DataLoader(val_dataset, batch_size=bs, num_workers=4)
         test_loader = DataLoader(test_dataset, batch_size=bs, num_workers=4)
-        #predict_loader = DataLoader(predict_dataset, batch_size=bs, num_workers=4)
 
     # Model
     with log.subproc('Create data model'):
@@ -185,7 +181,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # Training
     with log.subproc('Start training'):
-        trainer = pl.Trainer(gpus=gpus, num_nodes=nodes, precision=16, strategy="ddp", max_epochs=epochs)
+        trainer = pl.Trainer(gpus=gpus, num_nodes=nodes, precision=16, strategy="ddp", max_epochs=epochs, default_root_dir=params_in.output_dir)
         trainer.fit(model, train_loader, val_loader)
         log.message('End training')
 
@@ -195,10 +191,9 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message('End testing')
 
     # Save model
-    modelPathStr = '~/sciml_bench/outputs/stemdl_classification/stemdlModel.h5'
-    modelPath = os.path.expanduser(modelPathStr)
+    model_path = params_in.output_dir / 'stemdlModel.h5'
     with log.subproc('Save model'):
-        torch.save(model.state_dict(), modelPath)
+        torch.save(model.state_dict(), model_path)
         log.message('Model saved')
 
      # End top level
@@ -234,8 +229,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     # Set data paths
     with log.subproc('Set data paths'):
         basePath = params_in.dataset_dir
-        modelPathStr = '~/sciml_bench/outputs/stemdl_classification/stemdlModel.h5'
-        modelPath = os.path.expanduser(modelPathStr)
+        model_path = params_in.model
         inferencePath = os.path.expanduser(basePath)
 
     # Get command line arguments
@@ -255,11 +249,11 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     # Load model
     with log.subproc('Load model'):
         model = LitAutoEncoder()
-        model.load_state_dict(torch.load(modelPath))
+        model.load_state_dict(torch.load(model_path))
 
     # Start inference
     with log.subproc('Inference on the model'):
-        trainer = pl.Trainer(gpus=gpus, num_nodes=nodes, precision=16, strategy="ddp")
+        trainer = pl.Trainer(gpus=gpus, num_nodes=nodes, precision=16, strategy="ddp", default_root_dir=params_in.output_dir)
         trainer.predict(model, dataloaders=predict_loader)
 
     # End top level
