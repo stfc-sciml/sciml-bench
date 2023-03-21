@@ -94,10 +94,15 @@ def inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
         # reconstruct patches back to full size image
         mask_patches = tf.reshape(mask_patches, (n, ny, nx, PATCH_SIZE - CROP_SIZE, PATCH_SIZE - CROP_SIZE, 1))
         mask = reconstruct_from_patches(mask_patches, nx, ny, patch_size=PATCH_SIZE - CROP_SIZE)
+        mask = mask.numpy()
+        mask = (mask > .5).astype(int)
+
         mask_name = (output_dir / file_name.name).with_suffix('.h5')
 
         with h5py.File(mask_name, 'w') as handle:
             handle.create_dataset('mask', data=mask)
+            handle.create_dataset('mask_patches', data=mask_patches)
+            handle.create_dataset('patches', data=patches)
 
     console.ended('Inference Loop')
 

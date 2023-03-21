@@ -10,26 +10,22 @@
 # All rights reserved.
 
 import h5py
-import numpy as np
-import tensorflow as tf
-from sklearn.metrics import accuracy_score, f1_score
-from sciml_bench.core.tensorflow import LogEpochCallback
-from sciml_bench.core.utils import MultiLevelLogger
-
-from tqdm import tqdm
-from pathlib import Path
-
 import gc
 import resource
+import time
+import yaml
+import numpy as np
+import tensorflow as tf
+from tqdm import tqdm
+from sklearn.metrics import accuracy_score, f1_score
+
+from sciml_bench.core.tensorflow import LogEpochCallback
+from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
+from sciml_bench.core.utils import MultiLevelLogger
 
 from sciml_bench.benchmarks.science.optical_damage.model import autoencoder
 from sciml_bench.benchmarks.science.optical_damage.utils import IMAGE_SHAPE, load_images
 
-import time
-import yaml
-from pathlib import Path
-
-from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 
 def set_target_devices(use_gpu: bool, log: MultiLevelLogger) -> bool:
     if not use_gpu:
@@ -49,7 +45,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     Entry point for the training routine to be called by SciML-Bench
     """
     default_args = {
-        'batch_size': 64,
+        'batch_size': 32,
         'epochs': 5,
         'latent_size': 512,
         'lr': .001,
@@ -184,57 +180,48 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # The inference folder contains: 4499 undamaged and 2047 damaged images
     with log.subproc('Load damaged images'):
-        damaged_path = basePath / 'inference/damaged'
+        damaged_path = basePath / 'damaged'
         damaged_images = load_images(damaged_path)
         log.message(f'Number of damaged images: {len(damaged_images)}')
   
     with log.subproc('Load undamaged images'):
-        undamaged_path = basePath / 'inference/undamaged'
+        undamaged_path = basePath / 'undamaged'
         undamaged_images = load_images(undamaged_path)
         log.message(f'Number of damaged images: {len(undamaged_images)}')
 
     # Concatenate two arrays
-    test_images = np.concatenate((damaged_images, undamaged_images))
+    imgs = np.concatenate((damaged_images, undamaged_images))
+
+    batch_size = args['batch_size']
+    dataset = tf.data.Dataset.from_tensor_slices((imgs, imgs))
+    dataset = dataset.batch(batch_size)
 
     # Make labels for each image
-    test_labels = np.zeros((len(test_images)))
+    test_labels = np.zeros((len(imgs)))
     test_labels[:len(damaged_images)] = 1
 
-    log.message(f'Total number of images use for inferencing: {len(test_images)}') 
-
-    # Inference
-    recons = []
-    imgs = []
-    mse = []
+    log.message(f'Total number of images use for inferencing: {len(imgs)}') 
 
     startInference = time.time()
+
     with log.subproc('Start inference'):
-        for images in tqdm(test_images):
-            images = images.reshape(-1, 200, 200, 1)
-            recon = model(images, training=False)
-            loss = tf.keras.losses.mean_squared_error(images, recon)
-            recons.append(recon.numpy())
-            imgs.append(images)
-            mse.append(loss)
+        recons = model.predict(dataset)
 
     endInference = time.time()
     log.message(f'Inference time: {(endInference - startInference): 9.4f}, ' \
-                f'Images/s: {len(test_images)/(endInference - startInference):9.1f}')
+                f'Images/s: {len(imgs)/(endInference - startInference):9.1f}')
 
+    squared_error = (imgs - recons)**2
     # Calculating stats
-    recons = np.concatenate(recons, axis=0)
+
     recons = np.squeeze(recons)
-
-    imgs = np.concatenate(imgs, axis=0)
     imgs = np.squeeze(imgs)
-
-    mse = np.concatenate(mse, axis=0)
-    mse = np.squeeze(mse)
+    squared_error = np.squeeze(squared_error)
 
     with log.subproc('Calculating inference statistics'):
-        score_999 = np.any(mse > np.percentile(mse, 99.9), axis=(1, 2))
-        score_995 = np.any(mse > np.percentile(mse, 99.5), axis=(1, 2))
-        score_990 = np.any(mse > np.percentile(mse, 99.0), axis=(1, 2))
+        score_999 = np.any(squared_error > np.percentile(squared_error, 99.9), axis=(1, 2))
+        score_995 = np.any(squared_error > np.percentile(squared_error, 99.5), axis=(1, 2))
+        score_990 = np.any(squared_error > np.percentile(squared_error, 99.0), axis=(1, 2))
 
         acc_999 = accuracy_score(score_999, test_labels)
         acc_995 = accuracy_score(score_995, test_labels)
@@ -243,6 +230,8 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         f1_999 = f1_score(score_999, test_labels)
         f1_995 = f1_score(score_995, test_labels)
         f1_990 = f1_score(score_990, test_labels)
+
+        mse = squared_error.reshape(len(squared_error), -1).mean(-1)
 
         log.message(f'Accuracy at 99.0%: {acc_990: .2f}, 99.5%: {acc_995:.2f}, 99.9%: {acc_999:.2f}')
         log.message(f'F1 Score at 99.0%: {f1_990: .2f}, 99.5%: {f1_995:.2f}, 99.9%: {f1_999:.2f}')

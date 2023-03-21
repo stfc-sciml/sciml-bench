@@ -276,7 +276,7 @@ def run(mode, model, dataset_dir, output_dir, monitor_on,
             bench_run = Benchmark.create_training_instance(benchmark_name, bench_group)
     
     if (bench_run is None) or (mode not in bench_types):
-        print(f'The benchmark {benchmark_name} does not support {mode}.')
+        print(f'The benchmark {benchmark_name} does not support {mode}. Have you installed yet? Check with "sciml-bench list benchmarks --verify"')
         print(f'Terminating the execution')
         return 
 

@@ -34,7 +34,6 @@ def create_training_instance(benchmark_name, bench_group, return_none_on_except=
          # create an instance by returning the sciml_bench_training function
         return getattr(mod, 'sciml_bench_training')
     except Exception as e:
-        print(e)
         return None 
 
 

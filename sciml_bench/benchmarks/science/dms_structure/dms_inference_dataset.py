@@ -36,8 +36,8 @@ class DMSInferenceDataset(Dataset):
         if self.initialised == False: 
             self.initialised = True
             # images =  np.zeros([ len(self.inference_file_names), 1679, 1475, 3])
-            images =  np.zeros([ len(self.inference_file_names), 487, 195, 3], dtype = np.float)
-            self.inference_labels = np.zeros([len(self.inference_file_names),1], dtype = np.int)
+            images =  np.zeros([ len(self.inference_file_names), 487, 195, 3], dtype = float)
+            self.inference_labels = np.zeros([len(self.inference_file_names),1], dtype = int)
             for idx, url in enumerate(self.inference_file_names):
                 # images[idx, :, :, 0] =  skimage.io.imread(url)
                 images[idx, :, :, :] =  skimage.io.imread(url)
