@@ -30,7 +30,13 @@ echo $CONDA_PREFIX
 
 ## Installing the Benchmark 
 
-Once the environment is active, change the active directory where the sources are (where you should see the README.md file). 
+Once the environment is active, clone the repository (if you haven't done so already).
+
+```bash
+git clone https://github.com/stfc-sciml/sciml-bench
+```
+
+Change the active directory where the sources are (where you should see the README.md file). 
 
 Issue the following command to install the SciML-Bench.
 
