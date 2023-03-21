@@ -372,8 +372,3 @@ sciml-bench run --mode inference \
 
 <br>
 <br>
-
-# Using SciML-Bench through Containers 
-
-
-
