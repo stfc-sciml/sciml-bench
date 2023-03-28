@@ -207,9 +207,8 @@ def infer_with_error(loader, net):
                          'fme_mse': fme_mse, 'fae_mse': fae_mse})
 
 
-#####
-# init_dataloader
-def init_dataloader(args, actionStr, split = '00', shuffle=True):
+# init_dataloader_from_file
+def init_dataloader_from_file(args, actionStr, split = '00', shuffle=True):
     """
     Returns train, val, and list of examine loaders
     """
@@ -221,65 +220,37 @@ def init_dataloader(args, actionStr, split = '00', shuffle=True):
     
     # Read input file from args
     inputData = args.inputFile
+    onlyFileName = inputData.split(".")[0]
 
     path1 = os.path.join(os.path.expanduser("~"), args.datadir)
-    hdf5_file = os.path.join(path1, inputData)
-    dataset = h5py.File(hdf5_file, "r")
-   
-    index=10
-    dataset_size = int(dataset['size'].shape[0])
-    indexList = []
-    
-    for i in range(0, dataset_size):
-        indexList.append(i)
-    # shuffle list
-    shuffledList = random.shuffle(indexList)
+    train_file = os.path.join(path1, onlyFileName+"_trainData.pt")
+    val_file = os.path.join(path1, onlyFileName+"_valData.pt")
+    test_file = os.path.join(path1, onlyFileName+"_testData.pt")
 
-    # Split up indexList into train, val and test in ratio of 80:10:10
-    trainLen = int(dataset_size*0.8)
-    valLen = int(dataset_size*0.1)
-    testLen = valLen
-    trainIndices = indexList[0:trainLen-1]
-    valIndices = indexList[trainLen:trainLen+valLen-1]
-    testIndices = indexList[trainLen+valLen:]
-    
     if(actionStr =='train'):
-        trainData = load_data(trainIndices, dataset)
-        valData = load_data(valIndices, dataset)
+        # load .pt files
+        trainData = torch.load(train_file)
+        valData = torch.load(val_file)
+
         train_data.append(trainData)
         val_data.append(valData)
+
+        # no shuffle
         train_loader = DataLoader(ConcatDataset(train_data), batch_size=args.batch_size, shuffle=shuffle, pin_memory=pin_memory)
         val_loader = DataLoader(ConcatDataset(val_data), batch_size=args.batch_size, shuffle=shuffle, pin_memory=pin_memory)
+
         return train_loader, val_loader
 
     if(actionStr =='test'):
-        testData = load_data(testIndices, dataset)
+        testData = torch.load(test_file)
         test_data.append(testData)
         test_loader = DataLoader(ConcatDataset(test_data), batch_size=args.batch_size, shuffle=shuffle, pin_memory=pin_memory)
         return test_loader, testData
 
-# load_data
-def load_data(listIndices, dataset):
-    logging.info("Loading cached data from disk...")
-   
-    data_list = []
-    for i in range(len(listIndices)):
-        index = listIndices[i]
-        cluster_size = dataset["size"][index][0]
-
-        z = torch.from_numpy(dataset["z"][index][:cluster_size])
-        x = torch.from_numpy(dataset["x"][index][:cluster_size])
-        pos = torch.from_numpy(dataset["pos"][index][:cluster_size])
-        pos.requires_grad = True
-        y = torch.from_numpy(dataset["y"][index])
-        size = torch.from_numpy(dataset["size"][index])
-        data = Data(x=x, z=z, pos=pos, y=y, size=size)
-        data_list.append(data) 
-    return data_list
-
 #####################################################################
 # Training mode                                                     #
 #####################################################################
+#  sciml-bench run --mode training hydronet
 
 def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
@@ -335,11 +306,10 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     # get initial train, val, examine splits for dataset(s)
     start_load = datetime.datetime.now()
     logging.info(f'Start loading data: {start_time}')
-
-    train_loader, val_loader = init_dataloader(args, 'train')
+    train_loader, val_loader = init_dataloader_from_file(args, 'train')
     load_time = datetime.datetime.now() - start_load
     logging.info(f'Data load time: {load_time}')
-       
+
     ######## LOAD MODEL ########
     net = sciml_bench.benchmarks.science.hydronet.utils.models.load_model(args, device=device)
 
@@ -430,7 +400,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     net = sciml_bench.benchmarks.science.hydronet.utils.models.load_model(args, mode='eval', device=device, frozen=True)
 
     # load test data
-    loader, data = init_dataloader(args, 'test')
+    loader, data = init_dataloader_from_file(args, 'test')
     batch_size = args.batch_size if len(data) > args.batch_size else len(data)
     loader = DataLoader(data, batch_size=batch_size, shuffle=False)
 
