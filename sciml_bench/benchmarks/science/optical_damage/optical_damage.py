@@ -48,7 +48,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         'batch_size': 32,
         'epochs': 5,
         'latent_size': 512,
-        'lr': .001,
+        'lr': 0.001,
         'use_gpu': True
     }    
 
@@ -88,7 +88,6 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         validation_images = load_images(validation_path)
 
         log.message(f'Validation images: {len(validation_images)}')
-
 
     latent_dim = args['latent_size']
     learning_rate = args['lr']
@@ -207,7 +206,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     imgs = np.concatenate((damaged_images, undamaged_images))
 
     batch_size = args['batch_size']
-    dataset = tf.data.Dataset.from_tensor_slices((imgs, imgs))
+    dataset = tf.data.Dataset.from_tensor_slices(imgs)
     dataset = dataset.batch(batch_size)
 
     # Make labels for each image
@@ -220,7 +219,6 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     with log.subproc('Start inference'):
         recons = model.predict(dataset)
-        end_time = time.time()
 
     endInference = time.time()
 
@@ -230,7 +228,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     log.message(f'Inference time: {time_taken: 9.4f}, ' \
                 f'Images/s: {throughput:9.1f}')
 
-    squared_error = (imgs - recons)**2
+    squared_error = (imgs - recons)**2.
     # Calculating stats
 
     recons = np.squeeze(recons)
@@ -255,14 +253,14 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message(f'Accuracy at 99.0%: {acc_990: .2f}, 99.5%: {acc_995:.2f}, 99.9%: {acc_999:.2f}')
         log.message(f'F1 Score at 99.0%: {f1_990: .2f}, 99.5%: {f1_995:.2f}, 99.9%: {f1_999:.2f}')
 
-        # Save metrics
-        metrics = dict(time_taken=time_taken, throughput=throughput, f1_990=f1_990, f1_995=f1_995, f1_999=f1_999, 
-                       acc_990=acc_990, acc_995=acc_995, acc_999=acc_999)
-        metrics = {key: float(value) for key, value in metrics.items()}
-        metrics_file = params_in.output_dir / 'metrics.yml'
-        with log.subproc('Saving inference metrics to a file'):
-            with open(metrics_file, 'w') as handle:
-                yaml.dump(metrics, handle)  
+    # Save metrics
+    metrics = dict(time_taken=time_taken, throughput=throughput, f1_990=f1_990, f1_995=f1_995, f1_999=f1_999, 
+                    acc_990=acc_990, acc_995=acc_995, acc_999=acc_999)
+    metrics = {key: float(value) for key, value in metrics.items()}
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with log.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
 
     # Max memory usage
     memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

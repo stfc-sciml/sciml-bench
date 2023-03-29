@@ -1,7 +1,6 @@
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
-
 from tqdm import tqdm
 from PIL import Image
 
@@ -27,7 +26,6 @@ def load_images(file_path):
 
         # crop image around optic
         image = image[150:350, 270:470]
-
         image = np.expand_dims(image, axis=-1)
         images[index] = image
 
