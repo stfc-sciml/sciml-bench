@@ -137,25 +137,24 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         end_time = time.time()
         time_taken = end_time - start_time
 
-    # Save metrics
-    last_item = history[-1]
-    last_item.pop('epoch')
-    metrics = dict(time_taken=time_taken)
-    metrics.update(last_item)
-    metrics = {key: float(value) for key, value in metrics.items()}
-    metrics_file = params_in.output_dir / 'metrics.yml'
-    with console.subproc('Saving inference metrics to a file'):
-        with open(metrics_file, 'w') as handle:
-            yaml.dump(metrics, handle)  
+    if hvd.rank() == 0:
+        # Save metrics
+        metrics = history[-1]
+        metrics['time'] = time_taken
+        metrics = {key: float(value) for key, value in metrics.items()}
+        metrics_file = params_in.output_dir / 'metrics.yml'
+        with console.subproc('Saving inference metrics to a file'):
+            with open(metrics_file, 'w') as handle:
+                yaml.dump(metrics, handle)  
 
-    # save history
-    with console.subproc('Saving training history'):
-        history_file = params_in.output_dir / 'training_history.yml'
-        with history_file.open('w') as handle:
-            yaml.dump(history, handle)
+        # save history
+        with console.subproc('Saving training history'):
+            history_file = params_in.output_dir / 'training_history.yml'
+            with history_file.open('w') as handle:
+                yaml.dump(history, handle)
 
 
-    console.begin('Running benchmark slstr_cloud in training mode.')
+    console.ended('Running benchmark slstr_cloud in training mode.')
 
 
 #####################################################################
@@ -198,4 +197,12 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
             with open(args_file, 'w') as handle:
                 yaml.dump(args, handle)
 
-    inference(params_in, params_out)
+    metric_data = inference(params_in, params_out)
+
+    if hvd.rank() == 0:
+        # Save metrics
+        metric_data = {key: float(value) for key, value in metric_data.items()}
+        metrics_file = params_in.output_dir / 'metrics.yml'
+        with console.subproc('Saving inference metrics to a file'):
+            with open(metrics_file, 'w') as handle:
+                yaml.dump(metric_data, handle)  

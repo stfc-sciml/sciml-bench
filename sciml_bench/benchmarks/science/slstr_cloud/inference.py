@@ -76,11 +76,13 @@ def inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
     # only yields batches of images for a single image at a time so they can be
     # reconstructed.
     data_loader = SLSTRDataLoader(file_paths, single_image=True, crop_size=CROP_SIZE)
+    dataset_size = data_loader.size
     dataset = data_loader.to_dataset()
 
     console.begin('Inference Loop')
 
     accuracyList = []
+    lossList = []
 
     with console.subproc('Start inference'):
         start_time = time.time()
@@ -113,8 +115,7 @@ def inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
                 handle.create_dataset('patches', data=patches)
 
             # Change mask values from float to integer
-            mask_np = mask.numpy()
-            mask_np =  (mask_np > .5).astype(int)
+            mask_np = mask
             mask_flat = mask_np.reshape(-1)
             
             # Extract groundTruth from file, this is the Bayesian mask
@@ -127,21 +128,19 @@ def inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
             groundTruth_flat = groundTruth.reshape(-1)
         
             # Calculate hits between ground truth mask and the reconstructed mask
+            loss = metrics.log_loss(groundTruth_flat, mask_flat)
             accuracy = metrics.accuracy_score(groundTruth_flat, mask_flat)
             accuracyList.append(accuracy)
+            lossList.append(loss)
 
         end_time = time.time()
+
+        loss = np.array(lossList).mean()
+        accuracy = np.array(accuracyList).mean()
         time_taken = end_time - start_time
-        throughput = float(len(dataset)/(time_taken))
-
-    # Save metrics
-    metric_data = dict(accuracy=np.array(accuracyList).mean(), time_taken=time_taken, throughput=throughput)
-    metric_data = {key: float(value) for key, value in metric_data.items()}
-    metrics_file = params_in.output_dir / 'metrics.yml'
-    with console.subproc('Saving inference metrics to a file'):
-        with open(metrics_file, 'w') as handle:
-            yaml.dump(metrics, handle)  
-
+        throughput = float(dataset_size/(time_taken))
+        metric_data = dict(accuracy=accuracy, time=time_taken, throughput=throughput, loss=loss)
 
     console.ended('Inference Loop')
+    return metric_data
 

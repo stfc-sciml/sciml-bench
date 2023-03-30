@@ -34,6 +34,10 @@ class SLSTRDataLoader:
         assert len(self._image_paths) > 0, 'No image data found in path!'
 
     @property
+    def size(self):
+        return len(self._image_paths)
+
+    @property
     def input_size(self):
         return (PATCH_SIZE, PATCH_SIZE, N_CHANNELS)
 

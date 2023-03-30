@@ -156,8 +156,7 @@ def train_model(train_dataset, test_dataset, model, args:dict,  \
             model_file = params_in.output_dir / 'model.h5'
             model.save(model_file)
 
-            history.append(dict(train_accuracy=train_accuracy, epoch=epoch, train_loss=train_loss,
-                                test_accuracy=test_accuracy, test_loss=test_loss))
+            history.append(dict(accuracy=test_accuracy, loss=test_loss))
 
     return history 
 
