@@ -110,4 +110,7 @@ def train_model(log: MultiLevelLogger, model, datasets, args, params_in: Runtime
         errors.append([train_err, valid_err])
     log.message(
         f"Best Results:  train_err: {best_train_err:.4f}, valid_err: {best_valid_err:.4f}")
-    return np.asarray(errors)
+
+    
+    metrics = dict(accuracy=valid_acc  * 100, loss=valid_err)
+    return np.asarray(errors), metrics

@@ -61,7 +61,7 @@ def get_inference_dataset(inference_path: Path, batch_size: int):
     with the number of files
     """
     inference_ds = tf.keras.preprocessing.image_dataset_from_directory(
-    directory=inference_path, labels='inferred', label_mode='int',
+    directory=inference_path, labels='inferred', label_mode='categorical',
     class_names=None, color_mode='grayscale', batch_size=batch_size, image_size=(28,28),
     shuffle=False, seed=None, validation_split=None, subset=None,
     interpolation='bilinear', follow_links=False, smart_resize=False
@@ -184,7 +184,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
                     f'(accuracy: {accuracy:.2f}%)')
 
     # Save metrics
-    metrics = dict(time=time_taken, accuracy=accuracy)
+    metrics = dict(time=time_taken, accuracy=accuracy, loss=history.history['val_loss'][-1])
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:
@@ -249,13 +249,18 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         inference_dataset, n_total_elements = get_inference_dataset(params_in.dataset_dir, args["batch_size"])
 
     # Perform bulk inference
+    criterion = tf.keras.losses.CategoricalCrossentropy()
     with log.subproc(f'Doing inference'):
         start_time = time.time()
-        batch_correctness = 0
+        total_loss = 0
+        accuracy = tf.keras.metrics.CategoricalAccuracy()
         for inference_data, inference_label in inference_dataset: 
             outputs = model.predict(inference_data)
-            batch_correctness += np.sum(outputs.argmax(axis=1) == inference_label) 
-        rate = float(batch_correctness / n_total_elements) * 100
+            accuracy.update_state(outputs, inference_label)
+            loss = criterion(outputs, inference_label)
+            total_loss += loss
+        rate = accuracy.result().numpy() * 100
+        total_loss = total_loss / n_total_elements
         end_time = time.time()
     time_taken = end_time - start_time
 
@@ -266,10 +271,12 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message(f'Throughput  : {throughput} Images / sec')
         log.message(f'Overall Time: {time_taken:.4f} s')
         log.message(f'Correctness : {rate:.4f}%')
+        log.message(f'Loss        : {total_loss:.4f}')
 
     
     # Save metrics
-    metrics = dict(throughput=throughput, time=time_taken, accuracy=rate)
+    metrics = dict(throughput=throughput, time=time_taken, accuracy=rate, loss=total_loss)
+    metrics = {key: float(value) for key, value in metrics.items()}
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:

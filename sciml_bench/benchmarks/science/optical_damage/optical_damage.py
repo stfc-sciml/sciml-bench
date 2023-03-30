@@ -140,7 +140,8 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
             yaml.dump(history.history, handle)
 
     # Save metrics
-    metrics = dict(mse=float(mse), time_taken=time_taken)
+    metrics = dict(mse=float(mse), time=time_taken, loss=mse)
+    metrics = {key: float(value) for key, value in metrics.items()}
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:
@@ -248,14 +249,13 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         f1_995 = f1_score(score_995, test_labels)
         f1_990 = f1_score(score_990, test_labels)
 
-        mse = squared_error.reshape(len(squared_error), -1).mean(-1)
+        mse = squared_error.reshape(len(squared_error), -1).mean(-1).mean()
 
         log.message(f'Accuracy at 99.0%: {acc_990: .2f}, 99.5%: {acc_995:.2f}, 99.9%: {acc_999:.2f}')
         log.message(f'F1 Score at 99.0%: {f1_990: .2f}, 99.5%: {f1_995:.2f}, 99.9%: {f1_999:.2f}')
 
     # Save metrics
-    metrics = dict(time_taken=time_taken, throughput=throughput, f1_990=f1_990, f1_995=f1_995, f1_999=f1_999, 
-                    acc_990=acc_990, acc_995=acc_995, acc_999=acc_999)
+    metrics = dict(time=time_taken, throughput=throughput, accuracy=acc_999 * 100, f1=f1_999, mse=mse, loss=mse)
     metrics = {key: float(value) for key, value in metrics.items()}
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):

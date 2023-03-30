@@ -123,7 +123,8 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
             yaml.dump(history, handle)
 
     # Save metrics
-    metrics = dict(time=time_taken, loss=history[-1])
+    mse = history[-1]
+    metrics = dict(time=time_taken, loss=mse, mse=mse)
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:
@@ -215,7 +216,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message(f'Average PSNR: {psnr:.4f} dB')
 
     # Save metrics
-    metrics = dict(throughput=throughput, time=time_taken, mse=mse, psnr=psnr)
+    metrics = dict(throughput=throughput, time=time_taken, mse=mse, loss=mse, psnr=psnr)
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:

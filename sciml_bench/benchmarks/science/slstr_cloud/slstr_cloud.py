@@ -9,6 +9,7 @@
 # Science and Technology Facilities Council, UK.
 # All rights reserved.
 
+import time
 import yaml
 import tensorflow as tf
 import horovod.tensorflow as hvd
@@ -131,8 +132,21 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         
     # train model
     with console.subproc("Training the model"):
+        start_time = time.time()
         history = train_model(train_dataset, test_dataset, model, args, params_in, params_out)
+        end_time = time.time()
+        time_taken = end_time - start_time
 
+    # Save metrics
+    last_item = history[-1]
+    last_item.pop('epoch')
+    metrics = dict(time_taken=time_taken)
+    metrics.update(last_item)
+    metrics = {key: float(value) for key, value in metrics.items()}
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with console.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
 
     # save history
     with console.subproc('Saving training history'):

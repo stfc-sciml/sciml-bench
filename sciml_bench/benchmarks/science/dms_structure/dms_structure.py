@@ -121,7 +121,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     with log.subproc('Training the model'):
         params_out.system.stamp_event('start training')
         start_time = time.time()
-        history = train_model(log, model, datasets, args, params_in)
+        history, metrics = train_model(log, model, datasets, args, params_in)
         end_time = time.time()
         time_taken = end_time - start_time
 
@@ -137,7 +137,8 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
             yaml.dump(history, handle)
 
     # Save metrics
-    metrics = dict(time=time_taken, loss=history[-1])
+    metrics['time'] = time_taken
+    metrics = {key: float(value) for key, value in metrics.items()}
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:
@@ -198,25 +199,30 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     with log.subproc(f'Loading the model for inference into {device}'):
         model = torch.load(params_in.model)
         model.to(device)
+    
+    n_samples = len(inference_dataset_loader.dataset)
 
     # Perform bulk inference on the target device + collect metrics
-    with log.subproc(f'Doing inference across {len(inference_dataset_loader.dataset):,} items on device: {device}'):
+    with log.subproc(f'Doing inference across {n_samples} items on device: {device}'):
+        criterion = torch.nn.CrossEntropyLoss()
         start_time = time.time()
-        total  = 0
+        total_loss  = 0
         # batch_correctness = torch.no_grad.Variable(batch_correctness).int()
         batch_correctness = 0
         for image_batch, label_batch in inference_dataset_loader:
             model.eval()
             with torch.no_grad():
                 image_batch = image_batch.float().to(device)
-                label_batch = label_batch.int().to(device)
+                label_batch = label_batch.long().to(device)
                 outputs = model.forward(image_batch)
                 batch_correctness += torch.sum(outputs)
-        rate = float(batch_correctness / len(inference_dataset_loader.dataset)) * 100
+                total_loss += criterion(outputs, label_batch.flatten())
+        rate = float(batch_correctness / n_samples) * 100
+        loss = total_loss / n_samples
         end_time = time.time()
     time_taken = end_time - start_time
 
-    throughput = math.floor(len (inference_dataset_loader.dataset) / time_taken)
+    throughput = math.floor(n_samples / time_taken)
 
     # Log outputs
     with log.subproc('Inference Performance'):
@@ -225,7 +231,8 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         log.message(f'Correctness : {rate:.4f}%')
 
     # Save metrics
-    metrics = dict(throughput=throughput, time=time_taken, accuracy=rate)
+    metrics = dict(throughput=throughput, time=time_taken, accuracy=rate, loss=loss)
+    metrics = {key: float(value) for key, value in metrics.items()}
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:

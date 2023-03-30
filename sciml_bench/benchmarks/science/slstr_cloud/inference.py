@@ -132,9 +132,10 @@ def inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
 
         end_time = time.time()
         time_taken = end_time - start_time
+        throughput = float(len(dataset)/(time_taken))
 
     # Save metrics
-    metric_data = dict(accuracy=np.array(accuracyList).mean(), time_taken=time_taken)
+    metric_data = dict(accuracy=np.array(accuracyList).mean(), time_taken=time_taken, throughput=throughput)
     metric_data = {key: float(value) for key, value in metric_data.items()}
     metrics_file = params_in.output_dir / 'metrics.yml'
     with console.subproc('Saving inference metrics to a file'):
