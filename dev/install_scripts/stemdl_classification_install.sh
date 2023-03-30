@@ -13,5 +13,5 @@ conda install -n $ENV_NAME -y --quiet pytorch==1.13.1 torchvision==0.14.1 pytorc
 
 # Install pip requirements
 conda run -n $ENV_NAME python -m pip install -q --upgrade pip
-conda run -n $ENV_NAME python -m pip install -q "pytorch_lightning==1.9.*" scikit-learn tensorboard
+conda run -n $ENV_NAME python -m pip install -q "pytorch_lightning==1.9.*" scikit-learn tensorboard torchmetrics
 conda run -n $ENV_NAME python -m pip install -q -e .
