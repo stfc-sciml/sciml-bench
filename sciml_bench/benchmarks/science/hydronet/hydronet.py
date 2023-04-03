@@ -28,7 +28,7 @@ conda install pytorch==1.12.0 cudatoolkit=11.3 -c pytorch -c conda-forge
 
 6)	conda install -c conda-forge gdown
 
-7) pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
+7) pip install pandas torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
 
 '''
 

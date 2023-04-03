@@ -3,7 +3,7 @@ import os.path as op
 from torch_geometric.data import DataListLoader, DataLoader
 #from torch_geometric.loader import DataListLoader, DataLoader
 from torch.utils.data import ConcatDataset
-from utils.datasets import PrepackedDataset
+from sciml_bench.benchmarks.science.hydronet.utils.datasets import PrepackedDataset
 import sys
 
 
