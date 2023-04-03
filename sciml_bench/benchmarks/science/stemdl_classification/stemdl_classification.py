@@ -82,7 +82,6 @@ class StemDLClassifier(pl.LightningModule):
         self.model.fc = nn.Linear(self.num_ftrs, self.num_classes)
         self.feature_extract = False
         self.accuracy = tm.classification.MulticlassAccuracy(self.num_classes)
-        self.accuracy = tm.classification.MulticlassAccuracy(self.num_classes)
         self.f1_score = tm.classification.F1Score(task='multiclass', num_classes=self.num_classes, average='macro')
 
     # forward step
@@ -202,7 +201,10 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     # Training
     with log.subproc('Start training'):
         trainer = pl.Trainer(gpus=gpus, num_nodes=nodes, precision=16, strategy="ddp", max_epochs=epochs, default_root_dir=params_in.output_dir)
+        start_time = time.time()
         trainer.fit(model, train_loader, val_loader)
+        end_time = time.time()
+        time_taken = end_time - start_time
         log.message('End training')
 
     # Testing
@@ -219,6 +221,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     # Save metrics
     metrics = {key: float(value) for key, value in metrics.items()}
+    metrics['time'] = time_taken
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:
@@ -282,8 +285,13 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     # Start inference
     with log.subproc('Inference on the model'):
         trainer = pl.Trainer(gpus=gpus, num_nodes=nodes, precision=16, strategy="ddp", default_root_dir=params_in.output_dir)
+        start_time = time.time()
         metrics = trainer.test(model, dataloaders=predict_loader)
+        end_time = time.time()
+        time_taken = end_time - start_time
         metrics = metrics[0]
+        metrics['time'] = time_taken
+        metrics['throughput'] = len(predict_dataset) / time_taken
 
     # Save metrics
     metrics = {key: float(value) for key, value in metrics.items()}
