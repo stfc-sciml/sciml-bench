@@ -1,0 +1,486 @@
+{
+    "CONV_INIT": {
+        "type": "convolutional",
+        "stride": [
+            1,
+            1
+        ],
+        "kernel": [
+            5,
+            5
+        ],
+        "features": 256,
+        "activation": "relu",
+        "padding": "SAME",
+        "batch_norm": false
+    },
+    "DB_0": {
+        "type": "dense_block_down",
+        "conv": {
+            "conv_0": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            }
+        }
+    },
+    "TD_0": {
+        "type": "transition_down",
+        "conv": {
+            "type": "convolutional",
+            "stride": [
+                1,
+                1
+            ],
+            "kernel": [
+                1,
+                1
+            ],
+            "features": 512,
+            "activation": "relu",
+            "padding": "VALID",
+            "batch_norm": false,
+            "dropout": 0.2
+        },
+        "pool": {
+            "type": "pooling",
+            "stride": [
+                2,
+                2
+            ],
+            "kernel": [
+                2,
+                2
+            ],
+            "pool_type": "avg",
+            "padding": "VALID"
+        }
+    },
+    "DB_1": {
+        "type": "dense_block_down",
+        "conv": {
+            "conv_0": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_1": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            }
+        }
+    },
+    "TD_1": {
+        "type": "transition_down",
+        "conv": {
+            "type": "convolutional",
+            "stride": [
+                1,
+                1
+            ],
+            "kernel": [
+                1,
+                1
+            ],
+            "features": 1024,
+            "activation": "relu",
+            "padding": "VALID",
+            "batch_norm": false,
+            "dropout": 0.2
+        },
+        "pool": {
+            "type": "pooling",
+            "stride": [
+                2,
+                2
+            ],
+            "kernel": [
+                2,
+                2
+            ],
+            "pool_type": "avg",
+            "padding": "VALID"
+        }
+    },
+    "DB_2": {
+        "type": "dense_block_down",
+        "conv": {
+            "conv_0": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_1": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_2": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_3": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            }
+        }
+    },
+    "TD_2": {
+        "type": "transition_down",
+        "conv": {
+            "type": "convolutional",
+            "stride": [
+                1,
+                1
+            ],
+            "kernel": [
+                1,
+                1
+            ],
+            "features": 2048,
+            "activation": "relu",
+            "padding": "VALID",
+            "batch_norm": false,
+            "dropout": 0.2
+        },
+        "pool": {
+            "type": "pooling",
+            "stride": [
+                2,
+                2
+            ],
+            "kernel": [
+                2,
+                2
+            ],
+            "pool_type": "avg",
+            "padding": "VALID"
+        }
+    },
+    "DB_3": {
+        "type": "dense_block_bottleneck",
+        "conv": {
+            "conv_0": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_1": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_2": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            }
+        }
+    },
+    "TU_0": {
+        "type": "transition_up",
+        "deconv": {
+            "type": "deconvolutional",
+            "stride": [
+                2,
+                2
+            ],
+            "kernel": [
+                1,
+                1
+            ],
+            "features": 768,
+            "padding": "VALID",
+            "upsample": 2
+        }
+    },
+    "DB_4": {
+        "type": "dense_block_up",
+        "conv": {
+            "conv_0": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_1": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_2": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_3": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            }
+        }
+    },
+    "TU_1": {
+        "type": "transition_up",
+        "deconv": {
+            "type": "deconvolutional",
+            "stride": [
+                2,
+                2
+            ],
+            "kernel": [
+                1,
+                1
+            ],
+            "features": 1024,
+            "padding": "VALID",
+            "upsample": 2
+        }
+    },
+    "DB_5": {
+        "type": "dense_block_up",
+        "conv": {
+            "conv_0": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            },
+            "conv_1": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            }
+        }
+    },
+    "TU_2": {
+        "type": "transition_up",
+        "deconv": {
+            "type": "deconvolutional",
+            "stride": [
+                2,
+                2
+            ],
+            "kernel": [
+                1,
+                1
+            ],
+            "features": 512,
+            "padding": "VALID",
+            "upsample": 2
+        }
+    },
+    "DB_6": {
+        "type": "dense_block_up",
+        "conv": {
+            "conv_0": {
+                "type": "convolutional",
+                "stride": [
+                    1,
+                    1
+                ],
+                "kernel": [
+                    5,
+                    5
+                ],
+                "features": 256,
+                "activation": "relu",
+                "padding": "SAME",
+                "batch_norm": false,
+                "dropout": 0.2
+            }
+        }
+    },
+    "CONV_FIN": {
+        "type": "convolutional",
+        "stride": [
+            1,
+            1
+        ],
+        "kernel": [
+            1,
+            1
+        ],
+        "features": 1,
+        "activation": "relu",
+        "padding": "VALID",
+        "batch_norm": false
+    }
+}

@@ -1,0 +1,39 @@
+{       "mixing":0.5,
+        "scaling": 1,
+        "learning_rate_decay_factor": 0.99,
+        "warm_up_max_learning_rate": 1E-5,
+        "initial_learning_rate": 1E-4,
+        "warm_up": false,
+        "num_epochs_per_ramp": 4.0,
+        "network_type": "inverter",
+        "weight_decay": 1e-8,
+        "num_epochs_in_warm_up": 10,
+        "optimization": "Adam",
+        "loss_function": {
+                "residual_num_epochs_decay": 10,
+                "residual_initial": 10.0,
+                "residual_decay_factor": 0.75,
+                "residual_minimum": 1.0,
+                "type": "ABS_DIFF"
+        },
+        "num_epochs_per_decay": 2,
+        "moving_average_decay": 0.9999,
+        "momentum": 0.9,
+        "batch_norm": {
+                "epsilon": 1E-5,
+                "decay":0.9
+        },
+        "initializer": {
+                "type": "he"
+        },
+        "loss_scaling": "Logmax",
+        "LARC": true,
+        "LARC_eta": 0.001,
+        "LARC_epsilon": 1e-6,
+        "LARC_mode": "scale",
+        "LARC_min_update": 1e-4,
+        "LSAL": false,
+        "LSAL_epsilon": 1e-5,
+        "LSAL_min_update": 1e-5,
+        "langevin":false
+}
