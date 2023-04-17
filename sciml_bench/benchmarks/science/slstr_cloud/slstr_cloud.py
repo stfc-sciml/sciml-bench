@@ -1,12 +1,30 @@
 import yaml, os, h5py, time
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 import tensorflow as tf
+import tensorflow.keras.backend as K
 from pathlib import Path
 import numpy as np
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, f1_score, log_loss
 from sciml_bench.benchmarks.science.slstr_cloud.constants import PATCH_SIZE, N_CHANNELS, CROP_SIZE, IMAGE_H, IMAGE_W
 from sciml_bench.benchmarks.science.slstr_cloud.model import unet
 from sciml_bench.benchmarks.science.slstr_cloud.data_loader import SLSTRDataLoader, load_datasets
+
+def recall_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
+    recall = true_positives / (possible_positives + K.epsilon())
+    return recall
+
+def precision_m(y_true, y_pred):
+    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
+    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
+    precision = true_positives / (predicted_positives + K.epsilon())
+    return precision
+
+def f1_m(y_true, y_pred):
+    precision = precision_m(y_true, y_pred)
+    recall = recall_m(y_true, y_pred)
+    return 2*((precision*recall)/(precision+recall+K.epsilon()))
 
 # Loss function
 def weighted_cross_entropy(beta):
@@ -76,6 +94,7 @@ def cloud_inference(args)-> None:
     
     avg_accuracy = []
     avg_f1 = []
+    avg_loss = []
 
     # Inference Loop
     for patches, file_name in dataset:
@@ -105,18 +124,21 @@ def cloud_inference(args)-> None:
         mask = mask > .5
 
         accuracy = accuracy_score(mask.flatten(), ref_mask.flatten())
+        loss = log_loss(mask.flatten(), ref_mask.flatten())
         f1 = f1_score(mask.flatten(), ref_mask.flatten())
         avg_accuracy.append(accuracy)
         avg_f1.append(f1)
+        avg_loss.append(loss)
 
         with h5py.File(mask_name, 'w') as handle:
             handle.create_dataset('mask', data=mask)
 
     avg_accuracy = np.array(avg_accuracy).mean()
     avg_f1 = np.array(avg_f1).mean()
+    avg_loss = np.array(avg_loss).mean()
 
     # Return the number of inferences
-    return len(file_paths), dict(accuracy=avg_accuracy, f1=avg_f1)
+    return len(file_paths), dict(accuracy=avg_accuracy, f1=avg_f1, loss=avg_loss)
 
 #####################################################################
 # Training mode                                                     #
@@ -138,7 +160,7 @@ def cloud_training(args)-> None:
     
     with mirrored_strategy.scope():
         model = unet(input_shape=(PATCH_SIZE, PATCH_SIZE, N_CHANNELS))
-        model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['accuracy', f1_m])
         history = model.fit(train_dataset, validation_data=test_dataset, epochs=args['epochs'], verbose=1)
 
     # Save model
@@ -181,7 +203,13 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         elapsed_time = time.time() - start
     
     # Save metrics
-    metrics = dict(time=elapsed_time, accuracy=history.history['accuracy'][-1], loss=history.history['val_loss'][-1])
+    metrics = dict(
+        time=elapsed_time, 
+        accuracy=history.history['accuracy'][-1], 
+        f1=history.history['f1_m'][-1], 
+        loss=history.history['val_loss'][-1]
+    )
+
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:
@@ -222,6 +250,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
 
     metrics['time'] = elapsed_time
     metrics['throughput'] = throughput
+    metrics = {key: float(value) for key, value in metrics.items()}
     metrics_file = params_in.output_dir / 'metrics.yml'
     with log.subproc('Saving inference metrics to a file'):
         with open(metrics_file, 'w') as handle:
