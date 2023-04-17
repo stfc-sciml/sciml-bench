@@ -1,13 +1,52 @@
 from typing import Optional
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn.init import xavier_uniform_, zeros_
+from torch.nn.parallel import DistributedDataParallel as DDP
 from torch_geometric.nn.models.schnet import GaussianSmearing, \
     InteractionBlock, ShiftedSoftplus
 from torch_scatter.scatter import scatter_add
 from torch_geometric.nn import knn_graph
 import logging
+
+def load_model_ddp(args, rank, mode='train', device='cpu', frozen=False):
+    """ 
+    Load model 
+    """ 
+    if args['load_model']: 
+        net = load_pretrained_model(args, device=device, frozen=frozen)
+    else:
+        net = SchNet(num_features = args['num_features'],
+             num_interactions = args['num_interactions'],
+             num_gaussians = args['num_gaussians'],
+             cutoff = args['cutoff'])
+
+        device_ids = None
+        if device != 'cpu':
+            net.to(rank)
+            device_ids = [rank]
+            
+        net.reset_parameters()
+        #net.to(device)
+        #register backward hook --> gradient clipping
+        if not frozen:
+            for p in net.parameters():
+                p.register_hook(lambda grad: torch.clamp(grad, -args['clip_value'], args['clip_value']))
+        #TODO; check the placement because of the hooking
+        ## DistributedDataParallel will divide and allocate batch_size to all
+        # available GPUs if device_ids are not set
+        # cref: https://github.com/pytorch/examples/blob/master/imagenet/main.py#L156
+        net = DDP(net,
+                    device_ids=device_ids, 
+                    output_device=rank, 
+                    find_unused_parameters=False)
+    
+    if mode=='eval':
+        # set to eval mode
+        net.eval()
+        print('model set to eval')
+
+    return net 
 
 def load_model(args, mode='train', device='cpu', frozen=False):
     """

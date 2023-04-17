@@ -1,9 +1,8 @@
 import os
 import os.path as op
 from torch_geometric.data import DataListLoader, DataLoader
-#from torch_geometric.loader import DataListLoader, DataLoader
 from torch.utils.data import ConcatDataset
-from sciml_bench.benchmarks.science.hydronet.utils.datasets import PrepackedDataset
+from utils.datasets import PrepackedDataset
 import sys
 
 
@@ -45,12 +44,9 @@ def test_dataloader(args,
                     split = '00'
                     ):
 
-    dataset = PrepackedDataset(None,
-                               op.join(args.savedir,f'split_{split}_{dataset}.npz'),
-                               dataset,
+    dataset = PrepackedDataset(None, op.join(args.savedir,f'split_{split}_{dataset}.npz'), dataset, 
                                directory=args.datadir)
     data = dataset.load_data('test')
-    print(f"{len(data)} samples in test set")
     
     batch_size = args.batch_size if len(data) > args.batch_size else len(data)
     loader = DataLoader(data, batch_size=batch_size, shuffle=False)

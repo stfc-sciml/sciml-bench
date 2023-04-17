@@ -23,9 +23,9 @@ from ase.io.extxyz import read_xyz
 from ase.units import Debye, Bohr, Hartree, eV
 from ase.db import connect
 import shutil
-import fair_research_login
+# import fair_research_login
 
-class PrepackedDataset(torch.utils.data.Dataset):
+class PrepackedDataset(torch.utils.data.Dataset): #InMemoryDataset:
     def __init__(self, loader_list, split_file, dataset_type, 
                  max_num_atoms=None, num_elements=None,
                  shuffle=True, mode="train", directory="./data/cached_dataset/"):
@@ -77,7 +77,8 @@ class PrepackedDataset(torch.utils.data.Dataset):
         dataset.close()
         
     def load_data(self, idx_type):
-        logging.info("Loading cached data from disk...")
+        # logging.info("Loading cached data from disk...")
+        print("Loading cached data from disk...\n")
         dataset = h5py.File(os.path.join(self.directory, f"{self.dataset_type}.hdf5"), "r")
 
         S = np.load(self.split_file)
@@ -91,14 +92,14 @@ class PrepackedDataset(torch.utils.data.Dataset):
             z = torch.from_numpy(dataset["z"][index][:cluster_size])
             x = torch.from_numpy(dataset["x"][index][:cluster_size])
             pos = torch.from_numpy(dataset["pos"][index][:cluster_size])
-            pos.requires_grad = True
+            # pos.requires_grad = True
             y = torch.from_numpy(dataset["y"][index])
             size = torch.from_numpy(dataset["size"][index])
             data = Data(x=x, z=z, pos=pos, y=y, size=size)
             data_list.append(data)
-        
+        print("Data list size: {:5d} \n".format(len(data_list)), flush=True)
+        # return self.collate(data_list)
         return data_list
-
     def __len__(self):
         return len(self.z)
 
