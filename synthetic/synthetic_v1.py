@@ -39,9 +39,9 @@ class nonlinRegression1(nn.Module):
             nn.Sigmoid(),
             nn.Linear(hidden_size_2, hidden_size_3),
             nn.Sigmoid(),
-			nn.Linear(hidden_size_3, hidden_size_4),
+            nn.Linear(hidden_size_3, hidden_size_4),
             nn.Sigmoid(),
-			nn.Linear(hidden_size_4, output_size), # hidden -> output layer
+            nn.Linear(hidden_size_4, output_size), # hidden -> output layer
             nn.Sigmoid()	
         )
 
