@@ -1,9 +1,12 @@
+import time
 import h5py
 from pathlib import Path
 import numpy as np
 import tensorflow as tf
+import yaml
 
 import horovod.tensorflow.keras as hvd
+from sklearn import metrics
 from .data_loader import SLSTRDataLoader
 from .constants import CROP_SIZE, PATCH_SIZE, N_CHANNELS, IMAGE_H, IMAGE_W
 from sciml_bench.core.runtime import RuntimeOut, RuntimeIn
@@ -73,36 +76,71 @@ def inference(params_in: RuntimeIn, params_out: RuntimeOut)-> None:
     # only yields batches of images for a single image at a time so they can be
     # reconstructed.
     data_loader = SLSTRDataLoader(file_paths, single_image=True, crop_size=CROP_SIZE)
+    dataset_size = data_loader.size
     dataset = data_loader.to_dataset()
 
     console.begin('Inference Loop')
-    for patches, file_name in dataset:
-        file_name = Path(file_name.numpy().decode('utf-8'))
-        device.message(f"Processing file {file_name}")
-        console.message(f"Processing file {file_name}")
 
-        # convert patches to a batch of patches
-        n, ny, nx, _ = patches.shape
-        patches = tf.reshape(patches, (n * nx * ny, PATCH_SIZE, PATCH_SIZE, N_CHANNELS))
+    accuracyList = []
+    lossList = []
 
-        # perform inference on patches
-        mask_patches = model.predict_on_batch(patches)
+    with console.subproc('Start inference'):
+        start_time = time.time()
+        for patches, file_name in dataset:
+            file_name = Path(file_name.numpy().decode('utf-8'))
+            device.message(f"Processing file {file_name}")
+            console.message(f"Processing file {file_name}")
 
-        # crop edge artifacts
-        mask_patches = tf.image.crop_to_bounding_box(mask_patches, CROP_SIZE // 2, CROP_SIZE // 2, PATCH_SIZE - CROP_SIZE, PATCH_SIZE - CROP_SIZE)
+            # convert patches to a batch of patches
+            n, ny, nx, _ = patches.shape
+            patches = tf.reshape(patches, (n * nx * ny, PATCH_SIZE, PATCH_SIZE, N_CHANNELS))
 
-        # reconstruct patches back to full size image
-        mask_patches = tf.reshape(mask_patches, (n, ny, nx, PATCH_SIZE - CROP_SIZE, PATCH_SIZE - CROP_SIZE, 1))
-        mask = reconstruct_from_patches(mask_patches, nx, ny, patch_size=PATCH_SIZE - CROP_SIZE)
-        mask = mask.numpy()
-        mask = (mask > .5).astype(int)
+            # perform inference on patches
+            mask_patches = model.predict_on_batch(patches)
 
-        mask_name = (output_dir / file_name.name).with_suffix('.h5')
+            # crop edge artifacts
+            mask_patches = tf.image.crop_to_bounding_box(mask_patches, CROP_SIZE // 2, CROP_SIZE // 2, PATCH_SIZE - CROP_SIZE, PATCH_SIZE - CROP_SIZE)
 
-        with h5py.File(mask_name, 'w') as handle:
-            handle.create_dataset('mask', data=mask)
-            handle.create_dataset('mask_patches', data=mask_patches)
-            handle.create_dataset('patches', data=patches)
+            # reconstruct patches back to full size image
+            mask_patches = tf.reshape(mask_patches, (n, ny, nx, PATCH_SIZE - CROP_SIZE, PATCH_SIZE - CROP_SIZE, 1))
+            mask = reconstruct_from_patches(mask_patches, nx, ny, patch_size=PATCH_SIZE - CROP_SIZE)
+            mask = mask.numpy()
+            mask = (mask > .5).astype(int)
+
+            mask_name = (output_dir / file_name.name).with_suffix('.h5')
+
+            with h5py.File(mask_name, 'w') as handle:
+                handle.create_dataset('mask', data=mask)
+                handle.create_dataset('mask_patches', data=mask_patches)
+                handle.create_dataset('patches', data=patches)
+
+            # Change mask values from float to integer
+            mask_np = mask
+            mask_flat = mask_np.reshape(-1)
+            
+            # Extract groundTruth from file, this is the Bayesian mask
+            with h5py.File(file_name, 'r') as handle:           
+                groundTruth = handle['bayes'][:]
+                groundTruth[groundTruth > 0] = 1
+                groundTruth[groundTruth == 0] = 0
+            
+            # Make 1D array
+            groundTruth_flat = groundTruth.reshape(-1)
+        
+            # Calculate hits between ground truth mask and the reconstructed mask
+            loss = metrics.log_loss(groundTruth_flat, mask_flat)
+            accuracy = metrics.accuracy_score(groundTruth_flat, mask_flat)
+            accuracyList.append(accuracy)
+            lossList.append(loss)
+
+        end_time = time.time()
+
+        loss = np.array(lossList).mean()
+        accuracy = np.array(accuracyList).mean()
+        time_taken = end_time - start_time
+        throughput = float(dataset_size/(time_taken))
+        metric_data = dict(accuracy=accuracy, time=time_taken, throughput=throughput, loss=loss)
 
     console.ended('Inference Loop')
+    return metric_data
 

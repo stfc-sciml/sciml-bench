@@ -28,7 +28,7 @@ conda install pytorch==1.12.0 cudatoolkit=11.3 -c pytorch -c conda-forge
 
 6)	conda install -c conda-forge gdown
 
-7) pip install torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
+7) pip install pandas torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric -f https://data.pyg.org/whl/torch-1.12.0+cu113.html
 
 '''
 
@@ -261,7 +261,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     log.begin(f'Running benchmark hydronet on training mode')
 
     # Timestamp 
-    start_time = datetime.datetime.now()
+    start_time = time.time()
 
     # logging all to stdout
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -277,15 +277,8 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
  
     ######## SET UP ########
     # create directory to store training results
-    trainResultsDir = os.path.join(argsPath, 'trainingResults')
-    args.savedir = trainResultsDir
-    if not os.path.isdir(args.savedir):
-        os.mkdir(args.savedir)
-        os.mkdir(os.path.join(args.savedir,'tensorboard')) 
-    else:
-        logging.warning(f'{args.savedir} is already a directory, either delete or choose new SAVEDIR')
-        sys.exit()
-    
+    args.savedir = params_in.output_dir
+
     # set up tensorboard logger
     writer = SummaryWriter(log_dir=os.path.join(args.savedir,'tensorboard'))
     
@@ -304,10 +297,10 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     
     ######## LOAD DATA ########
     # get initial train, val, examine splits for dataset(s)
-    start_load = datetime.datetime.now()
+    start_load = time.time()
     logging.info(f'Start loading data: {start_time}')
     train_loader, val_loader = init_dataloader_from_file(args, 'train')
-    load_time = datetime.datetime.now() - start_load
+    load_time = time.time() - start_load
     logging.info(f'Data load time: {load_time}')
 
     ######## LOAD MODEL ########
@@ -352,9 +345,23 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     writer.close()
 
     # Program end timestamp
-    run_time = datetime.datetime.now() - start_time
+    run_time = time.time() - start_time
 
     logging.info(f'Hydronet: training complete: {run_time}')
+
+    # Save metrics
+    metrics = dict(time=run_time, loss=val_loss)
+
+    if args.train_forces:
+        metrics['energy_loss'] = e_loss
+        metrics['forces_loss'] = f_loss
+
+    metrics = {key: float(value) for key, value in metrics.items()}
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with log.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
+
     # End top level
     log.ended(f'Running benchmark hydronet on training mode')
     
@@ -386,12 +393,12 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
  
     ######## SET UP ########
     # create directory to store training results
-    trainResultsDir = os.path.join(argsPath, 'trainingResults')
+    trainResultsDir = params_in.output_dir
 
     args.savedir = trainResultsDir
     args.load_state = True
     args.load_model = True
-    args.start_model = op.join(args.savedir, 'best_model.pt')
+    args.start_model = params_in.model
 
     # check for GPU
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -407,22 +414,33 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     # get predictions on test set for each dataset
     df = pd.DataFrame()
     for dataset in args.datasets: 
-        start_inference_time = datetime.datetime.now() 
+        start_inference_time = time.time() 
         tmp = infer(loader, net, forces=args.train_forces, device=device)
-        total_inference_time = datetime.datetime.now() - start_inference_time
+        total_inference_time = time.time() - start_inference_time
 
         tmp['dataset']=dataset
         df = pd.concat([df, tmp], ignore_index=True, sort=False)
     
     # inference stats
     number_of_rows = len(df)
+    throughput = total_inference_time/number_of_rows
+
     logging.info(f'Inference time of {len(data)} queries: {total_inference_time}')
-    logging.info(f'Time per inference in seconds: {total_inference_time/number_of_rows}')
+    logging.info(f'Time per inference in seconds: {throughput}')
 
     # save inference results
     df.to_csv(op.join(args.savedir, 'test_set_inference.csv'), index=False)
 
     logging.info('Hydronet: Inference complete!')
+
+    # Save metrics
+    metrics = dict(mae=df['error'].mean(), time=total_inference_time, throughput=throughput)
+    metrics['loss'] = ((df['e_actual'] - df['e_pred'])**2).sum() / len(df)
+    metrics = {key: float(value) for key, value in metrics.items()}
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with log.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
     
     # End top level
     log.ended('Running benchmark hydronet on inference mode')

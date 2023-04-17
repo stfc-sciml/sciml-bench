@@ -3,7 +3,6 @@ from pathlib import Path
 import h5py
 import tensorflow as tf
 import numpy as np
-import horovod.tensorflow as hvd
 from sklearn.model_selection import train_test_split
 
 
@@ -32,6 +31,10 @@ class SLSTRDataLoader:
         self.no_cache = no_cache
 
         assert len(self._image_paths) > 0, 'No image data found in path!'
+
+    @property
+    def size(self):
+        return len(self._image_paths)
 
     @property
     def input_size(self):
@@ -113,7 +116,7 @@ class SLSTRDataLoader:
     def to_dataset(self):
         """Input function for training"""
         dataset = tf.data.Dataset.from_tensor_slices(self._image_paths)
-        dataset = dataset.shard(hvd.size(), hvd.rank())
+        # dataset = dataset.shard(hvd.size(), hvd.rank())
 
         if self._shuffle:
             dataset = dataset.shuffle(len(self._image_paths))

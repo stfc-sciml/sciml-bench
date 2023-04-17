@@ -15,6 +15,7 @@ Smart tool collection
 
 import time
 import logging
+import random
 from pathlib import Path
 from contextlib import contextmanager
 import sys
@@ -342,3 +343,26 @@ def print_bullet_list(items: list, intend: int=1):
     for item in items:
         print(' ' *  intend, end='')
         print(f'* {item.strip()}')
+
+def set_seeds(seed=0):
+    """
+    Given a seed, set the random number generators in each library
+    """
+    random.seed(seed)
+    try:
+        import numpy as np
+        np.random.seed(seed)
+    except:
+        pass
+
+    try:
+        import tensorflow as tf
+        tf.random.set_seed(seed)
+    except:
+        pass
+
+    try:
+        import torch
+        torch.manual_seed(0)
+    except:
+        pass

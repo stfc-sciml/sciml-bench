@@ -48,7 +48,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         'batch_size': 32,
         'epochs': 5,
         'latent_size': 512,
-        'lr': .001,
+        'lr': 0.001,
         'use_gpu': True
     }    
 
@@ -89,7 +89,6 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
         log.message(f'Validation images: {len(validation_images)}')
 
-
     latent_dim = args['latent_size']
     learning_rate = args['lr']
     batch_size = args['batch_size']
@@ -110,8 +109,15 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         model.compile(optimizer=opt, loss='mse', metrics=['mae', 'mse'])
 
     with log.subproc('Fitting model parameters'):
+        start_time = time.time()
         history = model.fit(train_data, validation_data=validation_data, epochs=args['epochs'], 
                             verbose=0, callbacks=[LogEpochCallback(params_out)])
+        end_time = time.time()
+        time_taken = end_time - start_time
+
+    with log.subproc('Predicting on validation data'):
+        predictions = model.predict(validation_data, verbose=0)
+        mse = ((predictions - validation_images)**2).reshape(len(validation_images), -1).mean(-1).mean()
 
     # Free up memory 
     del training_images
@@ -132,6 +138,14 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         history_file = params_in.output_dir / 'training_history.yml'
         with open(history_file, 'w') as handle:
             yaml.dump(history.history, handle)
+
+    # Save metrics
+    metrics = dict(mse=float(mse), time=time_taken, loss=mse)
+    metrics = {key: float(value) for key, value in metrics.items()}
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with log.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
 
     # End top level
     log.ended(f'Running benchmark optical_damage on training mode')
@@ -193,7 +207,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     imgs = np.concatenate((damaged_images, undamaged_images))
 
     batch_size = args['batch_size']
-    dataset = tf.data.Dataset.from_tensor_slices((imgs, imgs))
+    dataset = tf.data.Dataset.from_tensor_slices(imgs)
     dataset = dataset.batch(batch_size)
 
     # Make labels for each image
@@ -208,10 +222,14 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         recons = model.predict(dataset)
 
     endInference = time.time()
-    log.message(f'Inference time: {(endInference - startInference): 9.4f}, ' \
-                f'Images/s: {len(imgs)/(endInference - startInference):9.1f}')
 
-    squared_error = (imgs - recons)**2
+    time_taken = (endInference - startInference)
+    throughput = len(imgs)/(endInference - startInference)
+
+    log.message(f'Inference time: {time_taken: 9.4f}, ' \
+                f'Images/s: {throughput:9.1f}')
+
+    squared_error = (imgs - recons)**2.
     # Calculating stats
 
     recons = np.squeeze(recons)
@@ -231,10 +249,18 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
         f1_995 = f1_score(score_995, test_labels)
         f1_990 = f1_score(score_990, test_labels)
 
-        mse = squared_error.reshape(len(squared_error), -1).mean(-1)
+        mse = squared_error.reshape(len(squared_error), -1).mean(-1).mean()
 
         log.message(f'Accuracy at 99.0%: {acc_990: .2f}, 99.5%: {acc_995:.2f}, 99.9%: {acc_999:.2f}')
         log.message(f'F1 Score at 99.0%: {f1_990: .2f}, 99.5%: {f1_995:.2f}, 99.9%: {f1_999:.2f}')
+
+    # Save metrics
+    metrics = dict(time=time_taken, throughput=throughput, accuracy=acc_999 * 100, f1=f1_999, mse=mse, loss=mse)
+    metrics = {key: float(value) for key, value in metrics.items()}
+    metrics_file = params_in.output_dir / 'metrics.yml'
+    with log.subproc('Saving inference metrics to a file'):
+        with open(metrics_file, 'w') as handle:
+            yaml.dump(metrics, handle)  
 
     # Max memory usage
     memory_usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
@@ -248,6 +274,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
             handle.create_dataset('images', data=imgs)
             handle.create_dataset('mse', data=mse)
         log.message(f"Reconstructions saved to: {output_file}")
+
 
     # End top level
     log.ended('Running benchmark optical_damage on inference mode')

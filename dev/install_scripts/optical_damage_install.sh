@@ -3,7 +3,7 @@ set -e
 set -x
 
 # Create new environment
-ENV_NAME=sciml-bench-mnist_tf_keras
+ENV_NAME=sciml-bench-optical_damage
 conda remove -n $ENV_NAME --all -y --quiet
 conda create -n $ENV_NAME python=3.9 -y --quiet
 ENV_PATH=$(dirname $(dirname $(which conda)))/envs/$ENV_NAME
@@ -23,5 +23,5 @@ cp $ENV_PATH/lib/libdevice.10.bc $ENV_PATH/lib/nvvm/libdevice/
 
 # Install pip requirements
 conda run -n $ENV_NAME python -m pip install -q --upgrade pip
-conda run -n $ENV_NAME python -m pip install -q "tensorflow==2.11.*" scikit-image
+conda run -n $ENV_NAME python -m pip install -q "tensorflow==2.11.*" scikit-learn h5py tqdm
 conda run -n $ENV_NAME python -m pip install -q -e . 
