@@ -44,7 +44,14 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         "loss_fn": "mse"
     }
 
-    dist.init_process_group(backend="nccl", init_method='env://')
+    if 'LOCAL_RANK' in os.environ:
+        # Running with torchrun
+        dist.init_process_group(backend="nccl", init_method='env://')
+    else:
+        # Running without torchrun - force to use a single process
+        dist.init_process_group(backend="nccl", rank=0, world_size=1, store=dist.HashStore())
+        os.environ['LOCAL_RANK'] = '0'
+
     rank = dist.get_rank()
     local_rank = int(os.environ["LOCAL_RANK"])
     torch.cuda.set_device(local_rank)
