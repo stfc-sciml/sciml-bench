@@ -30,6 +30,7 @@ The overall scope of benchmarks, datasets and their coverage was a result of lon
 
 ## Funding
 
-This benchmarking programme is supported by [1] Benchmarking for AI for Science at Exascale (BASE), EPSRC ExCALIBUR Phase I grant (EP/V001310/1) and [2] Wave I of the UKRI Strategic Priorities Fund under the EPSRC grant (EP/T001569/1), particularly the *AI for Science* theme in that grant and the Alan Turing Institute.
+This benchmarking programme is supported by [1] Wave I of the UKRI Strategic Priorities Fund under the EPSRC grant (EP/T001569/1), particularly the AI for Science theme in that grant and the Alan Turing Institute, [2] the Benchmarking for AI for Science at Exascale (BASE), EPSRC ExCALIBUR Phase I grant (EP/V001310/1), and [3] the Blueprinting for AI for Science at Exascale (BASE-II, EP/X019918/1), which is Phase II of the [2].
+
 
 ◼︎
