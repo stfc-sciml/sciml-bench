@@ -42,7 +42,6 @@ def load_model_ddp(args, rank, mode='train', device='cpu', frozen=False):
     if mode=='eval':
         # set to eval mode
         net.eval()
-        print('model set to eval')
 
     return net 
 
@@ -50,13 +49,13 @@ def load_model(args, mode='train', device='cpu', frozen=False):
     """
     Load model 
     """
-    if args.load_model: 
+    if args['load_model']: 
         net = load_pretrained_model(args, device=device, frozen=frozen)
     else:
-        net = SchNet(num_features = args.num_features,
-             num_interactions = args.num_interactions,
-             num_gaussians = args.num_gaussians,
-             cutoff = args.cutoff)
+        net = SchNet(num_features = args['num_features'],
+             num_interactions = args['num_interactions'],
+             num_gaussians = args['num_gaussians'],
+             cutoff = args['cutoff'])
         net.reset_parameters()
         net.to(device)
         #register backward hook --> gradient clipping
@@ -67,7 +66,6 @@ def load_model(args, mode='train', device='cpu', frozen=False):
     if mode=='eval':
         # set to eval mode
         net.eval()
-        print('model set to eval')
 
     return net
 
@@ -78,7 +76,7 @@ def load_pretrained_model(args, device='cpu', frozen=False):
     device = torch.device(device)
     
     # load state dict of trained model
-    state=torch.load(args.start_model)
+    state=torch.load(args['start_model'])
     
     # extract model params from model state dict
     num_gaussians = state['basis_expansion.offset'].shape[0]
@@ -91,9 +89,9 @@ def load_pretrained_model(args, device='cpu', frozen=False):
                  num_gaussians = num_gaussians,
                  cutoff = 6.0)
 
-    logging.info(f'model architecture loaded from {args.start_model}')
+    logging.info(f'model architecture loaded from {args["start_model"]}')
     
-    if args.load_state:
+    if args['load_state']:
         # load trained weights into model
         net.load_state_dict(state)
         logging.info('model weights loaded')
@@ -105,7 +103,7 @@ def load_pretrained_model(args, device='cpu', frozen=False):
     #register backward hook --> gradient clipping
     if not frozen:
         for p in net.parameters():
-            p.register_hook(lambda grad: torch.clamp(grad, -args.clip_value, args.clip_value))
+            p.register_hook(lambda grad: torch.clamp(grad, -args['clip_value'], args['clip_value']))
 
     return net
 

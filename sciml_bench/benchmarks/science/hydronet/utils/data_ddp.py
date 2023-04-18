@@ -4,7 +4,8 @@ import time
 from typing import List
 import torch
 import os.path as op
-from torch_geometric.data import DataLoader, Dataset, Data
+from torch_geometric.data import Dataset, Data
+from torch_geometric.loader import DataLoader
 from torch.utils.data import Subset
 import torch.distributed as dist
 import h5py
@@ -47,7 +48,7 @@ def init_dataloader_from_file(args, log, actionStr, split = '00', shuffle=True):
     dataset = HydronetDataset(file_name)
     end_time = time.time()
 
-    log.message(f"Loaded data in {end_time - start_time:.2f}s on rank {dist.get_rank()}")
+    log.message(f"Loaded data in {end_time - start_time:.2f}s")
     
     # Split data 80:10:10
     n = len(dataset)
