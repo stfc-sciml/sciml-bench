@@ -39,11 +39,10 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         "loss_fn": "mse"
     }
 
-    # dist.init_process_group(backend="nccl", init_method='env://')
-    dist.init_process_group(world_size=1, rank=0, store=dist.HashStore(), backend='gloo')
+    dist.init_process_group(backend="nccl", init_method='env://')
     rank = dist.get_rank()
-    local_rank = 0#int(os.environ["LOCAL_RANK"])
-    # torch.cuda.set_device(local_rank)
+    local_rank = int(os.environ["LOCAL_RANK"])
+    torch.cuda.set_device(local_rank)
 
     params_out.activate(rank=rank, local_rank=local_rank)
 
@@ -101,6 +100,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     elapsed_time = end_time - start_time
 
     if rank == 0:
+        metrics = {}
         metrics['loss'] = val_loss
         metrics['time'] = elapsed_time
         metrics = {key: float(value) for key, value in metrics.items()}

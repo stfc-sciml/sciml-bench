@@ -21,10 +21,8 @@ def load_model_ddp(args, rank, mode='train', device='cpu', frozen=False):
              num_gaussians = args['num_gaussians'],
              cutoff = args['cutoff'])
 
-        device_ids = None
-        if device != 'cpu':
-            net.to(rank)
-            device_ids = [rank]
+        net.to(rank)
+        device_ids = [rank]
             
         net.reset_parameters()
         #net.to(device)
