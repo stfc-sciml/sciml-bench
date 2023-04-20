@@ -7,9 +7,7 @@ This version of the suite includes six benchmarks, namely:
 1. *[slstr_cloud](./benchmarks/slstr_cloud.md)*
 1. *[optical_damage](./benchmarks/optical_damage.md)*
 1. *[stemdl_classification](./benchmarks/stemdl_classification.md)*
-1. *[stemdl_reconstruction](./benchmarks/stemdl_reconstruction.md)*
 1. *[hydronet](./benchmarks/hydronet.md)*
-1. *[inelastic](./benchmarks/inelastic.md)*.
 1. *[synthetic_regression](./benchmarks/synthetic_regression.md)*
  
  
