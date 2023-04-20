@@ -10,7 +10,8 @@ This version of the suite includes six benchmarks, namely:
 1. *[stemdl_reconstruction](./benchmarks/stemdl_reconstruction.md)*
 1. *[hydronet](./benchmarks/hydronet.md)*
 1. *[inelastic](./benchmarks/inelastic.md)*.
+1. *[synthetic_regression](./benchmarks/synthetic_regression.md)*
  
  
-The full details of these benchmarks, such as basic task, definition and datasets,  can be found by clicking the respective hyperlinks above. The exact dependencies of the benchmark are defined in the Configuration file. 
+The full details of these benchmarks, such as basic task, definition and datasets, can be found by clicking the respective hyperlinks above. The exact dependencies of the benchmark are defined in the Configuration file. 
 

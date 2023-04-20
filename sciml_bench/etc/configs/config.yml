@@ -113,6 +113,11 @@ benchmarks:
         types: 'training, inference'
         group: 'science'
 
+    # Synthetic Benchmarks 
+    synthetic_regression:
+        dependencies: 'pytorch, lightning'
+        types: 'training'
+        group: 'synthetic'
         
     # Example Benchmarks 
     mnist_tf_keras:

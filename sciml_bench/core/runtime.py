@@ -89,8 +89,11 @@ class RuntimeIn:
         if self.execution_mode == 'training':
             if dataset_dir is None:
                 # default
-                dataset_name = prog_env.benchmarks[benchmark_name]['datasets']
-                self.dataset_dir = (prog_env.dataset_dir / dataset_name).expanduser()
+                if 'datasets' in prog_env.benchmarks[benchmark_name]:
+                    dataset_name = prog_env.benchmarks[benchmark_name]['datasets']
+                    self.dataset_dir = (prog_env.dataset_dir / dataset_name).expanduser()
+                else:
+                    self.dataset_dir = Path()
             else:
                 self.dataset_dir = Path(dataset_dir).expanduser()
 

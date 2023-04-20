@@ -270,8 +270,11 @@ def get_status(benchmark_names, ENV:ProgramEnv):
         is_good_inference = create_inference_instance(benchmark_name, bench_group, True)
         dep_datasets = ENV.get_bench_datasets(benchmark_name)
         all_datasets_available = True
-        for ds in dep_datasets:
-            all_datasets_available = all_datasets_available and Dataset.get_status(ds, ENV) == 'Downloaded' 
+        if dep_datasets is not None:
+            for ds in dep_datasets:
+                all_datasets_available = all_datasets_available and Dataset.get_status(ds, ENV) == 'Downloaded' 
+        else:
+            all_datasets_available = True
         status_str.append(__get_runnable_status__(is_good_train, is_good_inference, all_datasets_available))
     
     if flag == True:
