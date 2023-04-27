@@ -2,16 +2,13 @@ import os
 import time
 import torch
 import yaml
-import numpy as np
 import pandas as pd
 import os.path as op
 from sciml_bench.core.runtime import RuntimeIn, RuntimeOut
 
 import torch.distributed as dist
 from torch_geometric.loader import DataLoader
-from sciml_bench.benchmarks.science.hydronet.utils import data_ddp, train_ddp, models_ddp
-import sciml_bench.benchmarks.science.hydronet.utils.infer
-
+from sciml_bench.benchmarks.science.hydronet.utils import data_ddp, train_ddp, models_ddp, infer
 
 def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
@@ -19,20 +16,11 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
 
     default_args = {
-        "parallel": True,
-        "create_splits": False,
-        "n_train": 107108,
-        "n_val": 13388,
-        "splitdir": "~/sciml_bench/datasets/hydronet_ds1/QM9/",
-        "datadir": "sciml_bench/datasets/hydronet_ds1/",
-        "inputFile" : "qm9.hdf5",
-        "savedir": "trainingResults",
         "train_forces": False,
         "energy_coeff": 1,
-        "n_epochs": 1,
+        "n_epochs": 500,
         "batch_size": 1024,
-        "datasets": ["qm9"],
-        "start_model": "~/sciml_bench/outputs/hydronet/IPU-minima-best_model.pt",
+        "dataset": "qm9",
         "load_model": False,
         "load_state": False,
         "num_features": 100,
@@ -46,7 +34,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     if 'LOCAL_RANK' in os.environ:
         # Running with torchrun
-        dist.init_process_group(backend="nccl", init_method='env://')
+        dist.init_process_group(backend="nccl")
     else:
         # Running without torchrun - force to use a single process
         dist.init_process_group(backend="nccl", rank=0, world_size=1, store=dist.HashStore())
@@ -68,13 +56,14 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     with log.subproc('Parsing input arguments'):
         args = params_in.bench_args.try_get_dict(default_args=default_args)
+        args['datadir'] = params_in.dataset_dir
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     n_gpus = dist.get_world_size()
     local_batch_size = args['batch_size']
     global_batch_size = n_gpus * local_batch_size
     # Linear LR scaling
-    learning_rate = args['start_lr'] * n_gpus
+    learning_rate = args['start_lr']
 
     net = models_ddp.load_model_ddp(args, local_rank, device)
 
@@ -140,22 +129,15 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     """
 
     default_args = {
-        "parallel": True,
-        "create_splits": False,
         "n_train": 107108,
         "n_val": 13388,
-        "splitdir": "~/sciml_bench/datasets/hydronet_ds1/QM9/",
-        "datadir": "sciml_bench/datasets/hydronet_ds1/",
-        "inputFile" : "qm9.hdf5",
-        "savedir": "trainingResults",
         "train_forces": False,
         "energy_coeff": 1,
         "n_epochs": 1,
         "batch_size": 1024,
-        "datasets": ["qm9"],
-        "start_model": "~/sciml_bench/outputs/hydronet/IPU-minima-best_model.pt",
-        "load_model": False,
-        "load_state": False,
+        "dataset": "qm9",
+        "load_model": True,
+        "load_state": True,
         "num_features": 100,
         "num_interactions": 4,
         "num_gaussians": 25,
@@ -173,9 +155,7 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     with log.subproc('Parsing input arguments'):
         args = params_in.bench_args.try_get_dict(default_args=default_args)
 
-    trainResultsDir = params_in.output_dir
-
-    args['savedir'] = trainResultsDir
+    args['savedir'] = params_in.output_dir
 
     # check for GPU
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -190,16 +170,11 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     loader = DataLoader(data, batch_size=batch_size, shuffle=False)
 
     # get predictions on test set for each dataset
-    df = pd.DataFrame()
-    for dataset in args['datasets']: 
-        with log.subproc('Running inference'):
-            start_inference_time = time.time() 
-            tmp = infer(loader, net, forces=args['train_forces'], device=device)
-            total_inference_time = time.time() - start_inference_time
+    with log.subproc('Running inference'):
+        start_inference_time = time.time() 
+        df = infer.infer(loader, net, forces=args['train_forces'], device=device)
+        total_inference_time = time.time() - start_inference_time
 
-        tmp['dataset']=dataset
-        df = pd.concat([df, tmp], ignore_index=True, sort=False)
-    
     # inference stats
     number_of_rows = len(df)
     throughput = total_inference_time/number_of_rows
@@ -218,81 +193,3 @@ def sciml_bench_inference(params_in: RuntimeIn, params_out: RuntimeOut):
     
     # End top level
     log.ended('Running benchmark hydronet on inference mode')
-
-def infer(loader, net, forces=True, energies=True, force_type='max', device='cpu'):
-    f_actual = []
-    e_actual = []
-    e_pred = []
-    f_pred = []
-    size = []
-
-    for data in loader:
-        data = data.to(device)
-        #size += data.size.tolist()
-        size += data['size'].tolist()
-        if energies:
-            e_actual += data.y.tolist()
-            e = net(data)
-            e_pred += e.tolist()
-
-        # get predicted values
-        if forces:
-            data.pos.requires_grad = True
-            f = torch.autograd.grad(e, data.pos, grad_outputs=torch.ones_like(e), retain_graph=False)[0]
-        
-            if force_type == 'max':
-                f_actual += get_max_forces(data, data.f)
-                f_pred += get_max_forces(data, f)
-            elif force_type == 'all':
-                f_actual += data.f.squeeze().tolist()
-                f_pred += f.squeeze().tolist()
-            elif force_type == 'error':
-                f_actual += force_magnitude_error(data.f, f)
-                f_pred += force_angular_error(data.f, f)
-            else:
-                raise ValueError('Not implemented')
-                
-    # return as dataframe
-    if energies == True and forces == False:
- 
-        # Relative difference between e_actual and e_pred
-        num_e_actual = np.array(e_actual)
-        num_e_pred = np.array(e_pred)
-        num_error = abs((num_e_actual - num_e_pred)/num_e_actual)
-        error = np.ndarray.tolist(num_error)
-        
-        return pd.DataFrame({'size': size, 'e_actual': e_actual, 'e_pred': e_pred, 'error': error})
-    
-    if energies == True and forces == True:
-        if force_type=='error':
-            return pd.DataFrame({'size': size, 'e_actual': e_actual, 'e_pred': e_pred}), pd.DataFrame({'f_mag_error': f_actual, 'f_ang_error': f_pred})
-        else:
-            return pd.DataFrame({'size': size, 'e_actual': e_actual, 'e_pred': e_pred}), pd.DataFrame({'f_actual': f_actual, 'f_pred': f_pred})
-
-
-# Inference methods
-#
-def force_magnitude_error(actual, pred):
-    # ||f_hat|| - ||f||
-    return torch.sub(torch.norm(pred, dim=1), torch.norm(actual, dim=1))
-
-def force_angular_error(actual, pred):
-    # cos^-1( f_hat/||f_hat|| • f/||f|| ) / pi
-    # batched dot product obtained with torch.bmm(A.view(-1, 1, 3), B.view(-1, 3, 1))
-    torch.pi = torch.acos(torch.zeros(1)).item() * 2 
-    
-    a = torch.norm(actual, dim=1)
-    p = torch.norm(pred, dim=1)
-    
-    return torch.div(torch.acos(torch.bmm(torch.div(actual.T, a).T.view(-1, 1, 3), torch.div(pred.T, p).T.view(-1, 3,1 )).view(-1)), torch.pi)
-
-# get_max_forces
-def get_max_forces(data, forces):
-    # data: data from DataLoader
-    # forces: data.f for actual, f for pred
-    start = 0
-    f=[]
-    for size in data.size.numpy()*3:
-        f.append(np.abs(forces[start:start+size].numpy()).max())
-        start += size
-    return f

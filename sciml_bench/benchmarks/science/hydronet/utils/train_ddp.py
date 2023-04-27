@@ -226,22 +226,20 @@ def get_pred_eloss(args, model, loader, optimizer, device):
 
 def get_pred_eloss_ddp(args, rank, model, loader, optimizer, device):
     model.eval()
-    total_e_loss = []
+    total_e_loss = 0.
+    total_samples = 0.
 
-    for data in loader:
-        if device != 'cpu':
+    with torch.no_grad():
+        for data in loader:
             data = data.to(rank, non_blocking=True)
-        optimizer.zero_grad()
+            optimizer.zero_grad()
 
-        e = model(data)
-
-        if device != 'cpu':
+            e = model(data)
             y = data.y.to(rank)
 
-        e_loss = torch.mean(torch.square(y - e))
+            e_loss = torch.mean(torch.square(y - e))
+            total_samples += e.shape[0]
+            total_e_loss += e_loss.sum().item()
 
-        with torch.no_grad():
-            total_e_loss.append(e_loss.item())
-
-    ave_e_loss = sum(total_e_loss)/len(total_e_loss)
+    ave_e_loss = total_e_loss/total_samples
     return ave_e_loss

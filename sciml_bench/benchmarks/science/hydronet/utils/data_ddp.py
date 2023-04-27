@@ -43,13 +43,10 @@ def init_dataloader_from_file(args, log, actionStr, split = '00', shuffle=True):
     Returns train, val, and list of examine loaders
     """
     path = os.path.join(os.path.expanduser("~"), args["datadir"])
-    file_name = Path(path) / f'{args["datasets"][0]}.hdf5'
-    start_time = time.time()
-    dataset = HydronetDataset(file_name)
-    end_time = time.time()
+    file_name = Path(path) / f'{args["dataset"]}.hdf5'
+    with log.subproc(f'Loading dataset {file_name}'):
+        dataset = HydronetDataset(file_name)
 
-    log.message(f"Loaded data in {end_time - start_time:.2f}s")
-    
     # Split data 80:10:10
     n = len(dataset)
     indices = torch.arange(n)
@@ -74,9 +71,6 @@ def init_dataloader(args, log, local_batch_size):
     # pin_memory = False if args.train_forces else True
     pin_memory = True
     num_workers = 0
-
-    if not isinstance(args["datasets"], list):
-        args["datasets"] = [args["datasets"]]
 
     trainData, valData = init_dataloader_from_file(args, log, "train")
 
