@@ -1,13 +1,7 @@
-import os 
-import sys
-import logging
 import torch
 import numpy as np
-import pickle
 import torch.nn.functional as F
-from torch_geometric.nn import DataParallel
-from torch.utils.data import ConcatDataset
-from torch_geometric.data import DataListLoader, DataLoader
+from torch_geometric.loader import DataLoader
 from scipy.special import erfinv
 
 
@@ -30,6 +24,39 @@ def energy_forces_loss(args, data, p_energies, p_forces, device):
     else:
         raise(NotImplementedError(f'Loss funciton tag "{args.loss_fn}" not implemented'))
         
+
+def train_energy_only_ddp(args, log, rank, model, loader, optimizer, device, clip_value=150):
+    """
+    Loop over batches and train model
+    return: batch-averaged loss over the entire training epoch
+    """
+    model.train()
+    total_e_loss = []
+
+    log.message("Training with dataset of size {} on rank {}".format(len(loader), rank))
+
+    for batch_id, data in enumerate(loader):
+        if device != 'cpu':
+            data = data.to(rank)
+
+        optimizer.zero_grad()
+        e = model(data)
+        y = data.y
+
+        if device != 'cpu':
+            y = y.to(rank)
+
+        e_loss = F.mse_loss(e.view(-1), y.view(-1), reduction="sum")
+
+        with torch.no_grad():
+            total_e_loss.append(e_loss.item())
+
+        e_loss.backward()
+        optimizer.step()
+
+        log.message(f'Batch {batch_id}, loss {e_loss/len(data):.2f}')
+
+    return sum(total_e_loss) # ave_e_loss
 
 def train_energy_only(args, model, loader, optimizer, device, clip_value=150):
     """
@@ -89,7 +116,6 @@ def train_energy_forces(args, model, loader, optimizer, device, clip_value=150):
                 f = torch.autograd.grad(e_tmp, d.pos, grad_outputs=torch.ones_like(e_tmp), create_graph=False)[0]
         else:
             f = torch.autograd.grad(e, data.pos, grad_outputs=torch.ones_like(e), retain_graph=True)[0]
-
 
         ef_loss, e_loss, f_loss = energy_forces_loss(args, data, e, f, e.device)
 
@@ -196,4 +222,24 @@ def get_pred_eloss(args, model, loader, optimizer, device):
 
 
     ave_e_loss = sum(total_e_loss)/len(total_e_loss)
+    return ave_e_loss
+
+def get_pred_eloss_ddp(args, rank, model, loader, optimizer, device):
+    model.eval()
+    total_e_loss = 0.
+    total_samples = 0.
+
+    with torch.no_grad():
+        for data in loader:
+            data = data.to(rank, non_blocking=True)
+            optimizer.zero_grad()
+
+            e = model(data)
+            y = data.y.to(rank)
+
+            e_loss = torch.mean(torch.square(y - e))
+            total_samples += e.shape[0]
+            total_e_loss += e_loss.sum().item()
+
+    ave_e_loss = total_e_loss/total_samples
     return ave_e_loss
