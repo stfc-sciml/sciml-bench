@@ -6,8 +6,8 @@
 # SciML-Bench
 # Copyright © 2021 Scientific Machine Learning Research Group
 # Scientific Computing Department, Rutherford Appleton Laboratory
-# Science and Technology Facilities Council, UK. 
+# Science and Technology Facilities Council, UK.
 # All rights reserved.
 
 # specify version here; it will picked up by pip
-__version__ = '1.0.0'
+__version__='1.1.0.b160323_1133'

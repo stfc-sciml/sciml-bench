@@ -15,7 +15,7 @@ Runtime input and output
 
 from datetime import datetime
 from pathlib import Path
-from sciml_bench.core.program import ProgramEnv
+from sciml_bench.core.config import ProgramEnv
 from sciml_bench.core.utils import SafeDict
 
 from contextlib import contextmanager
@@ -23,72 +23,118 @@ from sciml_bench.core.utils import MultiLevelLogger
 from sciml_bench.core.system import SystemMonitor
 from sciml_bench.core.system import save_sys_info, save_proc_info
 
-
 class RuntimeIn:
     """
     Class for runtime input
 
-    Useful components of an object smlb_in:
-    * smlb_in.start_time: start time of running as UTC-datetime
-    * smlb_in.dataset_dir: dataset directory
-    * smlb_in.output_dir: output directory
-    * smlb_in.bench_args: benchmark-specific arguments
+    Useful components of an object params_in:
+    * params_in.start_time : start time of running as UTC-datetime
+    * params_in.dataset_dir: dataset directory
+    * params_in.output_dir : output directory
+    * params_in.bench_args : benchmark-specific arguments
     """
 
-    def __init__(self, smlb_env: ProgramEnv,
-                 benchmark_name, dataset_dir, output_dir, bench_args_list):
-        # check registration
-        assert benchmark_name in smlb_env.registered_benchmarks.keys(), \
-            f'Benchmark {benchmark_name} is not registered.\n' \
-            f'Registered benchmarks: ' \
-            f'{list(smlb_env.registered_benchmarks.keys())}'
+    def __set_error_msg(self, msg):
+        self.valid = False
+        self.error_msg = msg
 
-        # start time
-        self.start_time = datetime.utcnow().isoformat() + 'Z'
+    def __init__(self, prog_env: ProgramEnv,  execution_mode, model_file, 
+                 benchmark_name, dataset_dir, 
+                 output_dir, bench_args_list):
 
+        self.valid = True
+        self.error_msg = None
+        self.start_time = None
+        self.dataset_dir = None
+        self.output_dir = None
+        self.bench_args = None
+        self.execution_mode = execution_mode
+        self.model = None
+
+
+        if prog_env.is_config_valid() == False:
+            self.valid = False
+            self.__set_error_msg(self.prog_env.config_error)
+            return 
+
+        if benchmark_name not in prog_env.benchmarks.keys():
+            self.valid = False
+            self.__set_error_msg(f'\nBenchmark {benchmark_name} is not '\
+                                  'part of the SciML-Bench.')
+            return 
+
+        # Check whether this is inference mode 
+        # and we have the model to use
+        if self.execution_mode == 'inference':
+            if model_file is None:
+                model_file = prog_env.model_dir / benchmark_name / 'model.h5'
+                if not model_file.is_file():
+                    self.__set_error_msg(f'\nNo model file specified or available'\
+                                         f'\nfor inferencing on {benchmark_name}.'\
+                                         f'\nTerminating execution.\n')
+                    return 
+            else:
+                self.model  = model_file
+
+            if dataset_dir is None:
+                self.__set_error_msg(f'\nNo dataset directory specified'\
+                                     f'\nfor inferencing on {benchmark_name}.'\
+                                     f'\nTerminating execution.\n')
+                return
+            else:
+                self.dataset_dir = Path(dataset_dir).expanduser()
+
+        # At present, we will support only one dataset per benchmark
         # data dir
-        if dataset_dir == '':
-            # default
-            dataset_name = \
-                smlb_env.registered_benchmarks[benchmark_name]['dataset']
-            self.dataset_dir = smlb_env.dataset_root_dir / dataset_name
-        else:
-            self.dataset_dir = Path(dataset_dir).expanduser()
+        if self.execution_mode == 'training':
+            if dataset_dir is None:
+                # default
+                if 'datasets' in prog_env.benchmarks[benchmark_name]:
+                    dataset_name = prog_env.benchmarks[benchmark_name]['datasets']
+                    self.dataset_dir = (prog_env.dataset_dir / dataset_name).expanduser()
+                else:
+                    self.dataset_dir = Path()
+            else:
+                self.dataset_dir = Path(dataset_dir).expanduser()
+
+
         # check data existence
-        assert self.dataset_dir.exists(), \
-            f'Dataset directory does not exist: {self.dataset_dir}' \
-            f'\nDownload dataset first or pass correct --dataset_dir.'
+        if not self.dataset_dir.exists():
+            self.valid = False
+            self.__set_error_msg(f'\nDataset directory {self.dataset_dir} does not exist')
+            return
 
         # output dir
-        assert output_dir != '', \
-            'Option --output_dir cannot be "" (empty string).'
-
-        # user-specified
-        if output_dir[0] == '@':
+        if output_dir is None:
+            datestr = datetime.today().strftime('%Y%m%d')
+            self.output_dir = (prog_env.output_dir / benchmark_name / datestr / self.execution_mode).expanduser()
+        elif output_dir[0] == '@':
             # special convention to use default root
-            self.output_dir = smlb_env.output_root_dir / benchmark_name / \
-                              output_dir[1:]
+            self.output_dir = prog_env.output_dir / benchmark_name / output_dir[1:]
         else:
             self.output_dir = Path(output_dir).expanduser()
 
-        # this is thread-safe
+        # If we have got this far, we can extract the arguments 
+        # Create relevant paths in a thread-safe manner
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # benchmark-specific arguments
+        # Extract benchmark-specific arguments
         self.bench_args = SafeDict({})
         for key, val in bench_args_list:
             self.bench_args[key] = val
 
+        # start time
+        self.start_time = datetime.utcnow().isoformat() + 'Z'
 
 class RuntimeOut:
     """
     Class for runtime output, including logging and system monitoring
 
-    Useful components of an object smlb_out:
-    * smlb_out.log.console: multi-level logger on root (rank=0)
-    * smlb_out.log.host: multi-level logger on host (local_rank=0)
-    * smlb_out.log.device: multi-level logger on device (rank=any)
-    * smlb_out.system: a set of system monitors
+    Useful components of an object params_out:
+    * params_out.log.console: multi-level logger on root (rank=0)
+    * params_out.log.host: multi-level logger on host (local_rank=0)
+    * params_out.log.device: multi-level logger on device (rank=any)
+    * params_out.system: a set of system monitors
     """
 
     class Loggers:
@@ -105,18 +151,18 @@ class RuntimeOut:
             """ Activate loggers """
             # console
             if rank == 0:
-                self.console.activate('smlb_log_console',
+                self.console.activate('sciml_bench_log_console',
                                       log_dir / 'console.log',
                                       screen=console_on_screen)
             # host
             # NOTE: rank rather than host ID is used in filename
             if activate_host and local_rank == 0:
-                self.host.activate(f'smlb_log_host{rank}',
+                self.host.activate(f'sciml_bench_log_host{rank}',
                                    log_dir / f'host{rank}.log',
                                    screen=False)
             # device
             if activate_device:
-                self.device.activate(f'smlb_log_device{rank}',
+                self.device.activate(f'sciml_bench_log_device{rank}',
                                      log_dir / f'device{rank}.log',
                                      screen=False)
 

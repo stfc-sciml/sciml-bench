@@ -15,10 +15,14 @@ Smart tool collection
 
 import time
 import logging
+import random
 from pathlib import Path
 from contextlib import contextmanager
 import sys
-
+from sciml_bench import __version__ as VERSION
+from bs4 import BeautifulSoup, Comment
+from subprocess import PIPE, run
+from sciml_bench.core.statics  import *
 
 class SafeDict(dict):
     """
@@ -225,3 +229,140 @@ def query_yes_no(question, default=None):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+
+
+def display_logo():
+    """ sciml_bench logo """
+    logo = SCIMLBENCH_TXT_LOGO
+    logo = logo.replace('ver xx'.rjust(len(VERSION) + 4), f'ver {VERSION}')
+    print(logo)
+
+
+
+def extract_html_comments(file_name):
+    """
+    Extracts comments from an HTML File. Here This is used to extract 
+    reportable short summary from markdown files.
+
+    :param file_name: Fully qualified name of the MD file. 
+    """
+    try:
+        with open(file_name, 'r') as source:
+            html = source.read()
+            soup = BeautifulSoup(html, 'lxml')
+          
+            comments = soup.findAll(text=lambda text:isinstance(text, Comment))
+
+            if len(comments) > 0:
+                return comments[0]
+            else:
+                #return None
+                return soup
+    except EnvironmentError:
+        return None
+
+
+def check_command(command_name):
+    result = run(command_name, stderr=PIPE, stdout=PIPE, shell=True)
+    if 'not found' in str(result.stderr):
+        return False
+
+    return True
+
+def csv_to_stripped_set(dict, key):
+    """
+    Given a dictionary, and a key, returns 
+    the list of items under that key as a set. 
+    The white spaces are stripped 
+    """
+    if None in [dict, key]:
+        return set()
+
+    result = [x.strip() for x in dict[key].split(',')]
+    return set(filter(''.__ne__, result))
+
+def csv_string_to_stripped_set(string):
+    """
+    Given a csv string, returns 
+    the list of items as a set. 
+    The white spaces are stripped 
+    """
+    if string is None:
+        return set()
+    
+    result = [x.strip() for x in string.split(',')]
+    return set(filter(''.__ne__, result))
+
+
+def print_items(heading, column1, column2=[]):
+    """
+    Given two columns of strings  (each as a list)
+    prints them next to each other. 
+    """
+
+    if None in [heading, column1]:
+        return 
+    
+    if column2 is None:
+        column2 = []
+        
+    lengths = [len(x) for x in [column1, column2]]
+    
+    if lengths[0] ==0 or max(lengths)==0 or (lengths[1] > lengths[0]):
+        return 
+    
+    max_length = len(max(column1, key=len)) +1
+    print(f' {heading}\n ', end='')
+    print('-'*len(heading))
+    print()
+    for i in range(len(column1)):
+        flag_2 = i >= 0 and i < len(column2)
+        output = f'  * {column1[i].ljust(max_length)}'
+        if flag_2:
+            output += f': {column2[i]}' 
+        print(output)
+    print()
+
+def list_files(path: Path, recursive=True, sort=True):
+    """
+    Given a path, return a sorted, recursively found files in that directory
+    """
+    p = path.glob('**/*')
+    files = [x for x in p if x.is_file()]
+    if sort:
+        return sorted(files)
+    return files 
+
+def print_bullet_list(items: list, intend: int=1):
+    """
+    Given a list of items, 
+    print them one item per line 
+    with a given intend
+    """
+
+    for item in items:
+        print(' ' *  intend, end='')
+        print(f'* {item.strip()}')
+
+def set_seeds(seed=0):
+    """
+    Given a seed, set the random number generators in each library
+    """
+    random.seed(seed)
+    try:
+        import numpy as np
+        np.random.seed(seed)
+    except:
+        pass
+
+    try:
+        import tensorflow as tf
+        tf.random.set_seed(seed)
+    except:
+        pass
+
+    try:
+        import torch
+        torch.manual_seed(0)
+    except:
+        pass

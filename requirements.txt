@@ -9,3 +9,6 @@ tabulate
 click
 cmake
 aws-shell
+lxml
+bs4
+matplotlib

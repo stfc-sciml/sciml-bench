@@ -1,0 +1,83 @@
+Bootstrap: localimage
+From: ompi4.sif
+
+%files
+# -----------------------------------------------------------------------------------
+    requirements.txt /sciml-bench/requirements.txt
+    MANIFEST.in /sciml-bench/MANIFEST.in
+    setup.py /sciml-bench/setup.py
+    docs /sciml-bench/sciml_bench/docs
+    sciml_bench /sciml-bench/sciml_bench
+
+
+%environment
+# -----------------------------------------------------------------------------------
+
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    export LC_ALL=C
+    export HOROVOD_GPU_ALLREDUCE=NCCL
+    export HOROVOD_GPU_ALLGATHER=MPI
+    export HOROVOD_GPU_BROADCAST=MPI
+    export HOROVOD_NCCL_HOME=/usr/local/cuda/nccl
+    export HOROVOD_NCCL_INCLUDE=/usr/local/cuda/nccl/include
+    export HOROVOD_NCCL_LIB=/usr/local/cuda/nccl/lib 
+    export PYTHON_VERSION=3.8
+    export TENSORFLOW_VERSION=2.3.0
+    export PYTORCH_VERSION=1.7.1+cu101
+
+%post
+# -----------------------------------------------------------------------------------
+# this will install all necessary packages and prepare the container
+
+# TensorFlow version is tightly coupled to CUDA and cuDNN so it should be selected carefully
+# Python 2.7 or 3.5 is supported by Ubuntu Xenial out of the box
+
+    export PYTHON_VERSION=3.8
+    export TENSORFLOW_VERSION=2.3.0
+    export PYTORCH_VERSION=1.7.1+cu101
+
+    echo "deb http://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
+
+    apt-get -y update && apt-get install -y --allow-downgrades --allow-change-held-packages --no-install-recommends \
+        build-essential \
+        cmake \
+        git \
+        curl \
+        vim \
+        wget \
+        ca-certificates \
+        libjpeg-dev \
+        libpng-dev \
+        python${PYTHON_VERSION} \
+        python${PYTHON_VERSION}-dev
+
+    ln -sf /usr/bin/python${PYTHON_VERSION} /usr/bin/python
+
+    curl -O https://bootstrap.pypa.io/get-pip.py && \
+    python get-pip.py && \
+    rm get-pip.py
+
+# Install TensorFlow, Keras and PyTorch
+    pip install torch==${PYTORCH_VERSION} torchvision==0.8.2+cu101 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
+    pip install mxnet-cu101 tensorflow-gpu==${TENSORFLOW_VERSION} keras h5py filelock matplotlib scikit-learn
+
+# Install Horovod, temporarily using CUDA stubs
+    ldconfig /usr/local/cuda-10.1/targets/x86_64-linux/lib/stubs && \
+    HOROVOD_GPU_ALLREDUCE=NCCL HOROVOD_WITH_MXNET=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITH_PYTORCH=1 pip install --no-cache-dir horovod && \
+    ldconfig
+
+# Set default NCCL parameters
+    echo NCCL_DEBUG=INFO >> /etc/nccl.conf && \
+    echo NCCL_SOCKET_IFNAME=^docker0 >> /etc/nccl.conf
+
+# Download examples
+    cd / && \
+    apt-get install -y --no-install-recommends subversion && \
+    svn checkout https://github.com/uber/horovod/trunk/examples && \
+    rm -rf /examples/.svn
+
+# Install sciml-bench
+    cd /sciml-bench && pip install .
+
+%runscript
+    sciml-bench $@

@@ -21,9 +21,10 @@ setup(
     },
     url='https://github.com/stfc-sciml/sciml-bench',
     license='MIT License',
-    author='Jeyan Thiyagalingam, Kuangdai Leng, \
-            Samuel Jackson, Juri Papay, Mallikarjun Shankar, \
+    author='Jeyan Thiyagalingam, Juri Papay, Kuangdai Leng, \
+            Samuel Jackson, Mallikarjun Shankar, \
             Geoffrey Fox, Tony Hey',
     author_email='t.jeyan@stfc.ac.uk',
     description='SciMLBench: A Benchmarking Suite for AI for Science',
 )
+
