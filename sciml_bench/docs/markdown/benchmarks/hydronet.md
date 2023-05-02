@@ -8,8 +8,7 @@ water, so they are important to capture not only for modelling water itself but 
 molecules and biomolecules solvated in water. The output is the predicted property. For qm9,
 this is “energy_U” (internal energy at 298.15 K). For the water dataset, this is “energy”
 (binding energy).The Hydronet benchmark uses the Schnet model which calculates energy and
-forces. There are about ~200k trainable parameters. The inference operation over the entire
-test set be performed by running the "test_set_errors.py" program.
+forces. There are about ~200k trainable parameters.
 
 * Main Domain: Material Sciences
 * Sub Domain: 
@@ -19,6 +18,12 @@ test set be performed by running the "test_set_errors.py" program.
 * Support for Distributed Training: No
 * Device Support: CPU / GPU
 * Authors: Sutanay Choudhury, Jenna Pope, Jesun Firoz, Hatem Helal
+
+The hydronet benchmark has multi-GPU and multi-node support using pytorch distributed. To run the model you can invoke the `torchrun` command on `sciml-bench` as follows:
+
+```bash
+torchrun --standalone --no_python --nnodes=1 --nproc_per_node=4 sciml-bench run hydronet
+```
 
 <!--
 The scientific value of SchNet model value is twofold: molecular property prediction and 
