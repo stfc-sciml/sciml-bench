@@ -194,7 +194,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
 
     with log.subproc('Parsing input arguments'):
         args = params_in.bench_args.try_get_dict(default_args=default_args)
-        args['dataset_dir'] = params_in.dataset_dir
+        args['dataset_dir'] = params_in.dataset_dir / 'hdf/one-day'
         args['output_dir'] = params_in.output_dir
 
     with log.subproc('Training the Model'):
