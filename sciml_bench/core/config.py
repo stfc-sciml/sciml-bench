@@ -105,14 +105,6 @@ class ProgramEnv:
                 self.config_error = 'Invalid download command for at least one dataset.'
                 return   
 
-        # Check for minimum records in benchmarks
-        # existence of datasets
-        for k, v in self.benchmarks.items():
-            if 'datasets' not in v:
-                self.is_valid = False
-                self.config_error = 'No datasets are linked to at least one benchmark.'
-                return  
-        
         self.is_valid = True
 
     def is_config_valid(self):
