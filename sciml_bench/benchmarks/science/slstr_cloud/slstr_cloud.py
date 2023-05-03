@@ -74,7 +74,6 @@ def reconstruct_from_patches(args, patches: tf.Tensor, nx: int, ny: int, patch_s
     reconstructed = tf.image.crop_to_bounding_box(reconstructed, offset_y, offset_x, IMAGE_H, IMAGE_W)
     return reconstructed
 
-
 # Inference
 def cloud_inference(args)-> None:
     print('Running benchmark slstr_cloud in inference mode.')

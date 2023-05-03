@@ -79,7 +79,7 @@ benchmarks:
 
     slstr_cloud:
         datasets: cloud_slstr_ds1
-        dependencies: 'tensorflow,scikit-learn,horovod.tensorflow,h5py'
+        dependencies: 'tensorflow,scikit-learn,h5py'
         types: 'training, inference'
         group: 'science'
     
