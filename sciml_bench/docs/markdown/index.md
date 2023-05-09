@@ -2,6 +2,7 @@
 
 1. [Introduction](main/introduction.md)
 1. [Credits and Acknowledgments](credits.md)
+1. [Publications](publications.md)
 1. [Installing the Suite](main/installation.md)
 1. [Using the Suite](main/usage.md)
 1. [Available Benchmarks](benchmarks_summary.md)
