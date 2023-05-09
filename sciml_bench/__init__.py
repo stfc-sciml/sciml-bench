@@ -10,4 +10,4 @@
 # All rights reserved.
 
 # specify version here; it will picked up by pip
-__version__='1.1.0.b090523_1505'
+__version__='1.2.0.b090523_1620'
