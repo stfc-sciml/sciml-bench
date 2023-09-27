@@ -9,3 +9,4 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 conda remove -n $ENV_NAME --all -y --quiet
 conda create -n $ENV_NAME  -y --quiet --file $SCRIPT_DIR/hydronet_deps.txt
+conda run -n $ENV_NAME python -m pip install -q -e .

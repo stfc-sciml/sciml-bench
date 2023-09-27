@@ -131,3 +131,5 @@ dmypy.json
 
 # do not ignore any files in doc
 !doc/**
+
+wandb
