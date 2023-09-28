@@ -1,3 +1,4 @@
+import wandb
 import time
 import tensorflow as tf
 
@@ -23,3 +24,4 @@ class LogEpochCallback(tf.keras.callbacks.Callback):
             msg += f"{key}={val:f} "
         msg += f"elapsed={time.time() - self._start_time:f} sec"
         self._params_out.log.message(msg)
+        wandb.log(logs)

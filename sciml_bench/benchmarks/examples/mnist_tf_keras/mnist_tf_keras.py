@@ -179,10 +179,6 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         end_time = time.time()
         time_taken = end_time - start_time
 
-    for key, values in history.history.items():
-        for v in values:
-            wandb.log({key: v})
-
     # Save model
     with log.subproc("Saving the model"):
         model_file = params_in.output_dir / "mnist_tf_keras_model.h5"
@@ -213,9 +209,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         )
 
     # Save metrics
-    metrics = dict(
-        time=time_taken, accuracy=accuracy, loss=history.history["val_loss"][-1]
-    )
+    metrics = dict(time=time_taken)
     wandb.log(metrics)
 
     # end top level
