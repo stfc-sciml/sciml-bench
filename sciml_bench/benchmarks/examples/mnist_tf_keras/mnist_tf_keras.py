@@ -121,22 +121,8 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
     """
     Entry point for the training routine to be called by SciML-Bench
     """
-
-    log = params_out.log
-    log.begin("Running benchmark mnist_tf_keras on training mode")
-
-    # We expect two benchmark-specific arguments here:
-    # batch_size and epochs. If not, we will assign
-    # default values.
-    with log.subproc("Parsing input arguments"):
-        # hyperparameters
-        suggested_args = {"batch_size": 128, "epochs": 2}
-
-        args = params_in.bench_args.try_get_dict(default_args=suggested_args)
-        batch_size = args["batch_size"]
-        epochs = args["epochs"]
-        log.message(f"batch_size = {batch_size}")
-        log.message(f"epochs     = {epochs}")
+    suggested_args = {"batch_size": 128, "epochs": 2}
+    args = params_in.bench_args.try_get_dict(default_args=suggested_args)
 
     wandb.init(project="mnist_tf_keras", config=args)
     params_out.activate(
@@ -146,6 +132,19 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         activate_log_on_device=True,
         console_on_screen=True,
     )
+
+    log = params_out.log
+    log.begin("Running benchmark mnist_tf_keras on training mode")
+
+    # We expect two benchmark-specific arguments here:
+    # batch_size and epochs. If not, we will assign
+    # default values.
+    with log.subproc("Parsing input arguments"):
+        # hyperparameters
+        batch_size = args["batch_size"]
+        epochs = args["epochs"]
+        log.message(f"batch_size = {batch_size}")
+        log.message(f"epochs     = {epochs}")
 
     # Save training parameters
     with log.subproc("Writing the argument file"):
@@ -196,6 +195,7 @@ def sciml_bench_training(params_in: RuntimeIn, params_out: RuntimeOut):
         with open(history_file, "w") as handle:
             yaml.dump(history.history, handle)
         log.message(f"Saved to: {history_file}")
+
     log.ended("Training CNN model")
 
     # Predict
