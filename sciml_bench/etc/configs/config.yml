@@ -125,3 +125,9 @@ benchmarks:
         dependencies: 'tensorflow, scikit-image'
         types: 'training, inference'
         group: 'examples'
+
+    mnist_torch:
+        datasets: mnist
+        dependencies: 'pytorch, scikit-image'
+        types: 'training, inference'
+        group: 'examples'
